@@ -1,4 +1,5 @@
 #include "framework.h"
+#include "util.h"
 
 #include "config.h"
 
@@ -48,20 +49,20 @@ DWORD LoadConfigFromReg(PCFGDATA pCfgData)
         {
             // TODO: 读取配置
             cbData = sizeof(BOOL);
-            RegQueryBinValue(hkApp, REGVAL_SHOWMAINWND, &pCfgData->bFloatWnd, &cbData);
+            RegQueryAnyValue(hkApp, REGVAL_SHOWMAINWND, &pCfgData->bFloatWnd, &cbData);
             cbData = sizeof(BOOL);
-            RegQueryBinValue(hkApp, REGVAL_AUTORUN, &pCfgData->bAutoRun, &cbData);
+            RegQueryAnyValue(hkApp, REGVAL_AUTORUN, &pCfgData->bAutoRun, &cbData);
             cbData = sizeof(BOOL);
-            RegQueryBinValue(hkApp, REGVAL_TIMEAlARM, &pCfgData->bTimeAlarm, &cbData);
+            RegQueryAnyValue(hkApp, REGVAL_TIMEAlARM, &pCfgData->bTimeAlarm, &cbData);
             //cbData = MAX_PATH;
             //RegQueryValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, NULL, (PBYTE)pCfgData->szBalloonIconPath, &cbData);
             cbData = sizeof(BOOL);
-            RegQueryBinValue(hkApp, REGVAL_INFOSOUND, &pCfgData->bInfoSound, &cbData);
+            RegQueryAnyValue(hkApp, REGVAL_INFOSOUND, &pCfgData->bInfoSound, &cbData);
 
             cbData = sizeof(LOGFONTW);
-            RegQueryBinValue(hkApp, REGVAL_TEXTFONT, &pCfgData->lfText, &cbData);
+            RegQueryAnyValue(hkApp, REGVAL_TEXTFONT, &pCfgData->lfText, &cbData);
             cbData = sizeof(COLORREF);
-            RegQueryBinValue(hkApp, REGVAL_TEXTCOLOR, &pCfgData->rgbTextColor, &cbData);
+            RegQueryAnyValue(hkApp, REGVAL_TEXTCOLOR, &pCfgData->rgbTextColor, &cbData);
         }
         else if (dwErrorCode == ERROR_FILE_NOT_FOUND)
         {
@@ -128,65 +129,4 @@ DWORD SaveConfigToReg(PCFGDATA pCfgData)
         RegCloseKey(hkSoftware);
     }
     return dwErrorCode;
-}
-
-DWORD SetAppAutoRun()
-{
-    DWORD dwErrorCode = ERROR_SUCCESS;
-    HKEY hkRun = NULL;
-
-    // 打开启动项  
-    dwErrorCode = RegOpenRunKey(&hkRun);
-    if (dwErrorCode == ERROR_SUCCESS)
-    {
-        // 得到本程序自身的全路径
-        WCHAR szExeFullPath[MAX_PATH];
-        GetModuleFileNameW(NULL, szExeFullPath, MAX_PATH);
-        PathQuoteSpacesW(szExeFullPath); // 补上双引号
-
-        // 得到要写入的数据大小
-        size_t cchPath = 0;
-        StringCchLengthW(szExeFullPath, MAX_PATH, &cchPath);
-
-        dwErrorCode = RegSetValueExW(
-            hkRun, APPNAME, 0, REG_SZ, 
-            (LPBYTE)szExeFullPath, (DWORD)(sizeof(WCHAR)*(cchPath+1))
-        );
-    }
-
-    if (hkRun != NULL)
-    {
-        RegCloseKey(hkRun);
-    }
-    return dwErrorCode;
-}
-
-DWORD UnsetAppAutoRun()
-{
-    DWORD dwErrorCode = ERROR_SUCCESS;
-    HKEY hkRun = NULL;
-
-    // 打开启动项  
-    dwErrorCode = RegOpenRunKey(&hkRun);
-    if (dwErrorCode == ERROR_SUCCESS)
-    {
-        dwErrorCode = RegDeleteValueW(hkRun, APPNAME);
-
-    }
-    if (hkRun != NULL)
-    {
-        RegCloseKey(hkRun);
-    }
-    return dwErrorCode;
-}
-
-DWORD GetSystemCapitalFont(PLOGFONTW pLogFont)
-{
-    NONCLIENTMETRICSW ncMetrics = { 0 };
-    ncMetrics.cbSize = sizeof(NONCLIENTMETRICSW);
-
-    // 获取当前系统标题栏的字体
-    SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, 0, &ncMetrics, 0);
-    CopyMemory(pLogFont, &ncMetrics.lfCaptionFont, sizeof(LOGFONTW));
-    return 0;
 }

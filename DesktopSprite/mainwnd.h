@@ -12,7 +12,7 @@
 #define REFRESHINTERVAL                 1000
 
 #define WM_NOTIFYICON                   (WM_USER + 1)           // 通知区域消息
-#define WM_TIMEALARM                    (WM_USER + 2)           // 报时消息(WPARAM: HI[小时]:LO[分钟])
+#define WM_TIMEALARM                    (WM_USER + 2)           // 报时消息
 
 // 注册主窗口
 ATOM RegisterMainWnd(HINSTANCE hInstance);

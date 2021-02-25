@@ -26,6 +26,7 @@ static LRESULT OnDestroy(HWND hWnd, WPARAM wParam, LPARAM lParam);
 static LRESULT OnActivate(HWND hWnd, WPARAM wParam, LPARAM lParam);
 static LRESULT OnClose(HWND hWnd, WPARAM wParam, LPARAM lParam);
 static LRESULT OnPaint(HWND hWnd, WPARAM wParam, LPARAM lParam);
+static LRESULT OnSettingChange(HWND hWnd, WPARAM wParam, LPARAM lParam);
 static LRESULT OnContextMenu(HWND hWnd, WPARAM wParam, LPARAM lParam);
 static LRESULT OnCommand(HWND hWnd, WPARAM wParam, LPARAM lParam);
 static LRESULT OnTimer(HWND hWnd, WPARAM wParam, LPARAM lParam);
@@ -56,7 +57,7 @@ static LRESULT OnCreate(HWND hWnd, WPARAM wParam, LPARAM lParam)
         hWnd, ID_NIDMAIN, WM_NOTIFYICON,
         LoadIconW(
             GetModuleHandleW(NULL),
-            MAKEINTRESOURCEW(IsDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
+            MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
         )
     );
 
@@ -134,6 +135,18 @@ static LRESULT OnPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
     SelectObject(hdc, hFontPre);
     EndPaint(hWnd, &ps);
+    return 0;
+}
+
+static LRESULT OnSettingChange(HWND hWnd, WPARAM wParam, LPARAM lParam)
+{
+    // 自动调节图标颜色
+    SetNotifyIcon(hWnd, ID_NIDMAIN,
+        LoadIconW(
+            GetModuleHandleW(NULL),
+            MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
+        )
+    );
     return 0;
 }
 
@@ -354,7 +367,10 @@ static LRESULT OnTaskBarCreated(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
     AddNotifyIcon(
         hWnd, ID_NIDMAIN, WM_NOTIFYICON,
-        LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDI_APPICON_DARK))
+        LoadIconW(
+            GetModuleHandleW(NULL), 
+            MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
+        )
     );
     return 0;
 }
@@ -375,6 +391,8 @@ static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         return OnClose(hWnd, wParam, lParam);
     case WM_PAINT:
         return OnPaint(hWnd, wParam, lParam);
+    case WM_SETTINGCHANGE:
+        return OnSettingChange(hWnd, wParam, lParam);
     case WM_CONTEXTMENU:
         return OnContextMenu(hWnd, wParam, lParam);
     case WM_COMMAND:
@@ -478,7 +496,7 @@ UINT GetHourTimeDiff()
 {
     SYSTEMTIME st = { 0 };
     GetLocalTime(&st);
-    UINT uTimeDiff = (59 - st.wMinute) * 60 * 1000 + (59 - st.wSecond) * 1000 + (1000 - st.wMilliseconds) + 1;
+    UINT uTimeDiff = (59 - st.wMinute) * 60 * 1000 + (60 - st.wSecond) * 1000 + 100;
     return uTimeDiff;
 }
 

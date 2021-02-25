@@ -27,8 +27,37 @@
 #define SetWndData(hWnd, dwNewData) \
         SetWindowLongPtrW((hWnd), GWLP_USERDATA, (LONG_PTR)(dwNewData))
 
+// 向注册表子键写入二进制数据
+#define RegSetBinValue(hKey, lpValueName, lpData, cbData) \
+        RegSetValueExW((hKey), (lpValueName), 0, REG_BINARY, (PBYTE)(lpData), (cbData))
+
+// 从注册表子键查询二进制数据
+#define RegQueryAnyValue(hKey, lpValueName, lpData, lpcbData) \
+        RegQueryValueExW((hKey), (lpValueName), NULL, NULL, (PBYTE)(lpData), (lpcbData))
+
+// 打开 HEKY_CURRENT_USER\SOFTWARE 子键
+#define RegOpenSoftwareKey(phkResult) \
+        RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE", 0, KEY_ALL_ACCESS, (phkResult))
+
+// 打开 HEKY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+#define RegOpenRunKey(phkResult) \
+        RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_ALL_ACCESS, (phkResult))
+
+// 打开 HEKY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize
+#define RegOpenPersonalizeKey(phkResult) \
+        RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, KEY_READ, (phkResult))
+
+// 设置应用开机自启
+DWORD SetAppAutoRun();
+
+// 取消应用开机自启
+DWORD UnsetAppAutoRun();
+
 // 换算字节速度成带单位的字符串
 DWORD ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest);
 
-// 判断是否是深色主题
-BOOL IsDarkTheme();
+// 获取当前系统标题字体信息
+DWORD GetSystemCapitalFont(PLOGFONTW pLogFont);
+
+// 判断系统是否是深色主题
+BOOL IsSystemDarkTheme();
