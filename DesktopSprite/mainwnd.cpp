@@ -3,7 +3,6 @@
 #include "config.h"
 #include "notifyicon.h"
 #include "perfdata.h"
-
 #include "mainwnd.h"
 
 static UINT             uMsgTaskbarCreated              = 0;                        // 任务栏重建消息
@@ -125,7 +124,7 @@ static LRESULT OnPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
     PAINTSTRUCT ps = { 0 };
     HDC hdc = BeginPaint(hWnd, &ps);
-    HFONT hFontPre = SelectObject(hdc, hTextFont);
+    HFONT hFontPre = SelectFont(hdc, hTextFont);
     SetTextColor(hdc, rgbText);
     SetBkMode(hdc, TRANSPARENT);
 
@@ -434,7 +433,7 @@ ATOM RegisterMainWnd(HINSTANCE hInstance)
     wcex.cbWndExtra = 0;
     wcex.hIcon = NULL;
     wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
-    wcex.hbrBackground = GetStockObject(BLACK_BRUSH);
+    wcex.hbrBackground = GetStockBrush(BLACK_BRUSH);
     wcex.lpszMenuName = NULL;
     wcex.hIconSm = NULL;
 

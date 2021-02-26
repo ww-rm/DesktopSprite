@@ -38,7 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="config.c" />
-    <ClCompile Include="mainwnd.c" />
+    <ClCompile Include="mainwnd.cpp" />
     <ClCompile Include="notifyicon.c" />
     <ClCompile Include="perfdata.c" />
     <ClCompile Include="util.c" />

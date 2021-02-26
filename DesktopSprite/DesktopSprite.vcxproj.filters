@@ -49,10 +49,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="config.c">
+    <ClCompile Include="mainwnd.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="mainwnd.c">
+    <ClCompile Include="config.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="notifyicon.c">
