@@ -33,16 +33,23 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\appicon_dark.ico" />
+    <Image Include="res\appicon_dark.png" />
     <Image Include="res\appicon_light.ico" />
+    <Image Include="res\appicon_light.png" />
     <Image Include="res\timealarm.ico" />
+    <Image Include="res\timealarm.png" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="config.c" />
-    <ClCompile Include="mainwnd.cpp" />
+    <ClCompile Include="mainwnd.c" />
     <ClCompile Include="notifyicon.c" />
     <ClCompile Include="perfdata.c" />
     <ClCompile Include="util.c" />
     <ClCompile Include="winapp.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="res\AGENCYB.TTF" />
+    <Font Include="res\AGENCYR.TTF" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

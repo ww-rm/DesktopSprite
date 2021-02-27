@@ -12,84 +12,70 @@ static UINT     const   ID_NIDMAIN                      = 1;                    
 static INT      const   MAINWNDSIZE_CX                  = 100;                      // 窗口 cx
 static INT      const   MAINWNDSIZE_CY                  = 400;                      // 窗口 cy
 
-// 运行时设置项
-static BOOL             bFloatWnd                       = FALSE;                    // 是否桌面浮窗
-static HFONT            hTextFont                       = NULL;                     // 显示文本的字体
-static COLORREF         rgbText                         = RGB(0, 0, 0);             // 显示文本的颜色
-//static WCHAR            szBalloonIconPath[MAX_PATH]     = { 0 };                    // 气球图标文件路径
-static BOOL             bInfoSound                      = FALSE;                    // 气球提示是否有声音
-
-// 运行时数据
 static UINT             uMsgTaskbarCreated              = 0;                        // 任务栏重建消息
-static BOOL             bWndFixed                       = FALSE;                    // 窗口是否通过图标点击长期显示
-static POINT            ptDragSrc                       = { 0 };                    // 拖动窗口时的源点
-
 
 // 过程函数声明
 static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-static LRESULT OnCreate(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnDestroy(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnActivate(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnClose(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnPaint(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnSettingChange(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnContextMenu(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnCommand(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnTimer(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnMouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnLButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnLButtonUp(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnMouseLeave(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnNotifyIcon(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnTimeAlarm(HWND hWnd, WPARAM wParam, LPARAM lParam);
-static LRESULT OnTaskBarCreated(HWND hWnd, WPARAM wParam, LPARAM lParam);
+static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnDestroy(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnActivate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnClose(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnSettingChange(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnContextMenu(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnTimer(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnInitMenuPopup(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnMouseMove(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnLButtonDown(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnLButtonUp(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnMouseLeave(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnTimeAlarm(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnTaskBarCreated(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 
 
 // 过程处理实现
-static LRESULT OnCreate(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    // 注册任务栏重建消息
-    uMsgTaskbarCreated = RegisterWindowMessageW(SZMSG_TASKBARCREATED);
-
     // 应用配置项
     PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
     LoadConfigFromReg(pCfgData);
 
     // 按照读取的配置项初始化窗口数据
-    bFloatWnd = pCfgData->bFloatWnd;
+    pWndData->bFloatWnd = pCfgData->bFloatWnd;
 
     // 是否浮动窗口
     if (pCfgData->bFloatWnd)
     {
         // 调整显示位置
         SetWindowPos(
-            hWnd, HWND_TOPMOST,
+            pWndData->hWnd, HWND_TOPMOST,
             pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
             MAINWNDSIZE_CX, MAINWNDSIZE_CY,
             SWP_NOACTIVATE
         );
 
         // 显示窗口
-        AnimateWindow(hWnd, ANIMATIONTIME, AW_BLEND);
-        InvalidateRect(hWnd, NULL, TRUE);
+        AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_BLEND);
+        InvalidateRect(pWndData->hWnd, NULL, TRUE);
     }
 
     // 是否整点报时
     if (pCfgData->bTimeAlarm)
     {
-        SetTimer(hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+        SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
     }
 
     // 字体, 颜色, 声音
-    hTextFont = CreateFontIndirectW(&pCfgData->lfText);
-    rgbText = pCfgData->rgbTextColor;
-    bInfoSound = pCfgData->bInfoSound;
+    pWndData->hTextFont = CreateFontIndirectW(&pCfgData->lfText);
+    pWndData->rgbText = pCfgData->rgbTextColor;
+    pWndData->bInfoSound = pCfgData->bInfoSound;
     DefFreeMem(pCfgData);
 
     // 添加图标
     AddNotifyIcon(
-        hWnd, ID_NIDMAIN, WM_NOTIFYICON,
+        pWndData->hWnd, ID_NIDMAIN, WM_NOTIFYICON,
         LoadIconW(
             GetModuleHandleW(NULL),
             MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
@@ -99,46 +85,46 @@ static LRESULT OnCreate(HWND hWnd, WPARAM wParam, LPARAM lParam)
     // 设置图标提示信息
     WCHAR szTip[MAX_NIDTIP] = { 0 };
     LoadStringW(GetModuleHandleW(NULL), IDS_APPNAME, szTip, MAX_NIDTIP);
-    SetNotifyIconTip(hWnd, ID_NIDMAIN, szTip);
+    SetNotifyIconTip(pWndData->hWnd, ID_NIDMAIN, szTip);
 
     // 设置 85% 透明度
-    SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), (255 * 85) / 100, LWA_ALPHA);
+    SetLayeredWindowAttributes(pWndData->hWnd, RGB(0, 0, 0), (255 * 85) / 100, LWA_ALPHA);
 
     // 每 1s 刷新一次显示
-    SetTimer(hWnd, IDT_REFRESHRECT, REFRESHINTERVAL, (TIMERPROC)NULL);
+    SetTimer(pWndData->hWnd, IDT_REFRESHRECT, REFRESHINTERVAL, (TIMERPROC)NULL);
     return 0;
 }
 
-static LRESULT OnDestroy(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnDestroy(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    if (hTextFont != NULL)
+    if (pWndData->hTextFont != NULL)
     {
-        DeleteObject(hTextFont);
-        hTextFont = NULL;
+        DeleteObject(pWndData->hTextFont);
+        pWndData->hTextFont = NULL;
     }
-    DeleteNotifyIcon(hWnd, ID_NIDMAIN);
+    DeleteNotifyIcon(pWndData->hWnd, ID_NIDMAIN);
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
 }
 
-static LRESULT OnActivate(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnActivate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // 不是浮动且失去激活
-    if (!bFloatWnd && !wParam)
+    if (!pWndData->bFloatWnd && !wParam)
     {
-        bWndFixed = FALSE;
-        AnimateWindow(hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+        pWndData->bWndFixed = FALSE;
+        AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
     }
     return 0;
 }
 
-static LRESULT OnClose(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnClose(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    AnimateWindow(hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+    AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
     return 0;
 }
 
-static LRESULT OnPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // 得到格式化的字符串数据 xx.xx% xx.xxKB/s
     PERFDATA perfData = { 0 };
@@ -151,15 +137,15 @@ static LRESULT OnPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
     // 开始绘图
     PAINTSTRUCT ps = { 0 };
-    HDC hdc = BeginPaint(hWnd, &ps);
-    HFONT hFontPre = SelectFont(hdc, hTextFont);
-    SetTextColor(hdc, rgbText);
+    HDC hdc = BeginPaint(pWndData->hWnd, &ps);
+    HFONT hFontPre = SelectFont(hdc, pWndData->hTextFont);
+    SetTextColor(hdc, pWndData->rgbText);
     SetBkMode(hdc, TRANSPARENT);
 
     HINSTANCE hInstance = GetModuleHandleW(NULL);
     WCHAR szTip[MAX_LOADSTRING] = { 0 };
     RECT rcClient = { 0 };
-    GetClientRect(hWnd, &rcClient);
+    GetClientRect(pWndData->hWnd, &rcClient);
     INT nClientHeight = rcClient.bottom - rcClient.top;
     RECT rcDraw = { 0 };
     CopyRect(&rcDraw, &rcClient);
@@ -215,14 +201,14 @@ static LRESULT OnPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
     // 结束绘图
     SelectObject(hdc, hFontPre);
-    EndPaint(hWnd, &ps);
+    EndPaint(pWndData->hWnd, &ps);
     return 0;
 }
 
-static LRESULT OnSettingChange(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnSettingChange(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // 自动调节图标颜色
-    SetNotifyIcon(hWnd, ID_NIDMAIN,
+    SetNotifyIcon(pWndData->hWnd, ID_NIDMAIN,
         LoadIconW(
             GetModuleHandleW(NULL),
             MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
@@ -231,28 +217,28 @@ static LRESULT OnSettingChange(HWND hWnd, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-static LRESULT OnContextMenu(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnContextMenu(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // 加载ContextMenu
     HMENU hContextMenuBar = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDR_CONTEXTMENU));
     HMENU hContextMenu = GetSubMenu(hContextMenuBar, 0);
 
     // 解决在菜单外单击左键菜单不消失的问题
-    SetForegroundWindow(hWnd);
+    SetForegroundWindow(pWndData->hWnd);
 
     // 显示菜单
     TrackPopupMenuEx(
         hContextMenu,
         TPM_LEFTALIGN | TPM_LEFTBUTTON,
         GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam),
-        hWnd, NULL
+        pWndData->hWnd, NULL
     );
 
     DestroyMenu(hContextMenuBar);
     return 0;
 }
 
-static LRESULT OnCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // HIWORD(wParam) Menu: FALSE, Accelerator: TRUE
     // LOWORD(wParam) identifier
@@ -266,29 +252,29 @@ static LRESULT OnCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
     case IDM_FLOATWND:
     {
         pCfgData->bFloatWnd = !pCfgData->bFloatWnd;
-        bFloatWnd = pCfgData->bFloatWnd;
+        pWndData->bFloatWnd = pCfgData->bFloatWnd;
         if (pCfgData->bFloatWnd)
         {
             // 调整显示位置
             SetWindowPos(
-                hWnd, HWND_TOPMOST,
+                pWndData->hWnd, HWND_TOPMOST,
                 pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
                 MAINWNDSIZE_CX, MAINWNDSIZE_CY,
                 SWP_NOACTIVATE
             );
 
             // 显示窗口
-            AnimateWindow(hWnd, ANIMATIONTIME, AW_BLEND);
-            InvalidateRect(hWnd, NULL, TRUE);
+            AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_BLEND);
+            InvalidateRect(pWndData->hWnd, NULL, TRUE);
         }
         else
         {
             // 如果不显示浮动窗口就保存一次现在的窗口位置
             RECT rcWnd = { 0 };
-            GetWindowRect(hWnd, &rcWnd);
+            GetWindowRect(pWndData->hWnd, &rcWnd);
             pCfgData->ptLastFloatPos.x = rcWnd.left;
             pCfgData->ptLastFloatPos.y = rcWnd.top;
-            AnimateWindow(hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+            AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
         }
         break;
     }
@@ -310,18 +296,18 @@ static LRESULT OnCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
         pCfgData->bTimeAlarm = !pCfgData->bTimeAlarm;
         if (pCfgData->bTimeAlarm)
         {
-            SetTimer(hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+            SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
         }
         else
         {
-            KillTimer(hWnd, IDT_TIMEALARM);
+            KillTimer(pWndData->hWnd, IDT_TIMEALARM);
         }
         break;
     }
     case IDM_INFOSOUND:
     {
         pCfgData->bInfoSound = !pCfgData->bInfoSound;
-        bInfoSound = pCfgData->bInfoSound;
+        pWndData->bInfoSound = pCfgData->bInfoSound;
         break;
     }
     case IDM_EXIT:
@@ -330,17 +316,17 @@ static LRESULT OnCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
         {
             // 如果当前显示浮动窗口退出时就保存一次现在的窗口位置
             RECT rcWnd = { 0 };
-            GetWindowRect(hWnd, &rcWnd);
+            GetWindowRect(pWndData->hWnd, &rcWnd);
             pCfgData->ptLastFloatPos.x = rcWnd.left;
             pCfgData->ptLastFloatPos.y = rcWnd.top;
         }
-        DestroyWindow(hWnd);
+        DestroyWindow(pWndData->hWnd);
         break;
     }
     default:
     {
         DefFreeMem(pCfgData);
-        return DefWindowProcW(hWnd, WM_COMMAND, wParam, lParam);
+        return DefWindowProcW(pWndData->hWnd, WM_COMMAND, wParam, lParam);
     }
     }
 
@@ -350,24 +336,24 @@ static LRESULT OnCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-static LRESULT OnTimer(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnTimer(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     switch (wParam)
     {
     case IDT_REFRESHRECT:
-        InvalidateRect(hWnd, NULL, TRUE);
+        InvalidateRect(pWndData->hWnd, NULL, TRUE);
         break;
     case IDT_TIMEALARM:
-        PostMessageW(hWnd, WM_TIMEALARM, 0, 0);
-        SetTimer(hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+        PostMessageW(pWndData->hWnd, WM_TIMEALARM, 0, 0);
+        SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
         break;
     default:
-        return DefWindowProcW(hWnd, WM_TIMER, wParam, lParam);
+        return DefWindowProcW(pWndData->hWnd, WM_TIMER, wParam, lParam);
     }
     return 0;
 }
 
-static LRESULT OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnInitMenuPopup(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
     LoadConfigFromReg(pCfgData);
@@ -382,19 +368,19 @@ static LRESULT OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-static LRESULT OnMouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnMouseMove(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    if (bFloatWnd)
+    if (pWndData->bFloatWnd)
     {
         if (wParam & MK_LBUTTON)
         {
             POINT ptCursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
             RECT rcWnd;
-            GetWindowRect(hWnd, &rcWnd);
+            GetWindowRect(pWndData->hWnd, &rcWnd);
             SetWindowPos(
-                hWnd, HWND_TOPMOST,
-                rcWnd.left + (ptCursor.x - ptDragSrc.x),
-                rcWnd.top + (ptCursor.y- ptDragSrc.y), 
+                pWndData->hWnd, HWND_TOPMOST,
+                rcWnd.left + (ptCursor.x - pWndData->ptDragSrc.x),
+                rcWnd.top + (ptCursor.y- pWndData->ptDragSrc.y),
                 MAINWNDSIZE_CX, MAINWNDSIZE_CY, 
                 SWP_SHOWWINDOW | SWP_NOSIZE
             );
@@ -403,27 +389,27 @@ static LRESULT OnMouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-static LRESULT OnLButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnLButtonDown(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // 保存点击位置
-    ptDragSrc.x = GET_X_LPARAM(lParam);
-    ptDragSrc.y = GET_Y_LPARAM(lParam);
+    pWndData->ptDragSrc.x = GET_X_LPARAM(lParam);
+    pWndData->ptDragSrc.y = GET_Y_LPARAM(lParam);
     return 0;
 }
 
-static LRESULT OnLButtonUp(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnLButtonUp(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // TODO
-    return DefWindowProcW(hWnd, WM_LBUTTONUP, wParam, lParam);
+    return DefWindowProcW(pWndData->hWnd, WM_LBUTTONUP, wParam, lParam);
 }
 
-static LRESULT OnMouseLeave(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnMouseLeave(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // TODO
-    return DefWindowProcW(hWnd, WM_MOUSELEAVE, wParam, lParam);
+    return DefWindowProcW(pWndData->hWnd, WM_MOUSELEAVE, wParam, lParam);
 }
 
-static LRESULT OnNotifyIcon(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     switch (LOWORD(lParam))
     {
@@ -434,14 +420,14 @@ static LRESULT OnNotifyIcon(HWND hWnd, WPARAM wParam, LPARAM lParam)
         HMENU hContextMenu = GetSubMenu(hContextMenuBar, 0);
 
         // 解决在菜单外单击左键菜单不消失的问题
-        SetForegroundWindow(hWnd);
+        SetForegroundWindow(pWndData->hWnd);
         
         // 显示菜单
         TrackPopupMenuEx(
             hContextMenu,
             TPM_LEFTALIGN | TPM_LEFTBUTTON,
             GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam),
-            hWnd, NULL
+            pWndData->hWnd, NULL
         );
 
         DestroyMenu(hContextMenuBar);
@@ -450,56 +436,56 @@ static LRESULT OnNotifyIcon(HWND hWnd, WPARAM wParam, LPARAM lParam)
     case NIN_SELECT:
     case NIN_KEYSELECT:
     {
-        if (!bFloatWnd)
+        if (!pWndData->bFloatWnd)
         {
             // 不是浮动的情况下固定住窗口显示
-            bWndFixed = TRUE;
+            pWndData->bWndFixed = TRUE;
         }
 
         // 只有点击了图标才需要设置前景窗口
-        SetForegroundWindow(hWnd);
+        SetForegroundWindow(pWndData->hWnd);
     }
     case NIN_POPUPOPEN:
     {
         // 不是浮动的情况下显示显示弹窗
-        if (!bFloatWnd)
+        if (!pWndData->bFloatWnd)
         {
             //SetLayeredWindowAttributes;
             //UpdateLayeredWindow;
             //UpdateLayeredWindowIndirect;
             RECT rcNotifyIcon = { 0 };
-            GetNotifyIconRect(hWnd, ID_NIDMAIN, &rcNotifyIcon);
+            GetNotifyIconRect(pWndData->hWnd, ID_NIDMAIN, &rcNotifyIcon);
 
             SetWindowPos(
-                hWnd, HWND_TOPMOST,
+                pWndData->hWnd, HWND_TOPMOST,
                 rcNotifyIcon.left - ((MAINWNDSIZE_CX - (rcNotifyIcon.right - rcNotifyIcon.left)) / 2),
                 rcNotifyIcon.top - MAINWNDSIZE_CY,
                 MAINWNDSIZE_CX, MAINWNDSIZE_CY,
                 SWP_NOACTIVATE
             );
-            AnimateWindow(hWnd, ANIMATIONTIME, AW_BLEND);
+            AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_BLEND);
 
             // 需要立即重绘窗口
-            InvalidateRect(hWnd, NULL, TRUE);
+            InvalidateRect(pWndData->hWnd, NULL, TRUE);
         }
         break;
     }
     case NIN_POPUPCLOSE:
     {
         // 不是浮动且没有固定则隐藏弹窗
-        if (!bFloatWnd && !bWndFixed)
+        if (!pWndData->bFloatWnd && !pWndData->bWndFixed)
         {
-            AnimateWindow(hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+            AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
             break;
         }
     }
     default:
-        return DefWindowProcW(hWnd, WM_NOTIFYICON, wParam, lParam);
+        return DefWindowProcW(pWndData->hWnd, WM_NOTIFYICON, wParam, lParam);
     }
     return 0;
 }
 
-static LRESULT OnTimeAlarm(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnTimeAlarm(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     SYSTEMTIME st = { 0 };
     GetLocalTime(&st);
@@ -516,16 +502,16 @@ static LRESULT OnTimeAlarm(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
     //HICON hIcon = LoadIconFromFile(szBalloonIconPath);
     HICON hIcon = LoadIconRawSize(hInstance, MAKEINTRESOURCEW(IDI_TIMEALARM));
-    SetNotifyIconInfo(hWnd, ID_NIDMAIN, szInfoTitle, szInfo, hIcon, bInfoSound);
+    SetNotifyIconInfo(pWndData->hWnd, ID_NIDMAIN, szInfoTitle, szInfo, hIcon, pWndData->bInfoSound);
 
     DestroyIcon(hIcon);
     return 0;
 }
 
-static LRESULT OnTaskBarCreated(HWND hWnd, WPARAM wParam, LPARAM lParam)
+static LRESULT OnTaskBarCreated(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     AddNotifyIcon(
-        hWnd, ID_NIDMAIN, WM_NOTIFYICON,
+        pWndData->hWnd, ID_NIDMAIN, WM_NOTIFYICON,
         LoadIconW(
             GetModuleHandleW(NULL), 
             MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
@@ -538,43 +524,54 @@ static LRESULT OnTaskBarCreated(HWND hWnd, WPARAM wParam, LPARAM lParam)
 // 消息映射
 static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    PMAINWNDDATA pWndData = (PMAINWNDDATA)GetWndData(hWnd);
     switch (uMsg)
     {
+    case WM_NCCREATE:
+        pWndData = (PMAINWNDDATA)DefAllocMem(sizeof(MAINWNDDATA));
+        if (pWndData == NULL)
+            return FALSE;
+        pWndData->hWnd = hWnd;
+        SetWndData(hWnd, pWndData);
+        return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    case WM_NCDESTROY:
+        DefFreeMem(pWndData);
+        return DefWindowProcW(hWnd, uMsg, wParam, lParam);
     case WM_CREATE:
-        return OnCreate(hWnd, wParam, lParam);
+        return OnCreate(pWndData, wParam, lParam);
     case WM_DESTROY:
-        return OnDestroy(hWnd, wParam, lParam);
+        return OnDestroy(pWndData, wParam, lParam);
     case WM_ACTIVATE:
-        return OnActivate(hWnd, wParam, lParam);
+        return OnActivate(pWndData, wParam, lParam);
     case WM_CLOSE:
-        return OnClose(hWnd, wParam, lParam);
+        return OnClose(pWndData, wParam, lParam);
     case WM_PAINT:
-        return OnPaint(hWnd, wParam, lParam);
+        return OnPaint(pWndData, wParam, lParam);
     case WM_SETTINGCHANGE:
-        return OnSettingChange(hWnd, wParam, lParam);
+        return OnSettingChange(pWndData, wParam, lParam);
     case WM_CONTEXTMENU:
-        return OnContextMenu(hWnd, wParam, lParam);
+        return OnContextMenu(pWndData, wParam, lParam);
     case WM_COMMAND:
-        return OnCommand(hWnd, wParam, lParam);
+        return OnCommand(pWndData, wParam, lParam);
     case WM_TIMER:
-        return OnTimer(hWnd, wParam, lParam);
+        return OnTimer(pWndData, wParam, lParam);
     case WM_INITMENUPOPUP:
-        return OnInitMenuPopup(hWnd, wParam, lParam);
+        return OnInitMenuPopup(pWndData, wParam, lParam);
     case WM_MOUSEMOVE:
-        return OnMouseMove(hWnd, wParam, lParam);
+        return OnMouseMove(pWndData, wParam, lParam);
     case WM_LBUTTONDOWN:
-        return OnLButtonDown(hWnd, wParam, lParam);
+        return OnLButtonDown(pWndData, wParam, lParam);
     case WM_LBUTTONUP:
-        return OnLButtonUp(hWnd, wParam, lParam);
+        return OnLButtonUp(pWndData, wParam, lParam);
     case WM_MOUSELEAVE:
-        return OnMouseLeave(hWnd, wParam, lParam);
+        return OnMouseLeave(pWndData, wParam, lParam);
     case WM_NOTIFYICON:
-        return OnNotifyIcon(hWnd, wParam, lParam);
+        return OnNotifyIcon(pWndData, wParam, lParam);
     case WM_TIMEALARM:
-        return OnTimeAlarm(hWnd, wParam, lParam);
+        return OnTimeAlarm(pWndData, wParam, lParam);
     default:
         if (uMsg == uMsgTaskbarCreated)
-            return OnTaskBarCreated(hWnd, wParam, lParam);
+            return OnTaskBarCreated(pWndData, wParam, lParam);
         else
             return DefWindowProcW(hWnd, uMsg, wParam, lParam);
     }
@@ -583,6 +580,10 @@ static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 ATOM RegisterMainWnd(HINSTANCE hInstance)
 {
+    // 注册任务栏重建消息
+    uMsgTaskbarCreated = RegisterWindowMessageW(SZMSG_TASKBARCREATED);
+
+    // 注册窗体
     WNDCLASSEXW wcex = { 0 };
     wcex.cbSize = sizeof(WNDCLASSEXW);
     wcex.lpszClassName = MAINWNDCLASSNAME;
