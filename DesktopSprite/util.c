@@ -52,7 +52,6 @@ DWORD UnsetAppAutoRun()
     return dwErrorCode;
 }
 
-
 DWORD ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest)
 {
     PCWSTR dataUnits[5] = { L"B/s", L"KB/s", L"MB/s", L"GB/s", L"TB/s" };
@@ -64,6 +63,33 @@ DWORD ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest)
     }
     StringCchPrintfW(szFormatted, cchDest, L"%.2f%s", fSpeed, dataUnits[uID]);
     return 0;
+}
+
+UINT GetHourTimeDiff()
+{
+    SYSTEMTIME st = { 0 };
+    GetLocalTime(&st);
+    UINT uTimeDiff = (59 - st.wMinute) * 60 * 1000 + (60 - st.wSecond) * 1000 + 100;
+    return uTimeDiff;
+}
+
+DWORD SetMenuItemState(HMENU hMenu, UINT uIdentifier, UINT uState)
+{
+    MENUITEMINFOW mii = { 0 };
+    mii.cbSize = sizeof(MENUITEMINFOW);
+    mii.fMask = MIIM_STATE;
+    mii.fState = uState;
+    SetMenuItemInfoW(hMenu, uIdentifier, FALSE, &mii); // ERROR_MENU_ITEM_NOT_FOUND
+    return 0;
+}
+
+UINT GetMenuItemState(HMENU hMenu, UINT uIdentifier)
+{
+    MENUITEMINFOW mii = { 0 };
+    mii.cbSize = sizeof(MENUITEMINFOW);
+    mii.fMask = MIIM_STATE;
+    GetMenuItemInfoW(hMenu, uIdentifier, FALSE, &mii);
+    return mii.fState;
 }
 
 DWORD GetSystemCapitalFont(PLOGFONTW pLogFont)

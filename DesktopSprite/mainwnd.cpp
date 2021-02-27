@@ -5,18 +5,25 @@
 #include "perfdata.h"
 #include "mainwnd.h"
 
-static UINT             uMsgTaskbarCreated              = 0;                        // 任务栏重建消息
+// 常量定义
+static UINT     const   REFRESHINTERVAL                 = 1000;                     // 屏幕显示刷新间隔
+static UINT     const   ANIMATIONTIME                   = 100;                      // 动画效果持续时间
+static UINT     const   ID_NIDMAIN                      = 1;                        // 图标 ID
+static INT      const   MAINWNDSIZE_CX                  = 100;                      // 窗口 cx
+static INT      const   MAINWNDSIZE_CY                  = 400;                      // 窗口 cy
 
+// 运行时设置项
 static BOOL             bFloatWnd                       = FALSE;                    // 是否桌面浮窗
-
 static HFONT            hTextFont                       = NULL;                     // 显示文本的字体
 static COLORREF         rgbText                         = RGB(0, 0, 0);             // 显示文本的颜色
-
 //static WCHAR            szBalloonIconPath[MAX_PATH]     = { 0 };                    // 气球图标文件路径
 static BOOL             bInfoSound                      = FALSE;                    // 气球提示是否有声音
 
 // 运行时数据
+static UINT             uMsgTaskbarCreated              = 0;                        // 任务栏重建消息
 static BOOL             bWndFixed                       = FALSE;                    // 窗口是否通过图标点击长期显示
+static POINT            ptDragSrc                       = { 0 };                    // 拖动窗口时的源点
+
 
 // 过程函数声明
 static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -48,7 +55,36 @@ static LRESULT OnCreate(HWND hWnd, WPARAM wParam, LPARAM lParam)
     // 应用配置项
     PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
     LoadConfigFromReg(pCfgData);
-    ApplyAppConfig(pCfgData, hWnd);
+
+    // 按照读取的配置项初始化窗口数据
+    bFloatWnd = pCfgData->bFloatWnd;
+
+    // 是否浮动窗口
+    if (pCfgData->bFloatWnd)
+    {
+        // 调整显示位置
+        SetWindowPos(
+            hWnd, HWND_TOPMOST,
+            pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
+            MAINWNDSIZE_CX, MAINWNDSIZE_CY,
+            SWP_NOACTIVATE
+        );
+
+        // 显示窗口
+        AnimateWindow(hWnd, ANIMATIONTIME, AW_BLEND);
+        InvalidateRect(hWnd, NULL, TRUE);
+    }
+
+    // 是否整点报时
+    if (pCfgData->bTimeAlarm)
+    {
+        SetTimer(hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+    }
+
+    // 字体, 颜色, 声音
+    hTextFont = CreateFontIndirectW(&pCfgData->lfText);
+    rgbText = pCfgData->rgbTextColor;
+    bInfoSound = pCfgData->bInfoSound;
     DefFreeMem(pCfgData);
 
     // 添加图标
@@ -91,47 +127,93 @@ static LRESULT OnActivate(HWND hWnd, WPARAM wParam, LPARAM lParam)
     if (!bFloatWnd && !wParam)
     {
         bWndFixed = FALSE;
-        AnimateWindow(hWnd, 100, AW_HIDE | AW_BLEND);
+        AnimateWindow(hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
     }
     return 0;
 }
 
 static LRESULT OnClose(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
-    AnimateWindow(hWnd, 100, AW_HIDE | AW_BLEND);
+    AnimateWindow(hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
     return 0;
 }
 
 static LRESULT OnPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
+    // 得到格式化的字符串数据 xx.xx% xx.xxKB/s
     PERFDATA perfData = { 0 };
     GetPerfData(&perfData);
-    WCHAR szDataBuffer[4][16] = { 0 };
+    WCHAR szDataBuffer[4][16] = { 0 };  // CPU:MEM:UPLOAD:DOWNLOAD
     StringCchPrintfW(szDataBuffer[0], 16, L"%.2f%%", perfData.cpuPercent);
     StringCchPrintfW(szDataBuffer[1], 16, L"%.2f%%", perfData.memPercent);
     ConvertSpeed(perfData.uploadSpeed, szDataBuffer[2], 16);
     ConvertSpeed(perfData.downloadSpeed, szDataBuffer[3], 16);
 
-    WCHAR szTipFormat[MAX_LOADSTRING] = { 0 };
-    WCHAR szTip[MAX_LOADSTRING] = { 0 };
-    LoadStringW(GetModuleHandleW(NULL), IDS_TIP, szTipFormat, MAX_LOADSTRING);
-    StringCchPrintfW(
-        szTip, MAX_LOADSTRING, szTipFormat,
-        szDataBuffer[0], szDataBuffer[1], szDataBuffer[2], szDataBuffer[3]
-    );
-    SIZE_T nTextLength = 0;
-    StringCchLengthW(szTip, MAX_LOADSTRING, &nTextLength);
-
+    // 开始绘图
     PAINTSTRUCT ps = { 0 };
     HDC hdc = BeginPaint(hWnd, &ps);
     HFONT hFontPre = SelectFont(hdc, hTextFont);
     SetTextColor(hdc, rgbText);
     SetBkMode(hdc, TRANSPARENT);
 
+    HINSTANCE hInstance = GetModuleHandleW(NULL);
+    WCHAR szTip[MAX_LOADSTRING] = { 0 };
+    RECT rcClient = { 0 };
+    GetClientRect(hWnd, &rcClient);
+    INT nClientHeight = rcClient.bottom - rcClient.top;
     RECT rcDraw = { 0 };
-    GetClientRect(hWnd, &rcDraw);
-    DrawTextW(hdc, szTip, (INT)nTextLength, &rcDraw, DT_LEFT);
+    CopyRect(&rcDraw, &rcClient);
+    SIZE_T nTextLength = 0;
 
+    // 绘制CPU
+    LoadStringW(hInstance, IDS_TIP_CPU, szTip, MAX_LOADSTRING);
+    StringCchLengthW(szTip, MAX_LOADSTRING, &nTextLength);
+    rcDraw.top = 0;
+    rcDraw.bottom = rcDraw.top + nClientHeight / 8;
+    DrawTextW(hdc, szTip, (INT)nTextLength, &rcDraw, DT_CENTER);
+
+    StringCchLengthW(szDataBuffer[0], 16, &nTextLength);
+    rcDraw.top += nClientHeight / 8;
+    rcDraw.bottom += nClientHeight / 8;
+    DrawTextW(hdc, szDataBuffer[0], (INT)nTextLength, &rcDraw, DT_CENTER);
+
+    // 绘制内存
+    LoadStringW(hInstance, IDS_TIP_MEM, szTip, MAX_LOADSTRING);
+    StringCchLengthW(szTip, MAX_LOADSTRING, &nTextLength);
+    rcDraw.top += nClientHeight / 8;
+    rcDraw.bottom += nClientHeight / 8;
+    DrawTextW(hdc, szTip, (INT)nTextLength, &rcDraw, DT_CENTER);
+
+    StringCchLengthW(szDataBuffer[1], 16, &nTextLength);
+    rcDraw.top += nClientHeight / 8;
+    rcDraw.bottom += nClientHeight / 8;
+    DrawTextW(hdc, szDataBuffer[1], (INT)nTextLength, &rcDraw, DT_CENTER);
+
+    // 绘制上传
+    LoadStringW(hInstance, IDS_TIP_UPLOAD, szTip, MAX_LOADSTRING);
+    StringCchLengthW(szTip, MAX_LOADSTRING, &nTextLength);
+    rcDraw.top += nClientHeight / 8;
+    rcDraw.bottom += nClientHeight / 8;
+    DrawTextW(hdc, szTip, (INT)nTextLength, &rcDraw, DT_CENTER);
+
+    StringCchLengthW(szDataBuffer[2], 16, &nTextLength);
+    rcDraw.top += nClientHeight / 8;
+    rcDraw.bottom += nClientHeight / 8;
+    DrawTextW(hdc, szDataBuffer[2], (INT)nTextLength, &rcDraw, DT_CENTER);
+
+    // 绘制下载
+    LoadStringW(hInstance, IDS_TIP_DOWNLOAD, szTip, MAX_LOADSTRING);
+    StringCchLengthW(szTip, MAX_LOADSTRING, &nTextLength);
+    rcDraw.top += nClientHeight / 8;
+    rcDraw.bottom += nClientHeight / 8;
+    DrawTextW(hdc, szTip, (INT)nTextLength, &rcDraw, DT_CENTER);
+
+    StringCchLengthW(szDataBuffer[3], 16, &nTextLength);
+    rcDraw.top += nClientHeight / 8;
+    rcDraw.bottom += nClientHeight / 8;
+    DrawTextW(hdc, szDataBuffer[3], (INT)nTextLength, &rcDraw, DT_CENTER);
+
+    // 结束绘图
     SelectObject(hdc, hFontPre);
     EndPaint(hWnd, &ps);
     return 0;
@@ -182,27 +264,87 @@ static LRESULT OnCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
     switch (LOWORD(wParam))
     {
     case IDM_FLOATWND:
+    {
         pCfgData->bFloatWnd = !pCfgData->bFloatWnd;
+        bFloatWnd = pCfgData->bFloatWnd;
+        if (pCfgData->bFloatWnd)
+        {
+            // 调整显示位置
+            SetWindowPos(
+                hWnd, HWND_TOPMOST,
+                pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
+                MAINWNDSIZE_CX, MAINWNDSIZE_CY,
+                SWP_NOACTIVATE
+            );
+
+            // 显示窗口
+            AnimateWindow(hWnd, ANIMATIONTIME, AW_BLEND);
+            InvalidateRect(hWnd, NULL, TRUE);
+        }
+        else
+        {
+            // 如果不显示浮动窗口就保存一次现在的窗口位置
+            RECT rcWnd = { 0 };
+            GetWindowRect(hWnd, &rcWnd);
+            pCfgData->ptLastFloatPos.x = rcWnd.left;
+            pCfgData->ptLastFloatPos.y = rcWnd.top;
+            AnimateWindow(hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+        }
         break;
+    }
     case IDM_AUTORUN:
+    {
         pCfgData->bAutoRun = !pCfgData->bAutoRun;
+        if (pCfgData->bAutoRun)
+        {
+            SetAppAutoRun();
+        }
+        else
+        {
+            UnsetAppAutoRun();
+        }
         break;
+    }
     case IDM_TIMEALARM:
+    {
         pCfgData->bTimeAlarm = !pCfgData->bTimeAlarm;
+        if (pCfgData->bTimeAlarm)
+        {
+            SetTimer(hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+        }
+        else
+        {
+            KillTimer(hWnd, IDT_TIMEALARM);
+        }
         break;
+    }
     case IDM_INFOSOUND:
+    {
         pCfgData->bInfoSound = !pCfgData->bInfoSound;
+        bInfoSound = pCfgData->bInfoSound;
         break;
+    }
     case IDM_EXIT:
+    {
+        if (pCfgData->bFloatWnd)
+        {
+            // 如果当前显示浮动窗口退出时就保存一次现在的窗口位置
+            RECT rcWnd = { 0 };
+            GetWindowRect(hWnd, &rcWnd);
+            pCfgData->ptLastFloatPos.x = rcWnd.left;
+            pCfgData->ptLastFloatPos.y = rcWnd.top;
+        }
         DestroyWindow(hWnd);
         break;
+    }
     default:
+    {
         DefFreeMem(pCfgData);
         return DefWindowProcW(hWnd, WM_COMMAND, wParam, lParam);
     }
+    }
 
-    // 保存配置
-    ApplyAppConfig(pCfgData, hWnd);
+    // 保存修改之后的配置
     SaveConfigToReg(pCfgData);
     DefFreeMem(pCfgData);
     return 0;
@@ -242,13 +384,31 @@ static LRESULT OnInitMenuPopup(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 static LRESULT OnMouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
-    return DefWindowProcW(hWnd, WM_MOUSEMOVE, wParam, lParam);
+    if (bFloatWnd)
+    {
+        if (wParam & MK_LBUTTON)
+        {
+            POINT ptCursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+            RECT rcWnd;
+            GetWindowRect(hWnd, &rcWnd);
+            SetWindowPos(
+                hWnd, HWND_TOPMOST,
+                rcWnd.left + (ptCursor.x - ptDragSrc.x),
+                rcWnd.top + (ptCursor.y- ptDragSrc.y), 
+                MAINWNDSIZE_CX, MAINWNDSIZE_CY, 
+                SWP_SHOWWINDOW | SWP_NOSIZE
+            );
+        }
+    }
+    return 0;
 }
 
 static LRESULT OnLButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
-    // TODO
-    return DefWindowProcW(hWnd, WM_LBUTTONDOWN, wParam, lParam);
+    // 保存点击位置
+    ptDragSrc.x = GET_X_LPARAM(lParam);
+    ptDragSrc.y = GET_Y_LPARAM(lParam);
+    return 0;
 }
 
 static LRESULT OnLButtonUp(HWND hWnd, WPARAM wParam, LPARAM lParam)
@@ -312,12 +472,12 @@ static LRESULT OnNotifyIcon(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
             SetWindowPos(
                 hWnd, HWND_TOPMOST,
-                rcNotifyIcon.left - ((150 - (rcNotifyIcon.right - rcNotifyIcon.left)) / 2),
-                rcNotifyIcon.top - 100,
-                150, 100,
+                rcNotifyIcon.left - ((MAINWNDSIZE_CX - (rcNotifyIcon.right - rcNotifyIcon.left)) / 2),
+                rcNotifyIcon.top - MAINWNDSIZE_CY,
+                MAINWNDSIZE_CX, MAINWNDSIZE_CY,
                 SWP_NOACTIVATE
             );
-            AnimateWindow(hWnd, 100, AW_BLEND);
+            AnimateWindow(hWnd, ANIMATIONTIME, AW_BLEND);
 
             // 需要立即重绘窗口
             InvalidateRect(hWnd, NULL, TRUE);
@@ -329,7 +489,7 @@ static LRESULT OnNotifyIcon(HWND hWnd, WPARAM wParam, LPARAM lParam)
         // 不是浮动且没有固定则隐藏弹窗
         if (!bFloatWnd && !bWndFixed)
         {
-            AnimateWindow(hWnd, 100, AW_HIDE | AW_BLEND);
+            AnimateWindow(hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
             break;
         }
     }
@@ -446,74 +606,56 @@ HWND CreateMainWnd(HINSTANCE hInstance)
         WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED,
         MAINWNDCLASSNAME, NULL, 
         WS_POPUP,
-        CW_USEDEFAULT, 0, 400, 100,
+        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
         NULL, NULL, hInstance, NULL
     );
 }
 
-DWORD ApplyAppConfig(PCFGDATA pCfgData, HWND hMainWnd)
-{
-    bFloatWnd = pCfgData->bFloatWnd;
-    if (pCfgData->bFloatWnd)
-    {
-        AnimateWindow(hMainWnd, 100, AW_BLEND);
-        InvalidateRect(hMainWnd, NULL, TRUE);
-    }
-    else
-    {
-        AnimateWindow(hMainWnd, 100, AW_HIDE | AW_BLEND);
-    }
-
-    if (pCfgData->bAutoRun)
-    {
-        SetAppAutoRun();
-    }
-    else
-    {
-        UnsetAppAutoRun();
-    }
-
-    if (pCfgData->bTimeAlarm)
-    {
-        SetTimer(hMainWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
-    }
-    else 
-    {
-        KillTimer(hMainWnd, IDT_TIMEALARM);
-    }
-
-    DeleteObject(hTextFont);
-    hTextFont = CreateFontIndirectW(&pCfgData->lfText);
-    rgbText = pCfgData->rgbTextColor;
-
-    //StringCchCopyW(szBalloonIconPath, MAX_PATH, pCfgData->szBalloonIconPath);
-    bInfoSound = pCfgData->bInfoSound;
-    return 0;
-}
-
-UINT GetHourTimeDiff()
-{
-    SYSTEMTIME st = { 0 };
-    GetLocalTime(&st);
-    UINT uTimeDiff = (59 - st.wMinute) * 60 * 1000 + (60 - st.wSecond) * 1000 + 100;
-    return uTimeDiff;
-}
-
-DWORD SetMenuItemState(HMENU hMenu, UINT uIdentifier, UINT uState)
-{
-    MENUITEMINFOW mii = { 0 };
-    mii.cbSize = sizeof(MENUITEMINFOW);
-    mii.fMask = MIIM_STATE;
-    mii.fState = uState;
-    SetMenuItemInfoW(hMenu, uIdentifier, FALSE, &mii); // ERROR_MENU_ITEM_NOT_FOUND
-    return 0;
-}
-
-UINT GetMenuItemState(HMENU hMenu, UINT uIdentifier)
-{
-    MENUITEMINFOW mii = { 0 };
-    mii.cbSize = sizeof(MENUITEMINFOW);
-    mii.fMask = MIIM_STATE;
-    GetMenuItemInfoW(hMenu, uIdentifier, FALSE, &mii);
-    return mii.fState;
-}
+//DWORD ApplyAppConfig(PCFGDATA pCfgData, HWND hMainWnd)
+//{
+//    bFloatWnd = pCfgData->bFloatWnd;
+//    if (pCfgData->bFloatWnd)
+//    {
+//        // 调整显示位置
+//        SetWindowPos(
+//            hMainWnd, HWND_TOPMOST,
+//            pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
+//            MAINWNDSIZE_CX, MAINWNDSIZE_CY,
+//            SWP_NOACTIVATE
+//        );
+//
+//        // 显示窗口
+//        AnimateWindow(hMainWnd, ANIMATIONTIME, AW_BLEND);
+//        InvalidateRect(hMainWnd, NULL, TRUE);
+//    }
+//    else
+//    {
+//        AnimateWindow(hMainWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+//    }
+//
+//    if (pCfgData->bAutoRun)
+//    {
+//        SetAppAutoRun();
+//    }
+//    else
+//    {
+//        UnsetAppAutoRun();
+//    }
+//
+//    if (pCfgData->bTimeAlarm)
+//    {
+//        SetTimer(hMainWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+//    }
+//    else 
+//    {
+//        KillTimer(hMainWnd, IDT_TIMEALARM);
+//    }
+//
+//    DeleteObject(hTextFont);
+//    hTextFont = CreateFontIndirectW(&pCfgData->lfText);
+//    rgbText = pCfgData->rgbTextColor;
+//
+//    //StringCchCopyW(szBalloonIconPath, MAX_PATH, pCfgData->szBalloonIconPath);
+//    bInfoSound = pCfgData->bInfoSound;
+//    return 0;
+//}

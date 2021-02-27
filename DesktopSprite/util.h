@@ -60,6 +60,15 @@ extern "C" {
     // 换算字节速度成带单位的字符串
     DWORD ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest);
 
+    // 获取与整点时间差毫秒
+    UINT GetHourTimeDiff();
+
+    // 设置菜单项状态
+    DWORD SetMenuItemState(HMENU hMenu, UINT uIdentifier, UINT uState);
+
+    // 获得菜单项状态
+    UINT GetMenuItemState(HMENU hMenu, UINT uIdentifier);
+
     // 获取当前系统标题字体信息
     DWORD GetSystemCapitalFont(PLOGFONTW pLogFont);
 

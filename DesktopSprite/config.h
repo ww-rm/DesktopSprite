@@ -16,6 +16,9 @@ extern "C" {
         BOOL        bInfoSound;                     // 气泡消息声音
         LOGFONTW    lfText;                         // 窗口的字体
         COLORREF    rgbTextColor;                   // 窗口字体颜色
+
+        // 上一次的运行数据
+        POINT       ptLastFloatPos;                 // 上一次浮窗的屏幕位置
     }*PCFGDATA, CFGDATA;
 
     // 加载默认配置参数

@@ -130,7 +130,11 @@ BEGIN
     IDS_APPNAME             "DesktopSprite"
     IDS_TIMEALARMTITLE      "Take a break~"
     IDS_TIMEALARMINFO       "北京时间 %02d: %02d"
-    IDS_TIP                 "CPU: %s\n内存: %s\n上传: %s\n下载: %s"
+    IDS_TIP_ALL             "CPU: %s\n内存: %s\n上传: %s\n下载: %s"
+    IDS_TIP_CPU             "CPU"
+    IDS_TIP_MEM             "内存"
+    IDS_TIP_UPLOAD          "上传"
+    IDS_TIP_DOWNLOAD        "下载"
 END
 
 #endif    // 中文(简体，中国) resources

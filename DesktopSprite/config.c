@@ -13,6 +13,8 @@ static PCWSTR const REGVAL_INFOSOUND                = L"IsInfoSound";
 static PCWSTR const REGVAL_TEXTFONT                 = L"TextFont";
 static PCWSTR const REGVAL_TEXTCOLOR                = L"TextColor";
 
+static PCWSTR const REGVAL_LASTFLOATPOS             = L"LastFloatPos";
+
 
 DWORD LoadDefaultConfig(PCFGDATA pCfgData)
 {
@@ -29,6 +31,12 @@ DWORD LoadDefaultConfig(PCFGDATA pCfgData)
     pCfgData->bInfoSound = TRUE;
     GetSystemCapitalFont(&pCfgData->lfText);
     pCfgData->rgbTextColor = RGB(255, 255, 255);
+
+    // 默认位置是屏幕的 1/6 处
+    RECT rcScreen = { 0 };
+    GetWindowRect(GetDesktopWindow(), &rcScreen);
+    pCfgData->ptLastFloatPos.x = rcScreen.right * 5 / 6;
+    pCfgData->ptLastFloatPos.y = rcScreen.bottom * 5 / 6;
     return 0;
 }
 
@@ -63,6 +71,9 @@ DWORD LoadConfigFromReg(PCFGDATA pCfgData)
             RegQueryAnyValue(hkApp, REGVAL_TEXTFONT, &pCfgData->lfText, &cbData);
             cbData = sizeof(COLORREF);
             RegQueryAnyValue(hkApp, REGVAL_TEXTCOLOR, &pCfgData->rgbTextColor, &cbData);
+
+            cbData = sizeof(POINT);
+            RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, &cbData);
         }
         else if (dwErrorCode == ERROR_FILE_NOT_FOUND)
         {
@@ -112,6 +123,8 @@ DWORD SaveConfigToReg(PCFGDATA pCfgData)
 
             RegSetBinValue(hkApp, REGVAL_TEXTFONT, &pCfgData->lfText, sizeof(LOGFONTW));
             RegSetBinValue(hkApp, REGVAL_TEXTCOLOR, &pCfgData->rgbTextColor, sizeof(COLORREF));
+
+            RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, sizeof(POINT));
         }
         else
         {
