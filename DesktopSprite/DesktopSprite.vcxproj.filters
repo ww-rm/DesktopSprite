@@ -64,7 +64,7 @@
     <ClCompile Include="winapp.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="mainwnd.cpp">
+    <ClCompile Include="mainwnd.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -78,5 +78,22 @@
     <Image Include="res\appicon_light.ico">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="res\appicon_dark.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\appicon_light.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\timealarm.png">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="res\AGENCYR.TTF">
+      <Filter>资源文件</Filter>
+    </Font>
+    <Font Include="res\AGENCYB.TTF">
+      <Filter>资源文件</Filter>
+    </Font>
   </ItemGroup>
 </Project>
