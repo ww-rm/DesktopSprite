@@ -5,8 +5,6 @@
 extern "C" {
 #endif // __cplusplus
 
-#define APPMUTEXNAME    L"DesktopSpriteMutex"      // ·ÀÖ¹ÖØ¸´Æô¶¯µÄ MutexName
-
 #ifdef __cplusplus
 }
 #endif // __cplusplus

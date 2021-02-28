@@ -125,3 +125,31 @@ BOOL IsSystemDarkTheme()
     }
     return bRet;
 }
+
+DWORD ExtractResTTF(UINT uResID, PCWSTR szFilePath)
+{
+    DWORD dwErrorCode = ERROR_SUCCESS;
+
+    // 获取 TTF 资源
+    HINSTANCE hInstance = GetModuleHandleW(NULL);
+    HRSRC hrsrc = FindResourceW(hInstance, MAKEINTRESOURCEW(uResID), L"TrueTypeFont");
+    HGLOBAL hglobal = LoadResource(hInstance, hrsrc);
+    PBYTE pData = (PBYTE)LockResource(hglobal);
+    DWORD cbData = SizeofResource(hInstance, hrsrc);
+
+    // 写入临时文件
+    HANDLE hFile = DefCreateFile(szFilePath, GENERIC_WRITE, CREATE_ALWAYS);
+    dwErrorCode = GetLastError();
+    if (dwErrorCode == ERROR_SUCCESS || dwErrorCode == ERROR_ALREADY_EXISTS)
+    {
+        DWORD dwWrittenNum = 0;
+        WriteFile(hFile, pData, cbData, &dwWrittenNum, NULL);
+    }
+
+    if (hFile != NULL)
+    {
+        CloseHandle(hFile);
+    }
+
+    return dwErrorCode;
+}

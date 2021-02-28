@@ -13,6 +13,9 @@ extern "C" {
 #define DefAllocMem(dwBytes) \
         HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (dwBytes))
 
+#define DefCreateFile(lpFileName, dwDesiredAccess, dwCreationDisposition) \
+        CreateFileW((lpFileName), (dwDesiredAccess), 0, NULL, (dwCreationDisposition), FILE_ATTRIBUTE_NORMAL, NULL)
+
 // 从进程默认堆释放内存
 #define DefFreeMem(lpMem) \
         HeapFree(GetProcessHeap(), 0, (lpMem))
@@ -23,7 +26,7 @@ extern "C" {
 
 // 读取原始大小图标资源(需要用DestroyIcon释放)
 #define LoadIconRawSize(hInst, name) \
-        ((HICON)LoadImageW(hInst, name, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR))
+        ((HICON)LoadImageW((hInst), (name), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR))
 
 #define GetWndData(hWnd) \
         GetWindowLongPtrW((hWnd), GWLP_USERDATA)
@@ -74,6 +77,9 @@ extern "C" {
 
     // 判断系统是否是深色主题
     BOOL IsSystemDarkTheme();
+
+    // 往 FilePath 解压运行时需要的TTF字体资源
+    DWORD ExtractResTTF(UINT uResID, PCWSTR szFilePath);
 
 #ifdef __cplusplus
 }

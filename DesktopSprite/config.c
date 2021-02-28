@@ -30,6 +30,7 @@ DWORD LoadDefaultConfig(PCFGDATA pCfgData)
 
     pCfgData->bInfoSound = TRUE;
     GetSystemCapitalFont(&pCfgData->lfText);
+    StringCchCopyW(pCfgData->lfText.lfFaceName, LF_FACESIZE, L"Agency FB");
     pCfgData->rgbTextColor = RGB(255, 255, 255);
 
     // 默认位置是屏幕的 1/6 处
