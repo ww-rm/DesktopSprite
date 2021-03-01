@@ -7,6 +7,7 @@
 #include <PathCch.h>
 #include <Pdh.h>
 #include <PdhMsg.h>
+#include <gdiplus.h>
 //#include <CommCtrl.h>
 
 #include "resource.h"

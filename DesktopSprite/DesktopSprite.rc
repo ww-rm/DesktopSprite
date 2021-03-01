@@ -122,10 +122,10 @@ IDI_APPICON_LIGHT       ICON                    "res\\appicon_light.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// TrueTypeFont
+// TTF
 //
 
-IDR_TTF1                TrueTypeFont            "res\\AGENCYR.TTF"
+IDR_TTF1                TTF                     "res\\AGENCYR.TTF"
 
 
 /////////////////////////////////////////////////////////////////////////////

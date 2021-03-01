@@ -3,14 +3,17 @@
 #include "config.h"
 #include "notifyicon.h"
 #include "perfdata.h"
+
 #include "mainwnd.h"
+
+using namespace Gdiplus;
 
 // 常量定义
 static UINT     const   REFRESHINTERVAL                 = 1000;                     // 屏幕显示刷新间隔
 static UINT     const   ANIMATIONTIME                   = 100;                      // 动画效果持续时间
 static UINT     const   ID_NIDMAIN                      = 1;                        // 图标 ID
-static INT      const   MAINWNDSIZE_CX                  = 100;                      // 窗口 cx
-static INT      const   MAINWNDSIZE_CY                  = 400;                      // 窗口 cy
+static INT      const   MAINWNDSIZE_CX                  = 200;                      // 窗口 cx
+static INT      const   MAINWNDSIZE_CY                  = 150;                      // 窗口 cy
 
 static UINT             uMsgTaskbarCreated              = 0;                        // 任务栏重建消息
 
@@ -57,7 +60,7 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         );
 
         // 显示窗口
-        AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_BLEND);
+        ShowWindow(pWndData->hWnd, SW_SHOWNA);
         InvalidateRect(pWndData->hWnd, NULL, TRUE);
     }
 
@@ -88,7 +91,7 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     SetNotifyIconTip(pWndData->hWnd, ID_NIDMAIN, szTip);
 
     // 设置 85% 透明度
-    SetLayeredWindowAttributes(pWndData->hWnd, RGB(0, 0, 0), (255 * 85) / 100, LWA_ALPHA);
+    SetLayeredWindowAttributes(pWndData->hWnd, RGB(0, 0, 0), (255 * 75) / 100, LWA_ALPHA);
 
     // 每 1s 刷新一次显示
     SetTimer(pWndData->hWnd, IDT_REFRESHRECT, REFRESHINTERVAL, (TIMERPROC)NULL);
@@ -113,95 +116,83 @@ static LRESULT OnActivate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     if (!pWndData->bFloatWnd && !wParam)
     {
         pWndData->bWndFixed = FALSE;
-        AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+        ShowWindow(pWndData->hWnd, SW_HIDE);
     }
     return 0;
 }
 
 static LRESULT OnClose(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+    ShowWindow(pWndData->hWnd, SW_HIDE);
     return 0;
 }
 
 static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
+    // TODO: 绘图
     // 得到格式化的字符串数据 xx.xx% xx.xxKB/s
     PERFDATA perfData = { 0 };
     GetPerfData(&perfData);
     WCHAR szDataBuffer[4][16] = { 0 };  // CPU:MEM:UPLOAD:DOWNLOAD
-    StringCchPrintfW(szDataBuffer[0], 16, L"%.2f%%", perfData.cpuPercent);
-    StringCchPrintfW(szDataBuffer[1], 16, L"%.2f%%", perfData.memPercent);
+    StringCchPrintfW(szDataBuffer[0], 16, L"%.0f%%", perfData.cpuPercent);
+    StringCchPrintfW(szDataBuffer[1], 16, L"%.0f%%", perfData.memPercent);
     ConvertSpeed(perfData.uploadSpeed, szDataBuffer[2], 16);
     ConvertSpeed(perfData.downloadSpeed, szDataBuffer[3], 16);
 
     // 开始绘图
     PAINTSTRUCT ps = { 0 };
     HDC hdc = BeginPaint(pWndData->hWnd, &ps);
+    Graphics graphics(hdc);
+    graphics.SetTextRenderingHint(TextRenderingHintAntiAlias);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+
     HFONT hFontPre = SelectFont(hdc, pWndData->hTextFont);
     SetTextColor(hdc, pWndData->rgbText);
     SetBkMode(hdc, TRANSPARENT);
 
-    HINSTANCE hInstance = GetModuleHandleW(NULL);
-    WCHAR szTip[MAX_LOADSTRING] = { 0 };
-    RECT rcClient = { 0 };
-    GetClientRect(pWndData->hWnd, &rcClient);
-    INT nClientHeight = rcClient.bottom - rcClient.top;
     RECT rcDraw = { 0 };
-    CopyRect(&rcDraw, &rcClient);
     SIZE_T nTextLength = 0;
-
+    
     // 绘制CPU
-    LoadStringW(hInstance, IDS_TIP_CPU, szTip, MAX_LOADSTRING);
-    StringCchLengthW(szTip, MAX_LOADSTRING, &nTextLength);
     rcDraw.top = 0;
-    rcDraw.bottom = rcDraw.top + nClientHeight / 8;
-    DrawTextW(hdc, szTip, (INT)nTextLength, &rcDraw, DT_CENTER);
-
+    rcDraw.bottom = 100;
+    rcDraw.left = 0;
+    rcDraw.right = 100;
+    Pen penCpu(Color(0, 255, 0), 5);
+    graphics.DrawArc(&penCpu, Rect(25, 25, 50, 50), 270, REAL(-360 * perfData.cpuPercent / 100));
     StringCchLengthW(szDataBuffer[0], 16, &nTextLength);
-    rcDraw.top += nClientHeight / 8;
-    rcDraw.bottom += nClientHeight / 8;
-    DrawTextW(hdc, szDataBuffer[0], (INT)nTextLength, &rcDraw, DT_CENTER);
-
+    DrawTextW(hdc, szDataBuffer[0], (INT)nTextLength, &rcDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    
     // 绘制内存
-    LoadStringW(hInstance, IDS_TIP_MEM, szTip, MAX_LOADSTRING);
-    StringCchLengthW(szTip, MAX_LOADSTRING, &nTextLength);
-    rcDraw.top += nClientHeight / 8;
-    rcDraw.bottom += nClientHeight / 8;
-    DrawTextW(hdc, szTip, (INT)nTextLength, &rcDraw, DT_CENTER);
-
     StringCchLengthW(szDataBuffer[1], 16, &nTextLength);
-    rcDraw.top += nClientHeight / 8;
-    rcDraw.bottom += nClientHeight / 8;
-    DrawTextW(hdc, szDataBuffer[1], (INT)nTextLength, &rcDraw, DT_CENTER);
+    rcDraw.top = 0;
+    rcDraw.bottom = 100;
+    rcDraw.left = 100;
+    rcDraw.right = 200;
+    Pen penMem(Color(0, 255, 0), 5);
+    graphics.DrawArc(&penMem, Rect(125, 25, 50, 50), 270, REAL(-360 * perfData.memPercent / 100));
+    DrawTextW(hdc, szDataBuffer[1], (INT)nTextLength, &rcDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     // 绘制上传
-    LoadStringW(hInstance, IDS_TIP_UPLOAD, szTip, MAX_LOADSTRING);
-    StringCchLengthW(szTip, MAX_LOADSTRING, &nTextLength);
-    rcDraw.top += nClientHeight / 8;
-    rcDraw.bottom += nClientHeight / 8;
-    DrawTextW(hdc, szTip, (INT)nTextLength, &rcDraw, DT_CENTER);
-
     StringCchLengthW(szDataBuffer[2], 16, &nTextLength);
-    rcDraw.top += nClientHeight / 8;
-    rcDraw.bottom += nClientHeight / 8;
-    DrawTextW(hdc, szDataBuffer[2], (INT)nTextLength, &rcDraw, DT_CENTER);
+    rcDraw.top = 100;
+    rcDraw.bottom = 150;
+    rcDraw.left = 0;
+    rcDraw.right = 100;
+    DrawTextW(hdc, szDataBuffer[2], (INT)nTextLength, &rcDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     // 绘制下载
-    LoadStringW(hInstance, IDS_TIP_DOWNLOAD, szTip, MAX_LOADSTRING);
-    StringCchLengthW(szTip, MAX_LOADSTRING, &nTextLength);
-    rcDraw.top += nClientHeight / 8;
-    rcDraw.bottom += nClientHeight / 8;
-    DrawTextW(hdc, szTip, (INT)nTextLength, &rcDraw, DT_CENTER);
-
     StringCchLengthW(szDataBuffer[3], 16, &nTextLength);
-    rcDraw.top += nClientHeight / 8;
-    rcDraw.bottom += nClientHeight / 8;
-    DrawTextW(hdc, szDataBuffer[3], (INT)nTextLength, &rcDraw, DT_CENTER);
+    rcDraw.top = 100;
+    rcDraw.bottom = 150;
+    rcDraw.left = 100;
+    rcDraw.right = 200;
+    DrawTextW(hdc, szDataBuffer[3], (INT)nTextLength, &rcDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     // 结束绘图
     SelectObject(hdc, hFontPre);
     EndPaint(pWndData->hWnd, &ps);
+
     return 0;
 }
 
@@ -264,7 +255,7 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             );
 
             // 显示窗口
-            AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_BLEND);
+            ShowWindow(pWndData->hWnd, SW_SHOWNA);
             InvalidateRect(pWndData->hWnd, NULL, TRUE);
         }
         else
@@ -274,7 +265,7 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             GetWindowRect(pWndData->hWnd, &rcWnd);
             pCfgData->ptLastFloatPos.x = rcWnd.left;
             pCfgData->ptLastFloatPos.y = rcWnd.top;
-            AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+            ShowWindow(pWndData->hWnd, SW_HIDE);
         }
         break;
     }
@@ -463,7 +454,7 @@ static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
                 MAINWNDSIZE_CX, MAINWNDSIZE_CY,
                 SWP_NOACTIVATE
             );
-            AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_BLEND);
+            ShowWindow(pWndData->hWnd, SW_SHOWNA);
 
             // 需要立即重绘窗口
             InvalidateRect(pWndData->hWnd, NULL, TRUE);
@@ -475,7 +466,7 @@ static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         // 不是浮动且没有固定则隐藏弹窗
         if (!pWndData->bFloatWnd && !pWndData->bWndFixed)
         {
-            AnimateWindow(pWndData->hWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
+            ShowWindow(pWndData->hWnd, SW_HIDE);
             break;
         }
     }

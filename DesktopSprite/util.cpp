@@ -55,21 +55,34 @@ DWORD UnsetAppAutoRun()
 DWORD ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest)
 {
     PCWSTR dataUnits[5] = { L"B/s", L"KB/s", L"MB/s", L"GB/s", L"TB/s" };
-    UINT uID = 0;
-    while (fSpeed > 100)
+    INT nID = 0;
+    while (fSpeed >= 1000)
     {
-        uID++;
+        nID++;
         fSpeed /= 1024;
     }
-    StringCchPrintfW(szFormatted, cchDest, L"%.2f%s", fSpeed, dataUnits[uID]);
+    StringCchPrintfW(szFormatted, cchDest, L"%.1f%s", fSpeed, dataUnits[nID]);
     return 0;
+}
+
+INT GetSpeedUnit(DOUBLE fSpeed, PWSTR szUnit, SIZE_T cchDest)
+{
+    PCWSTR dataUnits[5] = { L"B/s", L"KB/s", L"MB/s", L"GB/s", L"TB/s" };
+    INT nID = 0;
+    while (fSpeed >= 1000)
+    {
+        nID++;
+        fSpeed /= 1024;
+    }
+    StringCchCopyW(szUnit, cchDest, dataUnits[nID]);
+    return nID;
 }
 
 UINT GetHourTimeDiff()
 {
     SYSTEMTIME st = { 0 };
     GetLocalTime(&st);
-    UINT uTimeDiff = (59 - st.wMinute) * 60 * 1000 + (60 - st.wSecond) * 1000 + 100;
+    UINT uTimeDiff = (59 - st.wMinute) * 60 * 1000 + (60 - st.wSecond) * 1000 + 1000;
     return uTimeDiff;
 }
 
@@ -132,24 +145,40 @@ DWORD ExtractResTTF(UINT uResID, PCWSTR szFilePath)
 
     // 获取 TTF 资源
     HINSTANCE hInstance = GetModuleHandleW(NULL);
-    HRSRC hrsrc = FindResourceW(hInstance, MAKEINTRESOURCEW(uResID), L"TrueTypeFont");
-    HGLOBAL hglobal = LoadResource(hInstance, hrsrc);
-    PBYTE pData = (PBYTE)LockResource(hglobal);
-    DWORD cbData = SizeofResource(hInstance, hrsrc);
+    HRSRC hrsrc = FindResourceW(hInstance, MAKEINTRESOURCEW(uResID), L"TTF");
 
-    // 写入临时文件
-    HANDLE hFile = DefCreateFile(szFilePath, GENERIC_WRITE, CREATE_ALWAYS);
-    dwErrorCode = GetLastError();
-    if (dwErrorCode == ERROR_SUCCESS || dwErrorCode == ERROR_ALREADY_EXISTS)
+    if (hrsrc != NULL)
     {
-        DWORD dwWrittenNum = 0;
-        WriteFile(hFile, pData, cbData, &dwWrittenNum, NULL);
+        HGLOBAL hglobal = LoadResource(hInstance, hrsrc);
+        PBYTE pData = (PBYTE)LockResource(hglobal);
+        DWORD cbData = SizeofResource(hInstance, hrsrc);
+
+        // 写入临时文件
+        HANDLE hFile = DefCreateFile(szFilePath, GENERIC_WRITE, CREATE_ALWAYS);
+        dwErrorCode = GetLastError();
+        if (dwErrorCode == ERROR_SUCCESS || dwErrorCode == ERROR_ALREADY_EXISTS)
+        {
+            DWORD dwWrittenNum = 0;
+            WriteFile(hFile, pData, cbData, &dwWrittenNum, NULL);
+        }
+
+        if (hFile != NULL)
+        {
+            CloseHandle(hFile);
+        }
     }
-
-    if (hFile != NULL)
+    else
     {
-        CloseHandle(hFile);
+        dwErrorCode = GetLastError();
     }
 
     return dwErrorCode;
+}
+
+DWORD DrawCircle(HDC hdc, RECT rcBound, INT nRadius, INT n, PCWSTR szTip)
+{
+    BeginPath(hdc);
+
+    EndPath(hdc);
+    return 0;
 }

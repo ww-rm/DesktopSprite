@@ -49,22 +49,22 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="config.c">
+    <ClCompile Include="mainwnd.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="notifyicon.c">
+    <ClCompile Include="config.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="perfdata.c">
+    <ClCompile Include="notifyicon.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="util.c">
+    <ClCompile Include="perfdata.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="winapp.c">
+    <ClCompile Include="winapp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="mainwnd.c">
+    <ClCompile Include="util.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

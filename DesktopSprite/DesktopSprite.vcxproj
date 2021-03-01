@@ -40,12 +40,12 @@
     <Image Include="res\timealarm.png" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="config.c" />
-    <ClCompile Include="mainwnd.c" />
-    <ClCompile Include="notifyicon.c" />
-    <ClCompile Include="perfdata.c" />
-    <ClCompile Include="util.c" />
-    <ClCompile Include="winapp.c" />
+    <ClCompile Include="config.cpp" />
+    <ClCompile Include="mainwnd.cpp" />
+    <ClCompile Include="notifyicon.cpp" />
+    <ClCompile Include="perfdata.cpp" />
+    <ClCompile Include="util.cpp" />
+    <ClCompile Include="winapp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="res\AGENCYB.TTF" />
@@ -125,7 +125,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;Gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -141,7 +141,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;Gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -161,7 +161,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;Gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -181,7 +181,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;Gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>

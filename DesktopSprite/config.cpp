@@ -28,6 +28,7 @@ DWORD LoadDefaultConfig(PCFGDATA pCfgData)
     PathCchRemoveFileSpec(szExeFullDir, MAX_PATH);
     //PathCchCombine(pCfgData->szBalloonIconPath, MAX_PATH, szExeFullDir, L"data\\default_balloonicon.ico");
 
+    // TODO: 移除与字体有关的数据域
     pCfgData->bInfoSound = TRUE;
     GetSystemCapitalFont(&pCfgData->lfText);
     StringCchCopyW(pCfgData->lfText.lfFaceName, LF_FACESIZE, L"Agency FB");
@@ -37,12 +38,14 @@ DWORD LoadDefaultConfig(PCFGDATA pCfgData)
     RECT rcScreen = { 0 };
     GetWindowRect(GetDesktopWindow(), &rcScreen);
     pCfgData->ptLastFloatPos.x = rcScreen.right * 5 / 6;
-    pCfgData->ptLastFloatPos.y = rcScreen.bottom * 5 / 6;
+    pCfgData->ptLastFloatPos.y = rcScreen.bottom * 1 / 6;
     return 0;
 }
 
 DWORD LoadConfigFromReg(PCFGDATA pCfgData)
 {
+    LoadDefaultConfig(pCfgData); // 保证有默认值
+
     DWORD dwErrorCode = ERROR_SUCCESS;
 
     // 打开注册表项
@@ -68,19 +71,15 @@ DWORD LoadConfigFromReg(PCFGDATA pCfgData)
             cbData = sizeof(BOOL);
             RegQueryAnyValue(hkApp, REGVAL_INFOSOUND, &pCfgData->bInfoSound, &cbData);
 
-            cbData = sizeof(LOGFONTW);
-            RegQueryAnyValue(hkApp, REGVAL_TEXTFONT, &pCfgData->lfText, &cbData);
-            cbData = sizeof(COLORREF);
-            RegQueryAnyValue(hkApp, REGVAL_TEXTCOLOR, &pCfgData->rgbTextColor, &cbData);
+            //cbData = sizeof(LOGFONTW);
+            //RegQueryAnyValue(hkApp, REGVAL_TEXTFONT, &pCfgData->lfText, &cbData);
+            //cbData = sizeof(COLORREF);
+            //RegQueryAnyValue(hkApp, REGVAL_TEXTCOLOR, &pCfgData->rgbTextColor, &cbData);
 
             cbData = sizeof(POINT);
             RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, &cbData);
         }
-        else if (dwErrorCode == ERROR_FILE_NOT_FOUND)
-        {
-            dwErrorCode = LoadDefaultConfig(pCfgData);
-        }
-        else
+        else if (dwErrorCode != ERROR_FILE_NOT_FOUND)
         {
             // TODO: 错误处理
         }
