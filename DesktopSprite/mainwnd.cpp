@@ -12,8 +12,8 @@ using namespace Gdiplus;
 static UINT     const   REFRESHINTERVAL                 = 1000;                     // 屏幕显示刷新间隔
 static UINT     const   ANIMATIONTIME                   = 100;                      // 动画效果持续时间
 static UINT     const   ID_NIDMAIN                      = 1;                        // 图标 ID
-static INT      const   MAINWNDSIZE_CX                  = 200;                      // 窗口 cx
-static INT      const   MAINWNDSIZE_CY                  = 150;                      // 窗口 cy
+static INT      const   MAINWNDSIZE_CX                  = 50*4;                      // 窗口 cx
+static INT      const   MAINWNDSIZE_CY                  = 50*3;                      // 窗口 cy
 
 static UINT             uMsgTaskbarCreated              = 0;                        // 任务栏重建消息
 
@@ -48,6 +48,9 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     // 按照读取的配置项初始化窗口数据
     pWndData->bFloatWnd = pCfgData->bFloatWnd;
 
+    // 声音
+    pWndData->bInfoSound = pCfgData->bInfoSound;
+
     // 是否浮动窗口
     if (pCfgData->bFloatWnd)
     {
@@ -70,11 +73,17 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
     }
 
-    // 字体, 颜色, 声音
-    pWndData->hTextFont = CreateFontIndirectW(&pCfgData->lfText);
-    pWndData->rgbText = pCfgData->rgbTextColor;
-    pWndData->bInfoSound = pCfgData->bInfoSound;
+    // 字体与颜色
+    GetSystemCapitalFont(&pWndData->lfText);
+    StringCchCopyW(pWndData->lfText.lfFaceName, LF_FACESIZE, L"Agency FB");
+
     DefFreeMem(pCfgData);
+
+    // 设置 85% 透明度
+    SetLayeredWindowAttributes(pWndData->hWnd, RGB(0, 0, 0), (255 * 100) / 100, LWA_ALPHA);
+
+    // 初始化自身数据
+    pWndData->bWndFixed = FALSE;
 
     // 添加图标
     AddNotifyIcon(
@@ -90,9 +99,6 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     LoadStringW(GetModuleHandleW(NULL), IDS_APPNAME, szTip, MAX_NIDTIP);
     SetNotifyIconTip(pWndData->hWnd, ID_NIDMAIN, szTip);
 
-    // 设置 85% 透明度
-    SetLayeredWindowAttributes(pWndData->hWnd, RGB(0, 0, 0), (255 * 75) / 100, LWA_ALPHA);
-
     // 每 1s 刷新一次显示
     SetTimer(pWndData->hWnd, IDT_REFRESHRECT, REFRESHINTERVAL, (TIMERPROC)NULL);
     return 0;
@@ -100,11 +106,6 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
 static LRESULT OnDestroy(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    if (pWndData->hTextFont != NULL)
-    {
-        DeleteObject(pWndData->hTextFont);
-        pWndData->hTextFont = NULL;
-    }
     DeleteNotifyIcon(pWndData->hWnd, ID_NIDMAIN);
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
@@ -129,70 +130,144 @@ static LRESULT OnClose(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
 static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    // TODO: 绘图
-    // 得到格式化的字符串数据 xx.xx% xx.xxKB/s
+    // TODO: 相对坐标
+    // 得到性能数据
     PERFDATA perfData = { 0 };
     GetPerfData(&perfData);
-    WCHAR szDataBuffer[4][16] = { 0 };  // CPU:MEM:UPLOAD:DOWNLOAD
-    StringCchPrintfW(szDataBuffer[0], 16, L"%.0f%%", perfData.cpuPercent);
-    StringCchPrintfW(szDataBuffer[1], 16, L"%.0f%%", perfData.memPercent);
-    ConvertSpeed(perfData.uploadSpeed, szDataBuffer[2], 16);
-    ConvertSpeed(perfData.downloadSpeed, szDataBuffer[3], 16);
+    WCHAR szDataBuffer[16] = { 0 };     // 字符串缓冲区
+    INT nLevel = 0;
+    Color statusColor;
 
-    // 开始绘图
+    // 开始绘图, 使用缓冲避免闪烁
     PAINTSTRUCT ps = { 0 };
     HDC hdc = BeginPaint(pWndData->hWnd, &ps);
-    Graphics graphics(hdc);
-    graphics.SetTextRenderingHint(TextRenderingHintAntiAlias);
-    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    Bitmap* pBmpMem = new Bitmap(MAINWNDSIZE_CX, MAINWNDSIZE_CY);
+    Graphics graphicsMem(pBmpMem);
 
-    HFONT hFontPre = SelectFont(hdc, pWndData->hTextFont);
-    SetTextColor(hdc, pWndData->rgbText);
-    SetBkMode(hdc, TRANSPARENT);
+    // 设置绘图模式
+    graphicsMem.SetSmoothingMode(SmoothingModeAntiAlias);                      // 图形渲染抗锯齿
+    //graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);       // 文字渲染抗锯齿
 
-    RECT rcDraw = { 0 };
-    SIZE_T nTextLength = 0;
-    
+    // 绘图属性对象
+    Pen pen(Color::Green, 5);                               // 图形颜色
+    SolidBrush textbrush(Color::White);                     // 文本颜色
+    SolidBrush bgbrush(Color::Black);                       // 背景颜色
+    Font font(hdc, &pWndData->lfText);                      // 文字字体
+    StringFormat strformat(StringFormatFlagsNoClip);        // 文字居于矩形中心
+    strformat.SetAlignment(StringAlignmentCenter);
+    strformat.SetLineAlignment(StringAlignmentCenter);
+
+    // 刷黑背景
+    graphicsMem.FillRectangle(&bgbrush, Rect(0, 0, 200, 150));
+
     // 绘制CPU
-    rcDraw.top = 0;
-    rcDraw.bottom = 100;
-    rcDraw.left = 0;
-    rcDraw.right = 100;
-    Pen penCpu(Color(0, 255, 0), 5);
-    graphics.DrawArc(&penCpu, Rect(25, 25, 50, 50), 270, REAL(-360 * perfData.cpuPercent / 100));
-    StringCchLengthW(szDataBuffer[0], 16, &nTextLength);
-    DrawTextW(hdc, szDataBuffer[0], (INT)nTextLength, &rcDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    
+    StringCchPrintfW(szDataBuffer, 16, L"%.0f%%", perfData.cpuPercent);
+    if (perfData.cpuPercent < 50) 
+    {
+        pen.SetColor(Color::Green);
+    }
+    else if (perfData.cpuPercent < 75) 
+    {
+        pen.SetColor(Color::Sienna);
+    }
+    else 
+    {
+        pen.SetColor(Color::DarkRed);
+    }
+    graphicsMem.DrawString(
+        szDataBuffer, -1, &font,
+        RectF(0, 0, MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY * 2 / 3.0f),
+        &strformat, &textbrush
+    );
+    DrawCircle(
+        graphicsMem, pen,
+        PointF(MAINWNDSIZE_CX / 4.0f, MAINWNDSIZE_CY / 3.0f), MAINWNDSIZE_CX / 4.0f - 15,
+        REAL(perfData.cpuPercent / 100)
+    );
+
     // 绘制内存
-    StringCchLengthW(szDataBuffer[1], 16, &nTextLength);
-    rcDraw.top = 0;
-    rcDraw.bottom = 100;
-    rcDraw.left = 100;
-    rcDraw.right = 200;
-    Pen penMem(Color(0, 255, 0), 5);
-    graphics.DrawArc(&penMem, Rect(125, 25, 50, 50), 270, REAL(-360 * perfData.memPercent / 100));
-    DrawTextW(hdc, szDataBuffer[1], (INT)nTextLength, &rcDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    StringCchPrintfW(szDataBuffer, 16, L"%.0f%%", perfData.memPercent);
+    if (perfData.memPercent < 75)
+    {
+        pen.SetColor(Color::Green);
+    }
+    else if (perfData.memPercent < 90)
+    {
+        pen.SetColor(Color::Sienna);
+    }
+    else
+    {
+        pen.SetColor(Color::DarkRed);
+    }
+    graphicsMem.DrawString(
+        szDataBuffer, -1, &font,
+        RectF(MAINWNDSIZE_CX / 2.0f, 0, MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY * 2 / 3.0f),
+        &strformat, &textbrush
+    );
+    DrawCircle(
+        graphicsMem, pen, 
+        PointF(MAINWNDSIZE_CX * 3 / 4.0f, MAINWNDSIZE_CY / 3.0f), MAINWNDSIZE_CX / 4.0f - 15,
+        REAL(perfData.memPercent / 100)
+    );
 
     // 绘制上传
-    StringCchLengthW(szDataBuffer[2], 16, &nTextLength);
-    rcDraw.top = 100;
-    rcDraw.bottom = 150;
-    rcDraw.left = 0;
-    rcDraw.right = 100;
-    DrawTextW(hdc, szDataBuffer[2], (INT)nTextLength, &rcDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    nLevel = ConvertSpeed(perfData.uploadSpeed, szDataBuffer, 16);
+    if (nLevel < 3)
+    {
+        statusColor = Color::DarkRed;
+    }
+    else if (nLevel < 5)
+    {
+        statusColor = Color::Sienna;
+    }
+    else
+    {
+        statusColor = Color::Green;
+    }
+    graphicsMem.DrawString(
+        szDataBuffer, -1, &font, 
+        RectF(0, MAINWNDSIZE_CY * 5 / 6.0f, MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY / 6.0f),
+        &strformat, &textbrush
+    );
+    DrawSpeedStair(
+        graphicsMem, statusColor,
+        RectF(0 + 20, MAINWNDSIZE_CY * 4 / 6.0f, MAINWNDSIZE_CX / 2.0f - 40, MAINWNDSIZE_CY / 6.0f),
+        TRUE, nLevel
+    );
 
     // 绘制下载
-    StringCchLengthW(szDataBuffer[3], 16, &nTextLength);
-    rcDraw.top = 100;
-    rcDraw.bottom = 150;
-    rcDraw.left = 100;
-    rcDraw.right = 200;
-    DrawTextW(hdc, szDataBuffer[3], (INT)nTextLength, &rcDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    nLevel = ConvertSpeed(perfData.downloadSpeed, szDataBuffer, 16);
+    if (nLevel < 3)
+    {
+        statusColor = Color::DarkRed;
+    }
+    else if (nLevel < 5)
+    {
+        statusColor = Color::Sienna;
+    }
+    else
+    {
+        statusColor = Color::Green;
+    }
+    graphicsMem.DrawString(
+        szDataBuffer, -1, &font, 
+        RectF(MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY * 5 / 6.0f, MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY / 6.0f),
+        &strformat, &textbrush
+    );
+    DrawSpeedStair(
+        graphicsMem, statusColor,
+        RectF(MAINWNDSIZE_CX / 2.0f + 20, MAINWNDSIZE_CY * 4 / 6.0f, MAINWNDSIZE_CX / 2.0f - 40, MAINWNDSIZE_CY / 6.0f),
+        FALSE, nLevel
+    );
 
-    // 结束绘图
-    SelectObject(hdc, hFontPre);
+    // 拷贝缓存图, 结束绘图
+    Graphics graphics(hdc);
+    CachedBitmap* pCachedBmp = new CachedBitmap(pBmpMem, &graphics);
+    graphics.DrawCachedBitmap(pCachedBmp, 0, 0);
     EndPaint(pWndData->hWnd, &ps);
 
+    delete pCachedBmp;
+    delete pBmpMem;
     return 0;
 }
 
@@ -585,7 +660,7 @@ ATOM RegisterMainWnd(HINSTANCE hInstance)
     wcex.cbWndExtra = 0;
     wcex.hIcon = NULL;
     wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
-    wcex.hbrBackground = GetStockBrush(BLACK_BRUSH);
+    wcex.hbrBackground = NULL;
     wcex.lpszMenuName = NULL;
     wcex.hIconSm = NULL;
 
@@ -603,51 +678,60 @@ HWND CreateMainWnd(HINSTANCE hInstance)
     );
 }
 
-//DWORD ApplyAppConfig(PCFGDATA pCfgData, HWND hMainWnd)
-//{
-//    bFloatWnd = pCfgData->bFloatWnd;
-//    if (pCfgData->bFloatWnd)
-//    {
-//        // 调整显示位置
-//        SetWindowPos(
-//            hMainWnd, HWND_TOPMOST,
-//            pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
-//            MAINWNDSIZE_CX, MAINWNDSIZE_CY,
-//            SWP_NOACTIVATE
-//        );
-//
-//        // 显示窗口
-//        AnimateWindow(hMainWnd, ANIMATIONTIME, AW_BLEND);
-//        InvalidateRect(hMainWnd, NULL, TRUE);
-//    }
-//    else
-//    {
-//        AnimateWindow(hMainWnd, ANIMATIONTIME, AW_HIDE | AW_BLEND);
-//    }
-//
-//    if (pCfgData->bAutoRun)
-//    {
-//        SetAppAutoRun();
-//    }
-//    else
-//    {
-//        UnsetAppAutoRun();
-//    }
-//
-//    if (pCfgData->bTimeAlarm)
-//    {
-//        SetTimer(hMainWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
-//    }
-//    else 
-//    {
-//        KillTimer(hMainWnd, IDT_TIMEALARM);
-//    }
-//
-//    DeleteObject(hTextFont);
-//    hTextFont = CreateFontIndirectW(&pCfgData->lfText);
-//    rgbText = pCfgData->rgbTextColor;
-//
-//    //StringCchCopyW(szBalloonIconPath, MAX_PATH, pCfgData->szBalloonIconPath);
-//    bInfoSound = pCfgData->bInfoSound;
-//    return 0;
-//}
+BOOL DrawCircle(
+    Graphics& graphics, 
+    Pen& pen, 
+    const PointF& ptCenter, 
+    const REAL& nOuterRadius, 
+    const REAL& sweepPercent
+)
+{
+    REAL nr = nOuterRadius - pen.GetWidth() / 2;
+    graphics.DrawArc(&pen, ptCenter.X - nr, ptCenter.Y - nr, 2 * nr, 2 * nr, 270, -360 * sweepPercent);
+    return TRUE;
+}
+
+BOOL DrawSpeedStair(
+    Graphics& graphics, 
+    const Color& color, 
+    const RectF& rect, 
+    const BOOL& bUp, 
+    const INT& nLevel, 
+    const INT& nMaxLevel
+)
+{
+    REAL whiteGap = 3;
+    REAL height = rect.Height / nMaxLevel;
+    REAL width = (rect.Width - whiteGap * nMaxLevel) / (nMaxLevel + 1);
+    Pen pen(color, 2);
+
+    // 绘制箭头
+    PointF pt1(rect.GetLeft() + width / 2, rect.GetTop());
+    PointF pt2(rect.GetLeft(), rect.GetTop() + rect.Height / 3);
+    PointF pt3(rect.GetLeft() + width, rect.GetTop() + rect.Height / 3);
+    PointF pt4(rect.GetLeft() + width / 2, rect.GetBottom());
+    if (!bUp)
+    {
+        REAL ymirror = rect.GetTop() + rect.Height / 2;
+        pt1.Y += 2 * (ymirror - pt1.Y);
+        pt2.Y += 2 * (ymirror - pt2.Y);
+        pt3.Y += 2 * (ymirror - pt3.Y);
+        pt4.Y += 2 * (ymirror - pt4.Y);
+    }
+    graphics.DrawLine(&pen, pt1, pt2);
+    graphics.DrawLine(&pen, pt1, pt3);
+    graphics.DrawLine(&pen, pt1, pt4);
+
+    // 绘制梯图
+    pen.SetWidth(width);
+    PointF pt5(rect.GetLeft() + 1.5f * width + whiteGap, rect.GetBottom());
+    PointF pt6(rect.GetLeft() + 1.5f * width + whiteGap, rect.GetBottom() - height);
+    for (INT i = 1; i <= (nLevel < nMaxLevel ? nLevel : nMaxLevel); i++)
+    {
+        graphics.DrawLine(&pen, pt5, pt6);
+        pt5.X += (width + whiteGap);
+        pt6.X += (width + whiteGap);
+        pt6.Y -= height;
+    }
+    return TRUE;
+}

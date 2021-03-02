@@ -10,10 +10,10 @@ typedef struct _CFGDATA
     BOOL        bTimeAlarm;                     // 整点报时
     //WCHAR       szBalloonIconPath[MAX_PATH];    // 气泡图标路径
     BOOL        bInfoSound;                     // 气泡消息声音
-    LOGFONTW    lfText;                         // 窗口的字体
-    COLORREF    rgbTextColor;                   // 窗口字体颜色
+    //BOOL        bDarkTheme;                     // 是否使用深色主题
+    //BYTE        byTransparency;                 // 透明度
 
-    // 上一次的运行数据
+    // 记忆数据
     POINT       ptLastFloatPos;                 // 上一次浮窗的屏幕位置
 }*PCFGDATA, CFGDATA;
 

@@ -234,7 +234,7 @@ static DWORD QueryPerfData()
             // 获得CPU数据
             pdhStatus = PdhGetFormattedCounterValue(
                 hCnterCpu,
-                PDH_FMT_DOUBLE | PDH_FMT_NOCAP100,
+                PDH_FMT_DOUBLE,
                 NULL, &pValue
             );
             perfData.cpuPercent = pValue.doubleValue;
@@ -242,7 +242,7 @@ static DWORD QueryPerfData()
             // 获得内存数据
             pdhStatus = PdhGetFormattedCounterValue(
                 hCnterMem,
-                PDH_FMT_DOUBLE | PDH_FMT_NOCAP100,
+                PDH_FMT_DOUBLE,
                 NULL, &pValue
             );
             perfData.memPercent = pValue.doubleValue;

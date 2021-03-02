@@ -52,7 +52,7 @@ DWORD UnsetAppAutoRun()
     return dwErrorCode;
 }
 
-DWORD ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest)
+INT ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest)
 {
     PCWSTR dataUnits[5] = { L"B/s", L"KB/s", L"MB/s", L"GB/s", L"TB/s" };
     INT nID = 0;
@@ -61,8 +61,9 @@ DWORD ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest)
         nID++;
         fSpeed /= 1024;
     }
-    StringCchPrintfW(szFormatted, cchDest, L"%.1f%s", fSpeed, dataUnits[nID]);
-    return 0;
+    StringCchPrintfW(szFormatted, cchDest, L"%.1f %s", fSpeed, dataUnits[nID]);
+    nID = 1 + nID * 2 + (fSpeed >= 500 ? 1 : 0);
+    return nID;
 }
 
 INT GetSpeedUnit(DOUBLE fSpeed, PWSTR szUnit, SIZE_T cchDest)
@@ -75,6 +76,7 @@ INT GetSpeedUnit(DOUBLE fSpeed, PWSTR szUnit, SIZE_T cchDest)
         fSpeed /= 1024;
     }
     StringCchCopyW(szUnit, cchDest, dataUnits[nID]);
+    nID = 1 + nID * 2 + (fSpeed >= 500 ? 1 : 0);
     return nID;
 }
 
@@ -173,12 +175,4 @@ DWORD ExtractResTTF(UINT uResID, PCWSTR szFilePath)
     }
 
     return dwErrorCode;
-}
-
-DWORD DrawCircle(HDC hdc, RECT rcBound, INT nRadius, INT n, PCWSTR szTip)
-{
-    BeginPath(hdc);
-
-    EndPath(hdc);
-    return 0;
 }

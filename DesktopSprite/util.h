@@ -57,7 +57,7 @@ DWORD SetAppAutoRun();
 DWORD UnsetAppAutoRun();
 
 // 换算字节速度成带单位的字符串
-DWORD ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest);
+INT ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest);
 
 // 换算字节速度, 得到单位, 并且返回换算次数
 INT GetSpeedUnit(DOUBLE fSpeed, PWSTR szUnit, SIZE_T cchDest);

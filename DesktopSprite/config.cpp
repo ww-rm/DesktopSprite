@@ -9,9 +9,8 @@ static PCWSTR const REGVAL_AUTORUN                  = L"IsAutoRun";
 static PCWSTR const REGVAL_TIMEAlARM                = L"IsTimeAlarm";
 //static PCWSTR const REGVAL_BALLOONICONPATH          = L"BalloonIconPath";
 static PCWSTR const REGVAL_INFOSOUND                = L"IsInfoSound";
-
-static PCWSTR const REGVAL_TEXTFONT                 = L"TextFont";
-static PCWSTR const REGVAL_TEXTCOLOR                = L"TextColor";
+//static PCWSTR const REGVAL_DARKTHEME                = L"IsDarkTheme";
+//static PCWSTR const REGVAL_TRANSPARENCY             = L"Transparency";
 
 static PCWSTR const REGVAL_LASTFLOATPOS             = L"LastFloatPos";
 
@@ -19,20 +18,16 @@ static PCWSTR const REGVAL_LASTFLOATPOS             = L"LastFloatPos";
 DWORD LoadDefaultConfig(PCFGDATA pCfgData)
 {
     // TODO: 应用默认设置
-    pCfgData->bFloatWnd = FALSE;
-    pCfgData->bAutoRun = FALSE;
-    pCfgData->bTimeAlarm = TRUE;
+    pCfgData->bFloatWnd = FALSE;                            // 隐藏浮窗
+    pCfgData->bAutoRun = FALSE;                             // 禁止开机自启
+    pCfgData->bTimeAlarm = TRUE;                            // 开启整点报时
 
-    WCHAR szExeFullDir[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, szExeFullDir, MAX_PATH);
-    PathCchRemoveFileSpec(szExeFullDir, MAX_PATH);
+    //WCHAR szExeFullDir[MAX_PATH] = { 0 };
+    //GetModuleFileNameW(NULL, szExeFullDir, MAX_PATH);
+    //PathCchRemoveFileSpec(szExeFullDir, MAX_PATH);
     //PathCchCombine(pCfgData->szBalloonIconPath, MAX_PATH, szExeFullDir, L"data\\default_balloonicon.ico");
 
-    // TODO: 移除与字体有关的数据域
-    pCfgData->bInfoSound = TRUE;
-    GetSystemCapitalFont(&pCfgData->lfText);
-    StringCchCopyW(pCfgData->lfText.lfFaceName, LF_FACESIZE, L"Agency FB");
-    pCfgData->rgbTextColor = RGB(255, 255, 255);
+    pCfgData->bInfoSound = TRUE;                            // 开启提示声音
 
     // 默认位置是屏幕的 1/6 处
     RECT rcScreen = { 0 };
@@ -70,11 +65,6 @@ DWORD LoadConfigFromReg(PCFGDATA pCfgData)
             //RegQueryValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, NULL, (PBYTE)pCfgData->szBalloonIconPath, &cbData);
             cbData = sizeof(BOOL);
             RegQueryAnyValue(hkApp, REGVAL_INFOSOUND, &pCfgData->bInfoSound, &cbData);
-
-            //cbData = sizeof(LOGFONTW);
-            //RegQueryAnyValue(hkApp, REGVAL_TEXTFONT, &pCfgData->lfText, &cbData);
-            //cbData = sizeof(COLORREF);
-            //RegQueryAnyValue(hkApp, REGVAL_TEXTCOLOR, &pCfgData->rgbTextColor, &cbData);
 
             cbData = sizeof(POINT);
             RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, &cbData);
@@ -120,9 +110,6 @@ DWORD SaveConfigToReg(PCFGDATA pCfgData)
             //StringCchLengthW(pCfgData->szBalloonIconPath, MAX_PATH, &cbData);
             //RegSetValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, REG_SZ, (PBYTE)pCfgData->szBalloonIconPath, (DWORD)(cbData+1)*sizeof(WCHAR));
             RegSetBinValue(hkApp, REGVAL_INFOSOUND, &pCfgData->bInfoSound, sizeof(BOOL));
-
-            RegSetBinValue(hkApp, REGVAL_TEXTFONT, &pCfgData->lfText, sizeof(LOGFONTW));
-            RegSetBinValue(hkApp, REGVAL_TEXTCOLOR, &pCfgData->rgbTextColor, sizeof(COLORREF));
 
             RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, sizeof(POINT));
         }
