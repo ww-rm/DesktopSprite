@@ -12,9 +12,7 @@ using namespace Gdiplus;
 static UINT     const   REFRESHINTERVAL                 = 1000;                     // 屏幕显示刷新间隔
 static UINT     const   ANIMATIONTIME                   = 100;                      // 动画效果持续时间
 static UINT     const   ID_NIDMAIN                      = 1;                        // 图标 ID
-static INT      const   MAINWNDSIZE_UNIT                = 25;
-static INT      const   MAINWNDSIZE_CX                  = MAINWNDSIZE_UNIT *6;      // 窗口 cx
-static INT      const   MAINWNDSIZE_CY                  = MAINWNDSIZE_UNIT *5;      // 窗口 cy
+static INT      const   MAINWNDSIZE_UNIT                = 25;                       // 窗口单元格大小
 
 static UINT             uMsgTaskbarCreated              = 0;                        // 任务栏重建消息
 
@@ -52,18 +50,28 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     // 声音
     pWndData->bInfoSound = pCfgData->bInfoSound;
 
-    // 是否浮动窗口
+    // 主题
+    pWndData->bDarkTheme = pCfgData->bDarkTheme;
+
+    // 设置透明度
+    SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+
+    // 根据显示内容决定窗口大小
+    pWndData->byShowContent = pCfgData->byShowContent;
+    SIZE sizeWnd = { 0 };
+    GetWndSizeByShowContent(&sizeWnd, pCfgData->byShowContent);
+
+    // 设置位置大小
+    SetWindowPos(
+        pWndData->hWnd, HWND_TOPMOST,
+        pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
+        sizeWnd.cx, sizeWnd.cy,
+        SWP_NOACTIVATE
+    );
+    
+    // 是否显示浮动窗口
     if (pCfgData->bFloatWnd)
     {
-        // 调整显示位置
-        SetWindowPos(
-            pWndData->hWnd, HWND_TOPMOST,
-            pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
-            MAINWNDSIZE_CX, MAINWNDSIZE_CY,
-            SWP_NOACTIVATE
-        );
-
-        // 显示窗口
         ShowWindow(pWndData->hWnd, SW_SHOWNA);
         InvalidateRect(pWndData->hWnd, NULL, TRUE);
     }
@@ -75,13 +83,12 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     }
 
     // 字体与颜色
-    GetSystemCapitalFont(&pWndData->lfText);
-    StringCchCopyW(pWndData->lfText.lfFaceName, LF_FACESIZE, L"Agency FB");
+    LOGFONTW lfText = { 0 };
+    GetSystemCapitalFont(&lfText);
+    StringCchCopyW(lfText.lfFaceName, LF_FACESIZE, L"Agency FB");
+    pWndData->hFontText = CreateFontIndirectW(&lfText);
 
     DefFreeMem(pCfgData);
-
-    // 设置 85% 透明度
-    SetLayeredWindowAttributes(pWndData->hWnd, RGB(0, 0, 0), (255 * 85) / 100, LWA_ALPHA);
 
     // 初始化自身数据
     pWndData->bWndFixed = FALSE;
@@ -107,6 +114,10 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
 static LRESULT OnDestroy(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
+    if (pWndData->hFontText != NULL)
+    {
+        DeleteFont(pWndData->hFontText);
+    }
     DeleteNotifyIcon(pWndData->hWnd, ID_NIDMAIN);
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
@@ -138,140 +149,158 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     INT nLevel = 0;
     Color statusColor;
 
-    // 开始绘图, 使用缓冲避免闪烁
+    // 开始绘图
     PAINTSTRUCT ps = { 0 };
     HDC hdc = BeginPaint(pWndData->hWnd, &ps);
-    Bitmap* pBmpMem = new Bitmap(MAINWNDSIZE_CX, MAINWNDSIZE_CY);
+
+    // 得到绘图窗体大小
+    RECT rcClient;
+    GetClientRect(pWndData->hWnd, &rcClient);
+    SizeF sizeClient(REAL(rcClient.right - rcClient.left), REAL(rcClient.bottom - rcClient.top));
+
+    // 使用缓冲区绘图
+    Bitmap* pBmpMem = new Bitmap((INT)sizeClient.Width, (INT)sizeClient.Height);
     Graphics graphicsMem(pBmpMem);
 
     // 设置绘图模式
     graphicsMem.SetSmoothingMode(SmoothingModeAntiAlias);                      // 图形渲染抗锯齿
-    //graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);       // 文字渲染抗锯齿
+    graphicsMem.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);       // 文字渲染抗锯齿
 
     // 绘图属性对象
     SizeF drawSize;                                         // 绘制矩形
     Pen pen(Color::Green, 5);                               // 图形颜色
-    SolidBrush textbrush(Color::White);                     // 文本颜色
-    SolidBrush bgbrush(Color::Black);                       // 背景颜色
-    Font font(hdc, &pWndData->lfText);                      // 文字字体
-    StringFormat strformat(StringFormatFlagsNoClip);        // 文字居于矩形中心
+    SolidBrush textbrush(pWndData->bDarkTheme ? Color::White : Color::Black);                     // 文本颜色
+    SolidBrush bgbrush(pWndData->bDarkTheme ? Color::Black : Color::White);                       // 背景颜色
+    Font font(hdc, pWndData->hFontText);                      // 文字字体
+    StringFormat strformat(StringFormatFlagsNoClip);          // 文字居于矩形中心
     strformat.SetAlignment(StringAlignmentCenter);
     strformat.SetLineAlignment(StringAlignmentCenter);
 
     // 刷黑背景
-    graphicsMem.FillRectangle(&bgbrush, 0, 0, MAINWNDSIZE_CX, MAINWNDSIZE_CY);
+    graphicsMem.FillRectangle(&bgbrush, 0., 0., sizeClient.Width, sizeClient.Height);
 
     // 绘制CPU与MEM
-    drawSize.Width = MAINWNDSIZE_UNIT * 3;
-    drawSize.Height = MAINWNDSIZE_UNIT * 3;
-    graphicsMem.TranslateTransform(0, 0);
+    if (pWndData->byShowContent & SHOWCONTENT_CPUMEM)
+    {
+        drawSize.Width = MAINWNDSIZE_UNIT * 3;
+        drawSize.Height = MAINWNDSIZE_UNIT * 3;
+        graphicsMem.TranslateTransform(0, 0);
 
-    // CPU
-    StringCchPrintfW(szDataBuffer, 16, L"C:%.0f%%", perfData.cpuPercent);
-    if (perfData.cpuPercent < 50)
-    {
-        pen.SetColor(Color::Green);
-    }
-    else if (perfData.cpuPercent < 75)
-    {
-        pen.SetColor(Color::Sienna);
-    }
-    else
-    {
-        pen.SetColor(Color::DarkRed);
-    }
-    graphicsMem.DrawString(
-        szDataBuffer, -1, &font,
-        RectF(PointF(0, 0), drawSize),
-        &strformat, &textbrush
-    );
-    DrawCircle(
-        graphicsMem, pen,
-        PointF(drawSize.Width / 2, drawSize.Height / 2),
-        drawSize.Height / 2 - 8,
-        REAL(perfData.cpuPercent / 100)
-    );
+        // CPU
+        StringCchPrintfW(szDataBuffer, 16, L"C:%.0f%%", perfData.cpuPercent);
+        if (perfData.cpuPercent < 50)
+        {
+            pen.SetColor(STATUSCOLOR_LOW);
+        }
+        else if (perfData.cpuPercent < 75)
+        {
+            pen.SetColor(STATUSCOLOR_MIDDLE);
+        }
+        else
+        {
+            pen.SetColor(STATUSCOLOR_HIGH);
+        }
+        graphicsMem.DrawString(
+            szDataBuffer, -1, &font,
+            RectF(PointF(0, 0), drawSize),
+            &strformat, &textbrush
+        );
+        DrawCircle(
+            graphicsMem, pen,
+            PointF(drawSize.Width / 2, drawSize.Height / 2),
+            drawSize.Height / 2 - 8,
+            REAL(perfData.cpuPercent / 100)
+        );
 
-    // 绘制内存
-    StringCchPrintfW(szDataBuffer, 16, L"M:%.0f%%", perfData.memPercent);
-    if (perfData.memPercent < 75)
-    {
-        pen.SetColor(Color::Green);
+        // 绘制内存
+        StringCchPrintfW(szDataBuffer, 16, L"M:%.0f%%", perfData.memPercent);
+        if (perfData.memPercent < 75)
+        {
+            pen.SetColor(STATUSCOLOR_LOW);
+        }
+        else if (perfData.memPercent < 90)
+        {
+            pen.SetColor(STATUSCOLOR_MIDDLE);
+        }
+        else
+        {
+            pen.SetColor(STATUSCOLOR_HIGH);
+        }
+        graphicsMem.DrawString(
+            szDataBuffer, -1, &font,
+            RectF(PointF(MAINWNDSIZE_UNIT * 3, 0), drawSize),
+            &strformat, &textbrush
+        );
+        DrawCircle(
+            graphicsMem, pen,
+            PointF(drawSize.Width / 2 + MAINWNDSIZE_UNIT * 3, drawSize.Height / 2),
+            drawSize.Height / 2 - 8,
+            REAL(perfData.memPercent / 100)
+        );
     }
-    else if (perfData.memPercent < 90)
-    {
-        pen.SetColor(Color::Sienna);
-    }
-    else
-    {
-        pen.SetColor(Color::DarkRed);
-    }
-    graphicsMem.DrawString(
-        szDataBuffer, -1, &font,
-        RectF(PointF(MAINWNDSIZE_UNIT * 3, 0), drawSize),
-        &strformat, &textbrush
-    );
-    DrawCircle(
-        graphicsMem, pen,
-        PointF(drawSize.Width / 2 + MAINWNDSIZE_UNIT * 3, drawSize.Height / 2),
-        drawSize.Height / 2 - 8,
-        REAL(perfData.memPercent / 100)
-    );
 
     // 绘制网速
-    drawSize.Width = MAINWNDSIZE_UNIT * 3;
-    drawSize.Height = MAINWNDSIZE_UNIT * 1;
-    graphicsMem.TranslateTransform(0, MAINWNDSIZE_UNIT * 3);
+    if (pWndData->byShowContent & SHOWCONTENT_NETSPEED)
+    {
+        drawSize.Width = MAINWNDSIZE_UNIT * 3;
+        drawSize.Height = MAINWNDSIZE_UNIT * 1;
+        graphicsMem.TranslateTransform(0, 0);
 
-    // 绘制上传
-    nLevel = ConvertSpeed(perfData.uploadSpeed, szDataBuffer, 16);
-    if (nLevel < 3)
-    {
-        statusColor = Color::DarkRed;
-    }
-    else if (nLevel < 5)
-    {
-        statusColor = Color::Sienna;
-    }
-    else
-    {
-        statusColor = Color::Green;
-    }
-    graphicsMem.DrawString(
-        szDataBuffer, -1, &font,
-        RectF(PointF(0, MAINWNDSIZE_UNIT), drawSize),
-        &strformat, &textbrush
-    );
-    DrawSpeedStair(
-        graphicsMem, statusColor,
-        RectF(10, 2, drawSize.Width - 20, drawSize.Height - 4),
-        TRUE, nLevel
-    );
+        if (pWndData->byShowContent & SHOWCONTENT_CPUMEM)
+        {
+            graphicsMem.TranslateTransform(0, MAINWNDSIZE_UNIT * 3);
+        }
 
-    // 绘制下载
-    nLevel = ConvertSpeed(perfData.downloadSpeed, szDataBuffer, 16);
-    if (nLevel < 3)
-    {
-        statusColor = Color::DarkRed;
+        // 绘制上传
+        nLevel = ConvertSpeed(perfData.uploadSpeed, szDataBuffer, 16);
+        if (nLevel < 3)
+        {
+            statusColor = STATUSCOLOR_HIGH;
+        }
+        else if (nLevel < 5)
+        {
+            statusColor = STATUSCOLOR_MIDDLE;
+        }
+        else
+        {
+            statusColor = STATUSCOLOR_LOW;
+        }
+        graphicsMem.DrawString(
+            szDataBuffer, -1, &font,
+            RectF(PointF(0, MAINWNDSIZE_UNIT), drawSize),
+            &strformat, &textbrush
+        );
+        DrawSpeedStair(
+            graphicsMem, statusColor,
+            RectF(10, 2, drawSize.Width - 20, drawSize.Height - 4),
+            TRUE, nLevel
+        );
+
+        // 绘制下载
+        nLevel = ConvertSpeed(perfData.downloadSpeed, szDataBuffer, 16);
+        if (nLevel < 3)
+        {
+            statusColor = STATUSCOLOR_HIGH;
+        }
+        else if (nLevel < 5)
+        {
+            statusColor = STATUSCOLOR_MIDDLE;
+        }
+        else
+        {
+            statusColor = STATUSCOLOR_LOW;
+        }
+        graphicsMem.DrawString(
+            szDataBuffer, -1, &font,
+            RectF(PointF(MAINWNDSIZE_UNIT * 3, MAINWNDSIZE_UNIT), drawSize),
+            &strformat, &textbrush
+        );
+        DrawSpeedStair(
+            graphicsMem, statusColor,
+            RectF(MAINWNDSIZE_UNIT * 3 + 10, 2, drawSize.Width - 20, drawSize.Height - 4),
+            FALSE, nLevel
+        );
     }
-    else if (nLevel < 5)
-    {
-        statusColor = Color::Sienna;
-    }
-    else
-    {
-        statusColor = Color::Green;
-    }
-    graphicsMem.DrawString(
-        szDataBuffer, -1, &font,
-        RectF(PointF(MAINWNDSIZE_UNIT * 3, MAINWNDSIZE_UNIT), drawSize),
-        &strformat, &textbrush
-    );
-    DrawSpeedStair(
-        graphicsMem, statusColor,
-        RectF(MAINWNDSIZE_UNIT * 3 + 10, 2, drawSize.Width - 20, drawSize.Height - 4),
-        FALSE, nLevel
-    );
 
     // 拷贝缓存图, 结束绘图
     Graphics graphics(hdc);
@@ -326,8 +355,10 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     // 读取配置
     PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
     LoadConfigFromReg(pCfgData);
+
     switch (LOWORD(wParam))
     {
+        // 浮动窗口
     case IDM_FLOATWND:
     {
         pCfgData->bFloatWnd = !pCfgData->bFloatWnd;
@@ -338,8 +369,8 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             SetWindowPos(
                 pWndData->hWnd, HWND_TOPMOST,
                 pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
-                MAINWNDSIZE_CX, MAINWNDSIZE_CY,
-                SWP_NOACTIVATE
+                0, 0,
+                SWP_NOACTIVATE | SWP_NOSIZE
             );
 
             // 显示窗口
@@ -357,6 +388,91 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
+    // 显示子菜单
+    case IDM_SHOWCPUMEM:
+    {
+        if (pCfgData->byShowContent == SHOWCONTENT_CPUMEM)
+        {
+            MessageBoxW(NULL, L"至少保留一项显示内容！", L"提示信息", MB_OK);
+        }
+        else
+        {
+            pCfgData->byShowContent ^= SHOWCONTENT_CPUMEM;
+            pWndData->byShowContent = pCfgData->byShowContent;
+            SIZE sizeWnd = { 0 };
+            GetWndSizeByShowContent(&sizeWnd, pCfgData->byShowContent);
+            SetWindowPos(
+                pWndData->hWnd, HWND_TOPMOST,
+                0, 0,
+                sizeWnd.cx, sizeWnd.cy,
+                SWP_NOACTIVATE | SWP_NOMOVE
+            );
+        }
+        break;
+    }
+    case IDM_SHOWNETSPEED:
+    {
+        if (pCfgData->byShowContent == SHOWCONTENT_NETSPEED)
+        {
+            MessageBoxW(NULL, L"至少保留一项显示内容！", L"提示信息", MB_OK);
+        }
+        else
+        {
+            pCfgData->byShowContent ^= SHOWCONTENT_NETSPEED;
+            pWndData->byShowContent = pCfgData->byShowContent;
+            SIZE sizeWnd = { 0 };
+            GetWndSizeByShowContent(&sizeWnd, pCfgData->byShowContent);
+            SetWindowPos(
+                pWndData->hWnd, HWND_TOPMOST,
+                0, 0,
+                sizeWnd.cx, sizeWnd.cy,
+                SWP_NOACTIVATE | SWP_NOMOVE
+            );
+        }
+        break;
+    }
+    case IDM_DARKTHEME:
+    {
+        pCfgData->bDarkTheme = !pCfgData->bDarkTheme;
+        pWndData->bDarkTheme = pCfgData->bDarkTheme;
+        InvalidateRect(pWndData->hWnd, NULL, TRUE);
+        break;
+    }
+    case IDM_TRAN_100:
+    {
+        pCfgData->byTransparency = 100 * 255 / 100;
+        pWndData->byTransparency = pCfgData->byTransparency;
+        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+        break;
+    }
+    case IDM_TRAN_75:
+    {
+        pCfgData->byTransparency = 75 * 255 / 100;
+        pWndData->byTransparency = pCfgData->byTransparency;
+        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+        break;
+    }
+    case IDM_TRAN_50:
+    {
+        pCfgData->byTransparency = 50 * 255 / 100;
+        pWndData->byTransparency = pCfgData->byTransparency;
+        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+        break;
+    }
+    case IDM_TRAN_25:
+    {
+        pCfgData->byTransparency = 25 * 255 / 100;
+        pWndData->byTransparency = pCfgData->byTransparency;
+        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+        break;
+    }
+    case IDM_TRANSPARENCY:
+    {
+        // TODO: 弹出一个填透明度的对话框
+        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+        break;
+    }
+    // 设置子菜单
     case IDM_AUTORUN:
     {
         pCfgData->bAutoRun = !pCfgData->bAutoRun;
@@ -389,6 +505,7 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         pWndData->bInfoSound = pCfgData->bInfoSound;
         break;
     }
+    // 退出
     case IDM_EXIT:
     {
         if (pCfgData->bFloatWnd)
@@ -438,10 +555,34 @@ static LRESULT OnInitMenuPopup(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lPar
     LoadConfigFromReg(pCfgData);
 
     HMENU hMenu = (HMENU)wParam;
-    SetMenuItemState(hMenu, IDM_AUTORUN, pCfgData->bAutoRun ? MFS_CHECKED : MFS_UNCHECKED);
     SetMenuItemState(hMenu, IDM_FLOATWND, pCfgData->bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED);
+
+    // 设置子菜单
+    SetMenuItemState(hMenu, IDM_AUTORUN, pCfgData->bAutoRun ? MFS_CHECKED : MFS_UNCHECKED);
     SetMenuItemState(hMenu, IDM_TIMEALARM, pCfgData->bTimeAlarm ? MFS_CHECKED : MFS_UNCHECKED);
     SetMenuItemState(hMenu, IDM_INFOSOUND, pCfgData->bInfoSound ? MFS_CHECKED : MFS_UNCHECKED);
+
+    // 显示子菜单
+    SetMenuItemState(hMenu, IDM_SHOWCPUMEM, (pCfgData->byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_SHOWNETSPEED, (pCfgData->byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_DARKTHEME, pCfgData->bDarkTheme ? MFS_CHECKED : MFS_UNCHECKED);
+    switch (pCfgData->byTransparency)
+    {
+    case 100 * 255 / 100:
+        SetMenuItemState(hMenu, IDM_TRAN_100, MFS_CHECKED);
+        break;
+    case 75 * 255 / 100:
+        SetMenuItemState(hMenu, IDM_TRAN_75, MFS_CHECKED);
+        break;
+    case 50 * 255 / 100:
+        SetMenuItemState(hMenu, IDM_TRAN_50, MFS_CHECKED);
+        break;
+    case 25 * 255 / 100:
+        SetMenuItemState(hMenu, IDM_TRAN_25, MFS_CHECKED);
+        break;
+    default:
+        SetMenuItemState(hMenu, IDM_TRANSPARENCY, MFS_CHECKED);
+    }
 
     DefFreeMem(pCfgData);
     return 0;
@@ -460,7 +601,7 @@ static LRESULT OnMouseMove(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
                 pWndData->hWnd, HWND_TOPMOST,
                 rcWnd.left + (ptCursor.x - pWndData->ptDragSrc.x),
                 rcWnd.top + (ptCursor.y- pWndData->ptDragSrc.y),
-                MAINWNDSIZE_CX, MAINWNDSIZE_CY, 
+                0, 0, 
                 SWP_SHOWWINDOW | SWP_NOSIZE
             );
         }
@@ -529,18 +670,18 @@ static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         // 不是浮动的情况下显示显示弹窗
         if (!pWndData->bFloatWnd)
         {
-            //SetLayeredWindowAttributes;
-            //UpdateLayeredWindow;
-            //UpdateLayeredWindowIndirect;
             RECT rcNotifyIcon = { 0 };
             GetNotifyIconRect(pWndData->hWnd, ID_NIDMAIN, &rcNotifyIcon);
+            RECT rcWnd = { 0 };
+            GetWindowRect(pWndData->hWnd, &rcWnd);
+            SIZE sizeWnd = { rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top };
 
             SetWindowPos(
                 pWndData->hWnd, HWND_TOPMOST,
-                rcNotifyIcon.left - ((MAINWNDSIZE_CX - (rcNotifyIcon.right - rcNotifyIcon.left)) / 2),
-                rcNotifyIcon.top - MAINWNDSIZE_CY,
-                MAINWNDSIZE_CX, MAINWNDSIZE_CY,
-                SWP_NOACTIVATE
+                rcNotifyIcon.left - ((sizeWnd.cx - (rcNotifyIcon.right - rcNotifyIcon.left)) / 2),
+                rcNotifyIcon.top - sizeWnd.cy,
+                0, 0,
+                SWP_NOACTIVATE | SWP_NOSIZE
             );
             ShowWindow(pWndData->hWnd, SW_SHOWNA);
 
@@ -747,4 +888,19 @@ BOOL DrawSpeedStair(
         pt6.Y -= height;
     }
     return TRUE;
+}
+
+DWORD GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent)
+{
+    psizeWnd->cx = MAINWNDSIZE_UNIT * 6;
+    psizeWnd->cy = 0;
+    if (byShowContent & SHOWCONTENT_CPUMEM)
+    {
+        psizeWnd->cy += MAINWNDSIZE_UNIT * 3;
+    }
+    if (byShowContent & SHOWCONTENT_NETSPEED)
+    {
+        psizeWnd->cy += MAINWNDSIZE_UNIT * 2;
+    }
+    return 0;
 }

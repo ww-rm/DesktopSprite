@@ -237,7 +237,7 @@ static DWORD QueryPerfData()
                 PDH_FMT_DOUBLE,
                 NULL, &pValue
             );
-            perfData.cpuPercent = pValue.doubleValue;
+            perfData.cpuPercent = (pValue.doubleValue > 100 ? 100 : pValue.doubleValue);    // 不高于100%
 
             // 获得内存数据
             pdhStatus = PdhGetFormattedCounterValue(

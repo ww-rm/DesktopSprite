@@ -20,13 +20,21 @@
 #define IDM_AUTORUN                     40003
 #define IDM_TIMEALARM                   40004
 #define IDM_INFOSOUND                   40005
+#define IDM_DARKTHEME                   40025
+#define IDM_SHOWCPUMEM                  40026
+#define IDM_SHOWNETSPEED                40027
+#define IDM_TRANSPARENCY                40028
+#define IDM_TRAN_100                    40029
+#define IDM_TRAN_75                     40031
+#define IDM_TRAN_50                     40032
+#define IDM_TRAN_25                     40033
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        110
-#define _APS_NEXT_COMMAND_VALUE         40013
+#define _APS_NEXT_COMMAND_VALUE         40034
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

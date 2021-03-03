@@ -9,8 +9,9 @@ static PCWSTR const REGVAL_AUTORUN                  = L"IsAutoRun";
 static PCWSTR const REGVAL_TIMEAlARM                = L"IsTimeAlarm";
 //static PCWSTR const REGVAL_BALLOONICONPATH          = L"BalloonIconPath";
 static PCWSTR const REGVAL_INFOSOUND                = L"IsInfoSound";
-//static PCWSTR const REGVAL_DARKTHEME                = L"IsDarkTheme";
-//static PCWSTR const REGVAL_TRANSPARENCY             = L"Transparency";
+static PCWSTR const REGVAL_DARKTHEME                = L"IsDarkTheme";
+static PCWSTR const REGVAL_TRANSPARENCY             = L"Transparency";
+static PCWSTR const REGVAL_SHOWCONTENT              = L"ShowContent";
 
 static PCWSTR const REGVAL_LASTFLOATPOS             = L"LastFloatPos";
 
@@ -28,7 +29,10 @@ DWORD LoadDefaultConfig(PCFGDATA pCfgData)
     //PathCchCombine(pCfgData->szBalloonIconPath, MAX_PATH, szExeFullDir, L"data\\default_balloonicon.ico");
 
     pCfgData->bInfoSound = TRUE;                            // 开启提示声音
-
+    pCfgData->bDarkTheme = TRUE;                            // 默认使用深色主题
+    pCfgData->byTransparency = 255 * 80 / 100;              // 默认透明度 80%
+    pCfgData->byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;    // 默认占用和网速都显示
+   
     // 默认位置是屏幕的 1/6 处
     RECT rcScreen = { 0 };
     GetWindowRect(GetDesktopWindow(), &rcScreen);
@@ -65,6 +69,12 @@ DWORD LoadConfigFromReg(PCFGDATA pCfgData)
             //RegQueryValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, NULL, (PBYTE)pCfgData->szBalloonIconPath, &cbData);
             cbData = sizeof(BOOL);
             RegQueryAnyValue(hkApp, REGVAL_INFOSOUND, &pCfgData->bInfoSound, &cbData);
+            cbData = sizeof(BOOL);
+            RegQueryAnyValue(hkApp, REGVAL_DARKTHEME, &pCfgData->bDarkTheme, &cbData);
+            cbData = sizeof(BYTE);
+            RegQueryAnyValue(hkApp, REGVAL_TRANSPARENCY, &pCfgData->byTransparency, &cbData);
+            cbData = sizeof(BYTE);
+            RegQueryAnyValue(hkApp, REGVAL_SHOWCONTENT, &pCfgData->byShowContent, &cbData);
 
             cbData = sizeof(POINT);
             RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, &cbData);
@@ -110,6 +120,9 @@ DWORD SaveConfigToReg(PCFGDATA pCfgData)
             //StringCchLengthW(pCfgData->szBalloonIconPath, MAX_PATH, &cbData);
             //RegSetValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, REG_SZ, (PBYTE)pCfgData->szBalloonIconPath, (DWORD)(cbData+1)*sizeof(WCHAR));
             RegSetBinValue(hkApp, REGVAL_INFOSOUND, &pCfgData->bInfoSound, sizeof(BOOL));
+            RegSetBinValue(hkApp, REGVAL_DARKTHEME, &pCfgData->bDarkTheme, sizeof(BOOL));
+            RegSetBinValue(hkApp, REGVAL_TRANSPARENCY, &pCfgData->byTransparency, sizeof(BYTE));
+            RegSetBinValue(hkApp, REGVAL_SHOWCONTENT, &pCfgData->byShowContent, sizeof(BYTE));
 
             RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, sizeof(POINT));
         }

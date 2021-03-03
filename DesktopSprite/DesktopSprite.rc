@@ -56,6 +56,21 @@ BEGIN
     BEGIN
         MENUITEM "浮动窗口(&F)",                    IDM_FLOATWND
         MENUITEM SEPARATOR
+        POPUP "显示"
+        BEGIN
+            MENUITEM "显示占用(&M)",                    IDM_SHOWCPUMEM
+            MENUITEM "显示网速(&N)",                    IDM_SHOWNETSPEED
+            MENUITEM SEPARATOR
+            MENUITEM "深色主题(&D)",                    IDM_DARKTHEME
+            POPUP "透明度(&T)"
+            BEGIN
+                MENUITEM "100%",                        IDM_TRAN_100
+                MENUITEM "75%",                         IDM_TRAN_75
+                MENUITEM "50%",                         IDM_TRAN_50
+                MENUITEM "25%",                         IDM_TRAN_25
+                MENUITEM "自定义(&D)...",                  IDM_TRANSPARENCY
+            END
+        END
         POPUP "设置(&C)"
         BEGIN
             MENUITEM "开机自启(&A)",                    IDM_AUTORUN
@@ -142,6 +157,10 @@ BEGIN
     IDS_TIP_CPU             "CPU"
     IDS_TIP_MEM             "内存"
     IDS_TIP_UPLOAD          "上传"
+END
+
+STRINGTABLE
+BEGIN
     IDS_TIP_DOWNLOAD        "下载"
 END
 
