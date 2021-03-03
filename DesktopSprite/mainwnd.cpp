@@ -12,8 +12,9 @@ using namespace Gdiplus;
 static UINT     const   REFRESHINTERVAL                 = 1000;                     // 屏幕显示刷新间隔
 static UINT     const   ANIMATIONTIME                   = 100;                      // 动画效果持续时间
 static UINT     const   ID_NIDMAIN                      = 1;                        // 图标 ID
-static INT      const   MAINWNDSIZE_CX                  = 50*4;                      // 窗口 cx
-static INT      const   MAINWNDSIZE_CY                  = 50*3;                      // 窗口 cy
+static INT      const   MAINWNDSIZE_UNIT                = 25;
+static INT      const   MAINWNDSIZE_CX                  = MAINWNDSIZE_UNIT *6;      // 窗口 cx
+static INT      const   MAINWNDSIZE_CY                  = MAINWNDSIZE_UNIT *5;      // 窗口 cy
 
 static UINT             uMsgTaskbarCreated              = 0;                        // 任务栏重建消息
 
@@ -80,7 +81,7 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     DefFreeMem(pCfgData);
 
     // 设置 85% 透明度
-    SetLayeredWindowAttributes(pWndData->hWnd, RGB(0, 0, 0), (255 * 100) / 100, LWA_ALPHA);
+    SetLayeredWindowAttributes(pWndData->hWnd, RGB(0, 0, 0), (255 * 85) / 100, LWA_ALPHA);
 
     // 初始化自身数据
     pWndData->bWndFixed = FALSE;
@@ -130,7 +131,6 @@ static LRESULT OnClose(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
 static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    // TODO: 相对坐标
     // 得到性能数据
     PERFDATA perfData = { 0 };
     GetPerfData(&perfData);
@@ -149,6 +149,7 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     //graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);       // 文字渲染抗锯齿
 
     // 绘图属性对象
+    SizeF drawSize;                                         // 绘制矩形
     Pen pen(Color::Green, 5);                               // 图形颜色
     SolidBrush textbrush(Color::White);                     // 文本颜色
     SolidBrush bgbrush(Color::Black);                       // 背景颜色
@@ -158,35 +159,41 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     strformat.SetLineAlignment(StringAlignmentCenter);
 
     // 刷黑背景
-    graphicsMem.FillRectangle(&bgbrush, Rect(0, 0, 200, 150));
+    graphicsMem.FillRectangle(&bgbrush, 0, 0, MAINWNDSIZE_CX, MAINWNDSIZE_CY);
 
-    // 绘制CPU
-    StringCchPrintfW(szDataBuffer, 16, L"%.0f%%", perfData.cpuPercent);
-    if (perfData.cpuPercent < 50) 
+    // 绘制CPU与MEM
+    drawSize.Width = MAINWNDSIZE_UNIT * 3;
+    drawSize.Height = MAINWNDSIZE_UNIT * 3;
+    graphicsMem.TranslateTransform(0, 0);
+
+    // CPU
+    StringCchPrintfW(szDataBuffer, 16, L"C:%.0f%%", perfData.cpuPercent);
+    if (perfData.cpuPercent < 50)
     {
         pen.SetColor(Color::Green);
     }
-    else if (perfData.cpuPercent < 75) 
+    else if (perfData.cpuPercent < 75)
     {
         pen.SetColor(Color::Sienna);
     }
-    else 
+    else
     {
         pen.SetColor(Color::DarkRed);
     }
     graphicsMem.DrawString(
         szDataBuffer, -1, &font,
-        RectF(0, 0, MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY * 2 / 3.0f),
+        RectF(PointF(0, 0), drawSize),
         &strformat, &textbrush
     );
     DrawCircle(
         graphicsMem, pen,
-        PointF(MAINWNDSIZE_CX / 4.0f, MAINWNDSIZE_CY / 3.0f), MAINWNDSIZE_CX / 4.0f - 15,
+        PointF(drawSize.Width / 2, drawSize.Height / 2),
+        drawSize.Height / 2 - 8,
         REAL(perfData.cpuPercent / 100)
     );
 
     // 绘制内存
-    StringCchPrintfW(szDataBuffer, 16, L"%.0f%%", perfData.memPercent);
+    StringCchPrintfW(szDataBuffer, 16, L"M:%.0f%%", perfData.memPercent);
     if (perfData.memPercent < 75)
     {
         pen.SetColor(Color::Green);
@@ -201,14 +208,20 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     }
     graphicsMem.DrawString(
         szDataBuffer, -1, &font,
-        RectF(MAINWNDSIZE_CX / 2.0f, 0, MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY * 2 / 3.0f),
+        RectF(PointF(MAINWNDSIZE_UNIT * 3, 0), drawSize),
         &strformat, &textbrush
     );
     DrawCircle(
-        graphicsMem, pen, 
-        PointF(MAINWNDSIZE_CX * 3 / 4.0f, MAINWNDSIZE_CY / 3.0f), MAINWNDSIZE_CX / 4.0f - 15,
+        graphicsMem, pen,
+        PointF(drawSize.Width / 2 + MAINWNDSIZE_UNIT * 3, drawSize.Height / 2),
+        drawSize.Height / 2 - 8,
         REAL(perfData.memPercent / 100)
     );
+
+    // 绘制网速
+    drawSize.Width = MAINWNDSIZE_UNIT * 3;
+    drawSize.Height = MAINWNDSIZE_UNIT * 1;
+    graphicsMem.TranslateTransform(0, MAINWNDSIZE_UNIT * 3);
 
     // 绘制上传
     nLevel = ConvertSpeed(perfData.uploadSpeed, szDataBuffer, 16);
@@ -225,13 +238,13 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         statusColor = Color::Green;
     }
     graphicsMem.DrawString(
-        szDataBuffer, -1, &font, 
-        RectF(0, MAINWNDSIZE_CY * 5 / 6.0f, MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY / 6.0f),
+        szDataBuffer, -1, &font,
+        RectF(PointF(0, MAINWNDSIZE_UNIT), drawSize),
         &strformat, &textbrush
     );
     DrawSpeedStair(
         graphicsMem, statusColor,
-        RectF(0 + 20, MAINWNDSIZE_CY * 4 / 6.0f, MAINWNDSIZE_CX / 2.0f - 40, MAINWNDSIZE_CY / 6.0f),
+        RectF(10, 2, drawSize.Width - 20, drawSize.Height - 4),
         TRUE, nLevel
     );
 
@@ -250,13 +263,13 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         statusColor = Color::Green;
     }
     graphicsMem.DrawString(
-        szDataBuffer, -1, &font, 
-        RectF(MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY * 5 / 6.0f, MAINWNDSIZE_CX / 2.0f, MAINWNDSIZE_CY / 6.0f),
+        szDataBuffer, -1, &font,
+        RectF(PointF(MAINWNDSIZE_UNIT * 3, MAINWNDSIZE_UNIT), drawSize),
         &strformat, &textbrush
     );
     DrawSpeedStair(
         graphicsMem, statusColor,
-        RectF(MAINWNDSIZE_CX / 2.0f + 20, MAINWNDSIZE_CY * 4 / 6.0f, MAINWNDSIZE_CX / 2.0f - 40, MAINWNDSIZE_CY / 6.0f),
+        RectF(MAINWNDSIZE_UNIT * 3 + 10, 2, drawSize.Width - 20, drawSize.Height - 4),
         FALSE, nLevel
     );
 
@@ -700,7 +713,7 @@ BOOL DrawSpeedStair(
     const INT& nMaxLevel
 )
 {
-    REAL whiteGap = 3;
+    REAL whiteGap = 1;
     REAL height = rect.Height / nMaxLevel;
     REAL width = (rect.Width - whiteGap * nMaxLevel) / (nMaxLevel + 1);
     Pen pen(color, 2);
