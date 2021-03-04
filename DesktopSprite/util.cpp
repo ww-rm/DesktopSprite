@@ -160,13 +160,13 @@ BOOL IsSystemDarkTheme()
     return bRet;
 }
 
-DWORD ExtractResTTF(UINT uResID, PCWSTR szFilePath)
+DWORD ExtractRes(UINT uResID, PCWSTR szResType, PCWSTR szFilePath)
 {
     DWORD dwErrorCode = ERROR_SUCCESS;
 
     // 获取 TTF 资源
     HINSTANCE hInstance = GetModuleHandleW(NULL);
-    HRSRC hrsrc = FindResourceW(hInstance, MAKEINTRESOURCEW(uResID), L"TTF");
+    HRSRC hrsrc = FindResourceW(hInstance, MAKEINTRESOURCEW(uResID), szResType);
 
     if (hrsrc != NULL)
     {
@@ -194,4 +194,21 @@ DWORD ExtractResTTF(UINT uResID, PCWSTR szFilePath)
     }
 
     return dwErrorCode;
+}
+
+PBYTE GetResPointer(UINT uResID, PCWSTR szResType, DWORD* cbData)
+{
+    // 获取 TTF 资源
+    HINSTANCE hInstance = GetModuleHandleW(NULL);
+    HRSRC hrsrc = FindResourceW(hInstance, MAKEINTRESOURCEW(uResID), szResType);
+
+    if (hrsrc != NULL)
+    {
+        HGLOBAL hglobal = LoadResource(hInstance, hrsrc);
+        *cbData = SizeofResource(hInstance, hrsrc);
+        return (PBYTE)LockResource(hglobal);
+    }
+
+    *cbData = 0;
+    return NULL;
 }

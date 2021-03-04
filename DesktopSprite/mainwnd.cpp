@@ -42,6 +42,32 @@ static LRESULT OnTaskBarCreated(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lPa
 // 过程处理实现
 static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
+    // 初始化自身运行时需要的数据
+    pWndData->bWndFixed = FALSE;
+
+    // 添加图标
+    AddNotifyIcon(
+        pWndData->hWnd, ID_NIDMAIN, WM_NOTIFYICON,
+        LoadIconW(
+            GetModuleHandleW(NULL),
+            MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
+        )
+    );
+
+    // 设置图标提示信息
+    WCHAR szTip[MAX_NIDTIP] = { 0 };
+    LoadStringW(GetModuleHandleW(NULL), IDS_APPNAME, szTip, MAX_NIDTIP);
+    SetNotifyIconTip(pWndData->hWnd, ID_NIDMAIN, szTip);
+
+    // 向字体容器添加私有字体
+    DWORD cbData = 0;
+    PBYTE pFontData = GetResPointer(IDR_TTF1, L"TTF", &cbData);
+    pWndData->pFontColl = new PrivateFontCollection;
+    pWndData->pFontColl->AddMemoryFont((PVOID)pFontData, (INT)cbData);
+    
+    // 每 1s 刷新一次显示
+    SetTimer(pWndData->hWnd, IDT_REFRESHRECT, REFRESHINTERVAL, (TIMERPROC)NULL);
+
     // 应用配置项
     PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
     LoadConfigFromReg(pCfgData);
@@ -84,40 +110,14 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
     }
 
-    // 字体与颜色
-    LOGFONTW lfText = { 0 };
-    GetSystemCapitalFont(&lfText);
-    StringCchCopyW(lfText.lfFaceName, LF_FACESIZE, L"Agency FB");
-    lfText.lfOutPrecision = OUT_TT_ONLY_PRECIS;
-    lfText.lfQuality = ANTIALIASED_QUALITY;
-    pWndData->hFontText = CreateFontIndirectW(&lfText);
     DefFreeMem(pCfgData);
 
-    // 初始化自身数据
-    pWndData->bWndFixed = FALSE;
-
-    // 添加图标
-    AddNotifyIcon(
-        pWndData->hWnd, ID_NIDMAIN, WM_NOTIFYICON,
-        LoadIconW(
-            GetModuleHandleW(NULL),
-            MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
-        )
-    );
-
-    // 设置图标提示信息
-    WCHAR szTip[MAX_NIDTIP] = { 0 };
-    LoadStringW(GetModuleHandleW(NULL), IDS_APPNAME, szTip, MAX_NIDTIP);
-    SetNotifyIconTip(pWndData->hWnd, ID_NIDMAIN, szTip);
-
-    // 每 1s 刷新一次显示
-    SetTimer(pWndData->hWnd, IDT_REFRESHRECT, REFRESHINTERVAL, (TIMERPROC)NULL);
     return 0;
 }
 
 static LRESULT OnDestroy(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    DeleteFont(pWndData->hFontText);
+    delete pWndData->pFontColl;
     DeleteNotifyIcon(pWndData->hWnd, ID_NIDMAIN);
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
@@ -171,7 +171,13 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     Pen pen(Color::Green, 5);                                                   // 图形颜色
     SolidBrush textbrush(pWndData->bDarkTheme ? Color::White : Color::Black);   // 文本颜色
     SolidBrush bgbrush(pWndData->bDarkTheme ? Color::Black : Color::White);     // 背景颜色
-    Font font(hdc, pWndData->hFontText);                                        // 文字字体
+
+    // 从容器中创建要使用的字体
+    FontFamily fontFamily;
+    INT found = 0;
+    pWndData->pFontColl->GetFamilies(1, &fontFamily, &found);
+    Font textFont(&fontFamily, 9);
+
     StringFormat strformat(StringFormatFlagsNoClip);                            // 文字居于矩形中心
     strformat.SetAlignment(StringAlignmentCenter);
     strformat.SetLineAlignment(StringAlignmentCenter);
@@ -201,7 +207,7 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             pen.SetColor(STATUSCOLOR_HIGH);
         }
         graphicsMem.DrawString(
-            szDataBuffer, -1, &font,
+            szDataBuffer, -1, &textFont,
             RectF(PointF(0, 0), drawSize),
             &strformat, &textbrush
         );
@@ -228,7 +234,7 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             pen.SetColor(STATUSCOLOR_HIGH);
         }
         graphicsMem.DrawString(
-            szDataBuffer, -1, &font,
+            szDataBuffer, -1, &textFont,
             RectF(PointF(MAINWNDSIZE_UNIT * 3, 0), drawSize),
             &strformat, &textbrush
         );
@@ -267,7 +273,7 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             statusColor = STATUSCOLOR_LOW;
         }
         graphicsMem.DrawString(
-            szDataBuffer, -1, &font,
+            szDataBuffer, -1, &textFont,
             RectF(PointF(0, MAINWNDSIZE_UNIT), drawSize),
             &strformat, &textbrush
         );
@@ -292,7 +298,7 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             statusColor = STATUSCOLOR_LOW;
         }
         graphicsMem.DrawString(
-            szDataBuffer, -1, &font,
+            szDataBuffer, -1, &textFont,
             RectF(PointF(MAINWNDSIZE_UNIT * 3, MAINWNDSIZE_UNIT), drawSize),
             &strformat, &textbrush
         );
@@ -903,6 +909,17 @@ BOOL DrawSpeedStair(
         pt6.Y -= height;
     }
     return TRUE;
+}
+
+Font* CreateFontFromFile(PCWSTR szFontFilePath, REAL emSize, INT style, Unit unit)
+{
+    PrivateFontCollection prvtFontColl;
+    prvtFontColl.AddFontFile(szFontFilePath);
+    FontFamily fontFamily;
+    INT found = 0;
+    prvtFontColl.GetFamilies(1, &fontFamily, &found);
+    Font* pFont = new Font(&fontFamily, emSize, style, unit);
+    return pFont;
 }
 
 DWORD GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent)

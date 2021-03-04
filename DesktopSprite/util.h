@@ -83,5 +83,8 @@ DWORD GetSystemCapitalFont(PLOGFONTW pLogFont);
 // 判断系统是否是深色主题
 BOOL IsSystemDarkTheme();
 
-// 往 FilePath 解压运行时需要的TTF字体资源
-DWORD ExtractResTTF(UINT uResID, PCWSTR szFilePath);
+//// 往 FilePath 解压资源
+DWORD ExtractRes(UINT uResID, PCWSTR szResType, PCWSTR szFilePath);
+
+// 获取 TTF 资源内存
+PBYTE GetResPointer(UINT uResID, PCWSTR szResType, DWORD* cbData);

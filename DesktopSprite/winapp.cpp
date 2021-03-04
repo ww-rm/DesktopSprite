@@ -1,13 +1,11 @@
 #include "framework.h"
 #include "mainwnd.h"
 #include "perfdata.h"
-#include "util.h"
 
 #include "winapp.h"
 
 using namespace Gdiplus;
 
-static  PCWSTR  const       TTFRESTMPPATH   = L"%TEMP%\\dstmp1.ttf";
 static  PCWSTR  const       APPMUTEXNAME    = L"DesktopSpriteMutex";    // 防止重复启动的 MutexName
 static  HANDLE              hAppMutex       = NULL;                     // 防止重复启动的互斥锁
 
@@ -21,12 +19,6 @@ INT APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLi
             // 初始工作
             RegisterMainWnd(hInstance);
             OpenPerfMonitor();
-
-            // 添加需要的私有字体资源
-            WCHAR szFullTTFResPath[MAX_PATH] = { 0 };
-            ExpandEnvironmentStringsW(TTFRESTMPPATH, szFullTTFResPath, MAX_PATH);
-            ExtractResTTF(IDR_TTF1, szFullTTFResPath);
-            AddFontResourceExW(szFullTTFResPath, FR_PRIVATE, 0);
 
             // 初始化 GDI+.
             GdiplusStartupInput gdiplusStartupInput;
@@ -53,7 +45,6 @@ INT APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLi
 
             // 清理工作
             GdiplusShutdown(gdiplusToken);
-            RemoveFontResourceExW(szFullTTFResPath, FR_PRIVATE, 0);
             ClosePerfMonitor();
         }
         else
