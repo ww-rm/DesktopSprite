@@ -6,6 +6,7 @@
 
 #include "mainwnd.h"
 // TODO: 透明度设置对话框
+// BUG: 字体问题
 
 using namespace Gdiplus;
 
@@ -393,7 +394,11 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     {
         if (pCfgData->byShowContent == SHOWCONTENT_CPUMEM)
         {
-            MessageBoxW(NULL, L"至少保留一项显示内容！", L"提示信息", MB_OK);
+            WCHAR szTitle[MAX_LOADSTRING];
+            WCHAR szMsg[MAX_LOADSTRING];
+            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
+            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
+            MessageBoxW(NULL, szMsg, szTitle, MB_OK);
         }
         else
         {
@@ -414,7 +419,11 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     {
         if (pCfgData->byShowContent == SHOWCONTENT_NETSPEED)
         {
-            MessageBoxW(NULL, L"至少保留一项显示内容！", L"提示信息", MB_OK);
+            WCHAR szTitle[MAX_LOADSTRING];
+            WCHAR szMsg[MAX_LOADSTRING];
+            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
+            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
+            MessageBoxW(NULL, szMsg, szTitle, MB_OK);
         }
         else
         {

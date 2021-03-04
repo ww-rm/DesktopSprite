@@ -58,8 +58,8 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "显示(&S)"
         BEGIN
-            MENUITEM "显示占用(&M)",                    IDM_SHOWCPUMEM
-            MENUITEM "显示网速(&N)",                    IDM_SHOWNETSPEED
+            MENUITEM "显示占用(&U)",                    IDM_SHOWCPUMEM
+            MENUITEM "显示网速(&S)",                    IDM_SHOWNETSPEED
             MENUITEM SEPARATOR
             MENUITEM "深色主题(&D)",                    IDM_DARKTHEME
             POPUP "透明度(&T)"
@@ -68,7 +68,7 @@ BEGIN
                 MENUITEM "75%",                         IDM_TRAN_75
                 MENUITEM "50%",                         IDM_TRAN_50
                 MENUITEM "25%",                         IDM_TRAN_25
-                MENUITEM "自定义(&D)...",                  IDM_TRANSPARENCY
+                MENUITEM "自定义(&C)...",                  IDM_TRANSPARENCY
             END
         END
         POPUP "设置(&C)"
@@ -77,7 +77,7 @@ BEGIN
             MENUITEM "整点报时(&I)",                    IDM_TIMEALARM
             MENUITEM "提示声音(&S)",                    IDM_INFOSOUND
         END
-        MENUITEM "退出(&T)",                      IDM_EXIT
+        MENUITEM "退出(&E)",                      IDM_EXIT
     END
 END
 
@@ -153,18 +153,120 @@ BEGIN
     IDS_APPNAME             "DesktopSprite"
     IDS_TIMEALARMTITLE      "Take a break~"
     IDS_TIMEALARMINFO       "北京时间 %02d: %02d"
-    IDS_TIP_ALL             "CPU: %s\n内存: %s\n上传: %s\n下载: %s"
-    IDS_TIP_CPU             "CPU"
-    IDS_TIP_MEM             "内存"
-    IDS_TIP_UPLOAD          "上传"
+    IDS_SHOWWARNINGTITLE    "提示信息"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_TIP_DOWNLOAD        "下载"
+    IDS_SHOWWARNINGMSG      "至少保留一项显示内容！"
 END
 
 #endif    // 中文(简体，中国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// 英语(美国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_CONTEXTMENU MENU
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "Floating Window(&F)",         IDM_FLOATWND
+        MENUITEM SEPARATOR
+        POPUP "Show(&S)"
+        BEGIN
+            MENUITEM "Show Usage(&U)",              IDM_SHOWCPUMEM
+            MENUITEM "Show Speed(&S)",              IDM_SHOWNETSPEED
+            MENUITEM SEPARATOR
+            MENUITEM "Dark Theme(&D)",              IDM_DARKTHEME
+            POPUP "Transparency(&T)"
+            BEGIN
+                MENUITEM "100%\t",                      IDM_TRAN_100
+                MENUITEM "75%",                         IDM_TRAN_75
+                MENUITEM "50%",                         IDM_TRAN_50
+                MENUITEM "25%",                         IDM_TRAN_25
+                MENUITEM "Custom(&C)...",               IDM_TRANSPARENCY
+            END
+        END
+        POPUP "Configure(&C)"
+        BEGIN
+            MENUITEM "Autorun(&A)",                 IDM_AUTORUN
+            MENUITEM "Hourly Alarm(&T)",            IDM_TIMEALARM
+            MENUITEM "Notice Sound(&S)",            IDM_INFOSOUND
+        END
+        MENUITEM "Exit(&E)",                    IDM_EXIT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "ww-rm's studio"
+            VALUE "FileDescription", "DesktopSprite"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "DesktopSprite.exe"
+            VALUE "LegalCopyright", "Copyright (C) 2021"
+            VALUE "OriginalFilename", "DesktopSprite.exe"
+            VALUE "ProductName", "DesktopSprite"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_APPNAME             "DesktopSprite"
+    IDS_TIMEALARMTITLE      "Take a break~"
+    IDS_TIMEALARMINFO       "Current Time %02d: %02d"
+    IDS_SHOWWARNINGTITLE    "Warning"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_SHOWWARNINGMSG      "At least keep one display item!"
+END
+
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

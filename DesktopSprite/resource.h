@@ -13,8 +13,10 @@
 #define IDS_TIP_CPU                     108
 #define IDS_TIP_MEM                     109
 #define IDR_TTF1                        110
+#define IDS_SHOWWARNINGTITLE            110
 #define IDS_TIP_UPLOAD                  111
 #define IDS_TIP_DOWNLOAD                112
+#define IDS_SHOWWARNINGMSG              113
 #define IDM_FLOATWND                    40001
 #define IDM_EXIT                        40002
 #define IDM_AUTORUN                     40003
