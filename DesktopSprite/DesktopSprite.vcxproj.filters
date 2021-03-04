@@ -16,6 +16,12 @@
     <Filter Include="头文件\框架">
       <UniqueIdentifier>{e35601af-e94f-4c3a-aa4a-b623e7887a03}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\字体">
+      <UniqueIdentifier>{1773196c-163a-4e2b-99d3-6978394094e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\图像">
+      <UniqueIdentifier>{a083aa08-43c1-4fe3-9ffd-bae24f6c7319}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DesktopSprite.rc">
@@ -69,31 +75,31 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\timealarm.ico">
-      <Filter>资源文件</Filter>
-    </Image>
     <Image Include="res\appicon_dark.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="res\appicon_light.ico">
-      <Filter>资源文件</Filter>
+      <Filter>资源文件\图像</Filter>
     </Image>
     <Image Include="res\appicon_dark.png">
-      <Filter>资源文件</Filter>
+      <Filter>资源文件\图像</Filter>
+    </Image>
+    <Image Include="res\appicon_light.ico">
+      <Filter>资源文件\图像</Filter>
     </Image>
     <Image Include="res\appicon_light.png">
-      <Filter>资源文件</Filter>
+      <Filter>资源文件\图像</Filter>
+    </Image>
+    <Image Include="res\timealarm.ico">
+      <Filter>资源文件\图像</Filter>
     </Image>
     <Image Include="res\timealarm.png">
-      <Filter>资源文件</Filter>
+      <Filter>资源文件\图像</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="res\AGENCYR.TTF">
-      <Filter>资源文件</Filter>
-    </Font>
     <Font Include="res\AGENCYB.TTF">
-      <Filter>资源文件</Filter>
+      <Filter>资源文件\字体</Filter>
+    </Font>
+    <Font Include="res\AGENCYR.TTF">
+      <Filter>资源文件\字体</Filter>
     </Font>
   </ItemGroup>
 </Project>

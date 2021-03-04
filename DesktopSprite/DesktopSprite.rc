@@ -56,7 +56,7 @@ BEGIN
     BEGIN
         MENUITEM "浮动窗口(&F)",                    IDM_FLOATWND
         MENUITEM SEPARATOR
-        POPUP "显示"
+        POPUP "显示(&S)"
         BEGIN
             MENUITEM "显示占用(&M)",                    IDM_SHOWCPUMEM
             MENUITEM "显示网速(&N)",                    IDM_SHOWNETSPEED
@@ -64,7 +64,7 @@ BEGIN
             MENUITEM "深色主题(&D)",                    IDM_DARKTHEME
             POPUP "透明度(&T)"
             BEGIN
-                MENUITEM "100%",                        IDM_TRAN_100
+                MENUITEM "100%\t",                      IDM_TRAN_100
                 MENUITEM "75%",                         IDM_TRAN_75
                 MENUITEM "50%",                         IDM_TRAN_50
                 MENUITEM "25%",                         IDM_TRAN_25

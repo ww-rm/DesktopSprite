@@ -66,10 +66,16 @@ INT GetSpeedUnit(DOUBLE fSpeed, PWSTR szUnit, SIZE_T cchDest);
 UINT GetHourTimeDiff();
 
 // 设置菜单项状态
-DWORD SetMenuItemState(HMENU hMenu, UINT uIdentifier, UINT uState);
+DWORD SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState);
 
 // 获得菜单项状态
-UINT GetMenuItemState(HMENU hMenu, UINT uIdentifier);
+UINT GetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition);
+
+// 设置菜单项类型
+DWORD SetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uType);
+
+// 获得菜单项类型
+UINT GetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition);
 
 // 获取当前系统标题字体信息
 DWORD GetSystemCapitalFont(PLOGFONTW pLogFont);

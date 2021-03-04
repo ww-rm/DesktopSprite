@@ -88,23 +88,42 @@ UINT GetHourTimeDiff()
     return uTimeDiff;
 }
 
-DWORD SetMenuItemState(HMENU hMenu, UINT uIdentifier, UINT uState)
+DWORD SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState)
 {
     MENUITEMINFOW mii = { 0 };
     mii.cbSize = sizeof(MENUITEMINFOW);
     mii.fMask = MIIM_STATE;
     mii.fState = uState;
-    SetMenuItemInfoW(hMenu, uIdentifier, FALSE, &mii); // ERROR_MENU_ITEM_NOT_FOUND
+    SetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
     return 0;
 }
 
-UINT GetMenuItemState(HMENU hMenu, UINT uIdentifier)
+UINT GetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition)
 {
     MENUITEMINFOW mii = { 0 };
     mii.cbSize = sizeof(MENUITEMINFOW);
     mii.fMask = MIIM_STATE;
-    GetMenuItemInfoW(hMenu, uIdentifier, FALSE, &mii);
+    GetMenuItemInfoW(hMenu, uItem, bByPosition, &mii);
     return mii.fState;
+}
+
+DWORD SetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uType)
+{
+    MENUITEMINFOW mii = { 0 };
+    mii.cbSize = sizeof(MENUITEMINFOW);
+    mii.fMask = MIIM_FTYPE;
+    mii.fType = uType;
+    SetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
+    return 0;
+}
+
+UINT GetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition)
+{
+    MENUITEMINFOW mii = { 0 };
+    mii.cbSize = sizeof(MENUITEMINFOW);
+    mii.fMask = MIIM_FTYPE;
+    GetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
+    return mii.fType;
 }
 
 DWORD GetSystemCapitalFont(PLOGFONTW pLogFont)

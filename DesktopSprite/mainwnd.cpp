@@ -5,6 +5,7 @@
 #include "perfdata.h"
 
 #include "mainwnd.h"
+// TODO: 透明度设置对话框
 
 using namespace Gdiplus;
 
@@ -86,8 +87,9 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     LOGFONTW lfText = { 0 };
     GetSystemCapitalFont(&lfText);
     StringCchCopyW(lfText.lfFaceName, LF_FACESIZE, L"Agency FB");
+    lfText.lfOutPrecision = OUT_TT_ONLY_PRECIS;
+    lfText.lfQuality = ANTIALIASED_QUALITY;
     pWndData->hFontText = CreateFontIndirectW(&lfText);
-
     DefFreeMem(pCfgData);
 
     // 初始化自身数据
@@ -114,10 +116,7 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
 static LRESULT OnDestroy(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    if (pWndData->hFontText != NULL)
-    {
-        DeleteFont(pWndData->hFontText);
-    }
+    DeleteFont(pWndData->hFontText);
     DeleteNotifyIcon(pWndData->hWnd, ID_NIDMAIN);
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
@@ -136,7 +135,7 @@ static LRESULT OnActivate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
 static LRESULT OnClose(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    ShowWindow(pWndData->hWnd, SW_HIDE);
+    // 屏蔽普通退出, 只能通过菜单退出
     return 0;
 }
 
@@ -163,16 +162,16 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     Graphics graphicsMem(pBmpMem);
 
     // 设置绘图模式
-    graphicsMem.SetSmoothingMode(SmoothingModeAntiAlias);                      // 图形渲染抗锯齿
-    graphicsMem.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);       // 文字渲染抗锯齿
+    graphicsMem.SetSmoothingMode(SmoothingModeAntiAlias);                       // 图形渲染抗锯齿
+    graphicsMem.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);        // 文字渲染抗锯齿
 
     // 绘图属性对象
-    SizeF drawSize;                                         // 绘制矩形
-    Pen pen(Color::Green, 5);                               // 图形颜色
-    SolidBrush textbrush(pWndData->bDarkTheme ? Color::White : Color::Black);                     // 文本颜色
-    SolidBrush bgbrush(pWndData->bDarkTheme ? Color::Black : Color::White);                       // 背景颜色
-    Font font(hdc, pWndData->hFontText);                      // 文字字体
-    StringFormat strformat(StringFormatFlagsNoClip);          // 文字居于矩形中心
+    SizeF drawSize(MAINWNDSIZE_UNIT * 3, MAINWNDSIZE_UNIT * 3);                 // 绘制矩形
+    Pen pen(Color::Green, 5);                                                   // 图形颜色
+    SolidBrush textbrush(pWndData->bDarkTheme ? Color::White : Color::Black);   // 文本颜色
+    SolidBrush bgbrush(pWndData->bDarkTheme ? Color::Black : Color::White);     // 背景颜色
+    Font font(hdc, pWndData->hFontText);                                        // 文字字体
+    StringFormat strformat(StringFormatFlagsNoClip);                            // 文字居于矩形中心
     strformat.SetAlignment(StringAlignmentCenter);
     strformat.SetLineAlignment(StringAlignmentCenter);
 
@@ -205,6 +204,7 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             RectF(PointF(0, 0), drawSize),
             &strformat, &textbrush
         );
+
         DrawCircle(
             graphicsMem, pen,
             PointF(drawSize.Width / 2, drawSize.Height / 2),
@@ -554,34 +554,37 @@ static LRESULT OnInitMenuPopup(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lPar
     PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
     LoadConfigFromReg(pCfgData);
 
+    // 获取菜单句柄
     HMENU hMenu = (HMENU)wParam;
-    SetMenuItemState(hMenu, IDM_FLOATWND, pCfgData->bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED);
 
-    // 设置子菜单
-    SetMenuItemState(hMenu, IDM_AUTORUN, pCfgData->bAutoRun ? MFS_CHECKED : MFS_UNCHECKED);
-    SetMenuItemState(hMenu, IDM_TIMEALARM, pCfgData->bTimeAlarm ? MFS_CHECKED : MFS_UNCHECKED);
-    SetMenuItemState(hMenu, IDM_INFOSOUND, pCfgData->bInfoSound ? MFS_CHECKED : MFS_UNCHECKED);
+    // 设置菜单状态
+    SetMenuItemState(hMenu, IDM_FLOATWND, FALSE, pCfgData->bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED);
 
-    // 显示子菜单
-    SetMenuItemState(hMenu, IDM_SHOWCPUMEM, (pCfgData->byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED);
-    SetMenuItemState(hMenu, IDM_SHOWNETSPEED, (pCfgData->byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED);
-    SetMenuItemState(hMenu, IDM_DARKTHEME, pCfgData->bDarkTheme ? MFS_CHECKED : MFS_UNCHECKED);
+    // 子菜单
+    SetMenuItemState(hMenu, IDM_AUTORUN, FALSE, pCfgData->bAutoRun ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_TIMEALARM, FALSE, pCfgData->bTimeAlarm ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_INFOSOUND, FALSE, pCfgData->bInfoSound ? MFS_CHECKED : MFS_UNCHECKED);
+
+    // 子菜单
+    SetMenuItemState(hMenu, IDM_SHOWCPUMEM, FALSE, (pCfgData->byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_SHOWNETSPEED, FALSE, (pCfgData->byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_DARKTHEME, FALSE, pCfgData->bDarkTheme ? MFS_CHECKED : MFS_UNCHECKED);
     switch (pCfgData->byTransparency)
     {
     case 100 * 255 / 100:
-        SetMenuItemState(hMenu, IDM_TRAN_100, MFS_CHECKED);
+        SetMenuItemState(hMenu, IDM_TRAN_100, FALSE, MFS_CHECKED);
         break;
     case 75 * 255 / 100:
-        SetMenuItemState(hMenu, IDM_TRAN_75, MFS_CHECKED);
+        SetMenuItemState(hMenu, IDM_TRAN_75, FALSE, MFS_CHECKED);
         break;
     case 50 * 255 / 100:
-        SetMenuItemState(hMenu, IDM_TRAN_50, MFS_CHECKED);
+        SetMenuItemState(hMenu, IDM_TRAN_50, FALSE, MFS_CHECKED);
         break;
     case 25 * 255 / 100:
-        SetMenuItemState(hMenu, IDM_TRAN_25, MFS_CHECKED);
+        SetMenuItemState(hMenu, IDM_TRAN_25, FALSE, MFS_CHECKED);
         break;
     default:
-        SetMenuItemState(hMenu, IDM_TRANSPARENCY, MFS_CHECKED);
+        SetMenuItemState(hMenu, IDM_TRANSPARENCY, FALSE, MFS_CHECKED);
     }
 
     DefFreeMem(pCfgData);
@@ -789,6 +792,9 @@ static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         return OnNotifyIcon(pWndData, wParam, lParam);
     case WM_TIMEALARM:
         return OnTimeAlarm(pWndData, wParam, lParam);
+    //case WM_MEASUREITEM:
+    //case WM_DRAWITEM:
+    //    return 0;
     default:
         if (uMsg == uMsgTaskbarCreated)
             return OnTaskBarCreated(pWndData, wParam, lParam);
