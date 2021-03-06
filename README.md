@@ -24,3 +24,7 @@
   - [Icon File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/appicon_dark.png): From: pixiv.net
   - [Balloontip Icon File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/timealarm.png) From: pixiv.net
   - [Font File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/AGENCYR.TTF): From Internet.
+
+---
+
+*If you think this project is helpful to you, plz star it and let more people see it. :)*
