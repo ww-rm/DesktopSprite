@@ -66,11 +66,11 @@
 
 // Alpha 和百分比转换
 #define AlphaToPercent(alpha) \
-        ((alpha) * 100 / 255)
+        ((BYTE)((INT)(alpha) * 100 / 255))
 
 // 百分比和 Alpha 转换
 #define PercentToAlpha(percent) \
-        ((percent) * 255 / 100)
+        ((BYTE)((INT)(percent) * 255 / 100))
 
 // 设置应用开机自启
 DWORD SetAppAutoRun();
