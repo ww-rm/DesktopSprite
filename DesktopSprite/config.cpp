@@ -19,7 +19,7 @@ static PCWSTR const REGVAL_LASTFLOATPOS             = L"LastFloatPos";
 DWORD LoadDefaultConfig(PCFGDATA pCfgData)
 {
     // TODO: 应用默认设置
-    pCfgData->bFloatWnd = FALSE;                            // 隐藏浮窗
+    pCfgData->bFloatWnd = TRUE;                             // 默认显示浮窗
     pCfgData->bAutoRun = FALSE;                             // 禁止开机自启
     pCfgData->bTimeAlarm = TRUE;                            // 开启整点报时
 
