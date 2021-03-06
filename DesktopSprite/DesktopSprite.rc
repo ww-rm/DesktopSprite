@@ -64,10 +64,10 @@ BEGIN
             MENUITEM "深色主题(&D)",                    IDM_DARKTHEME
             POPUP "透明度(&T)"
             BEGIN
-                MENUITEM "100%\t",                      IDM_TRAN_100
-                MENUITEM "75%",                         IDM_TRAN_75
-                MENUITEM "50%",                         IDM_TRAN_50
-                MENUITEM "25%",                         IDM_TRAN_25
+                MENUITEM "100%\t",                      IDM_TRANS_100
+                MENUITEM "75%",                         IDM_TRANS_75
+                MENUITEM "50%",                         IDM_TRANS_50
+                MENUITEM "25%",                         IDM_TRANS_25
                 MENUITEM "自定义(&C)...",                  IDM_TRANSPARENCY
             END
         END
@@ -145,6 +145,54 @@ IDR_TTF1                TTF                     "res\\AGENCYR.TTF"
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Dialog
+//
+
+IDD_TRANSPARENCY DIALOGEX 0, 0, 120, 60
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "透明度设置"
+FONT 8, "Microsoft YaHei UI", 400, 0, 0x86
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,7,39,50,14
+    PUSHBUTTON      "取消",IDCANCEL,63,39,50,14
+    LTEXT           "透明度：",IDC_STATIC,15,20,26,8
+    EDITTEXT        IDC_EDIT_TRANSPARENCY,40,18,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "%",IDC_STATIC,82,20,8,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_TRANSPARENCY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 113
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 53
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_TRANSPARENCY AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
@@ -191,10 +239,10 @@ BEGIN
             MENUITEM "Dark Theme(&D)",              IDM_DARKTHEME
             POPUP "Transparency(&T)"
             BEGIN
-                MENUITEM "100%\t",                      IDM_TRAN_100
-                MENUITEM "75%",                         IDM_TRAN_75
-                MENUITEM "50%",                         IDM_TRAN_50
-                MENUITEM "25%",                         IDM_TRAN_25
+                MENUITEM "100%\t",                      IDM_TRANS_100
+                MENUITEM "75%",                         IDM_TRANS_75
+                MENUITEM "50%",                         IDM_TRANS_50
+                MENUITEM "25%",                         IDM_TRANS_25
                 MENUITEM "Custom(&C)...",               IDM_TRANSPARENCY
             END
         END
@@ -245,6 +293,54 @@ BEGIN
     BEGIN
         VALUE "Translation", 0x409, 1200
     END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_TRANSPARENCY DIALOGEX 0, 0, 120, 60
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Transparency Config"
+FONT 8, "Microsoft YaHei UI", 400, 0, 0x86
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,39,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,63,39,50,14
+    LTEXT           "Transparency: ",IDC_STATIC,15,20,26,8
+    EDITTEXT        IDC_EDIT_TRANSPARENCY,40,18,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "%",IDC_STATIC,82,20,8,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_TRANSPARENCY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 113
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 53
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_TRANSPARENCY AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 

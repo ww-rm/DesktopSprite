@@ -3,16 +3,15 @@
 #include "config.h"
 #include "notifyicon.h"
 #include "perfdata.h"
+#include "transdlg.h"
 
 #include "mainwnd.h"
-// TODO: 透明度设置对话框
-// BUG: 字体问题
+// TODO: 响应缩放更改
 
 using namespace Gdiplus;
 
 // 常量定义
 static UINT     const   REFRESHINTERVAL                 = 1000;                     // 屏幕显示刷新间隔
-static UINT     const   ANIMATIONTIME                   = 100;                      // 动画效果持续时间
 static UINT     const   ID_NIDMAIN                      = 1;                        // 图标 ID
 static INT      const   MAINWNDSIZE_UNIT                = 25;                       // 窗口单元格大小
 
@@ -33,7 +32,6 @@ static LRESULT OnInitMenuPopup(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lPar
 static LRESULT OnMouseMove(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnLButtonDown(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnLButtonUp(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
-static LRESULT OnMouseLeave(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnTimeAlarm(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnTaskBarCreated(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
@@ -453,38 +451,55 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         InvalidateRect(pWndData->hWnd, NULL, TRUE);
         break;
     }
-    case IDM_TRAN_100:
+    case IDM_TRANS_100:
     {
-        pCfgData->byTransparency = 100 * 255 / 100;
+        pCfgData->byTransparency = PercentToAlpha(100);
         pWndData->byTransparency = pCfgData->byTransparency;
         SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
         break;
     }
-    case IDM_TRAN_75:
+    case IDM_TRANS_75:
     {
-        pCfgData->byTransparency = 75 * 255 / 100;
+        pCfgData->byTransparency = PercentToAlpha(75);
         pWndData->byTransparency = pCfgData->byTransparency;
         SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
         break;
     }
-    case IDM_TRAN_50:
+    case IDM_TRANS_50:
     {
-        pCfgData->byTransparency = 50 * 255 / 100;
+        pCfgData->byTransparency = PercentToAlpha(50);
         pWndData->byTransparency = pCfgData->byTransparency;
         SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
         break;
     }
-    case IDM_TRAN_25:
+    case IDM_TRANS_25:
     {
-        pCfgData->byTransparency = 25 * 255 / 100;
+        pCfgData->byTransparency = PercentToAlpha(25);
         pWndData->byTransparency = pCfgData->byTransparency;
         SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
         break;
     }
     case IDM_TRANSPARENCY:
     {
-        // TODO: 弹出一个填透明度的对话框
-        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+        if (IsWindowEnabled(pWndData->hWnd))
+        {
+            PTRANSDLGFORM pInitForm = (PTRANSDLGFORM)DefAllocMem(sizeof(TRANSDLGFORM));
+            if (pInitForm != NULL)
+            {
+                // 填充表单初始值
+                pInitForm->byTransparency = pCfgData->byTransparency;
+
+                // 显示对话框
+                DialogBoxTrans(GetModuleHandleW(NULL), pWndData->hWnd, pInitForm);
+
+                // 获取返回表单值, 修改设置项
+                pCfgData->byTransparency = pInitForm->byTransparency;
+
+                // 应用设置
+                SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+                DefFreeMem(pInitForm);
+            }
+        }
         break;
     }
     // 设置子菜单
@@ -586,17 +601,17 @@ static LRESULT OnInitMenuPopup(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lPar
     SetMenuItemState(hMenu, IDM_DARKTHEME, FALSE, pCfgData->bDarkTheme ? MFS_CHECKED : MFS_UNCHECKED);
     switch (pCfgData->byTransparency)
     {
-    case 100 * 255 / 100:
-        SetMenuItemState(hMenu, IDM_TRAN_100, FALSE, MFS_CHECKED);
+    case PercentToAlpha(100):
+        SetMenuItemState(hMenu, IDM_TRANS_100, FALSE, MFS_CHECKED);
         break;
-    case 75 * 255 / 100:
-        SetMenuItemState(hMenu, IDM_TRAN_75, FALSE, MFS_CHECKED);
+    case PercentToAlpha(75):
+        SetMenuItemState(hMenu, IDM_TRANS_75, FALSE, MFS_CHECKED);
         break;
-    case 50 * 255 / 100:
-        SetMenuItemState(hMenu, IDM_TRAN_50, FALSE, MFS_CHECKED);
+    case PercentToAlpha(50):
+        SetMenuItemState(hMenu, IDM_TRANS_50, FALSE, MFS_CHECKED);
         break;
-    case 25 * 255 / 100:
-        SetMenuItemState(hMenu, IDM_TRAN_25, FALSE, MFS_CHECKED);
+    case PercentToAlpha(25):
+        SetMenuItemState(hMenu, IDM_TRANS_25, FALSE, MFS_CHECKED);
         break;
     default:
         SetMenuItemState(hMenu, IDM_TRANSPARENCY, FALSE, MFS_CHECKED);
@@ -641,22 +656,21 @@ static LRESULT OnLButtonUp(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     return DefWindowProcW(pWndData->hWnd, WM_LBUTTONUP, wParam, lParam);
 }
 
-static LRESULT OnMouseLeave(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
-{
-    // TODO
-    return DefWindowProcW(pWndData->hWnd, WM_MOUSELEAVE, wParam, lParam);
-}
-
 static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     switch (LOWORD(lParam))
     {
+    case WM_LBUTTONDBLCLK:
+    {
+        // TODO
+        break;
+    }
     case WM_CONTEXTMENU:
     {
         // 加载ContextMenu
         HMENU hContextMenuBar = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDR_CONTEXTMENU));
         HMENU hContextMenu = GetSubMenu(hContextMenuBar, 0);
-
+        
         // 解决在菜单外单击左键菜单不消失的问题
         SetForegroundWindow(pWndData->hWnd);
         
@@ -801,8 +815,6 @@ static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         return OnLButtonDown(pWndData, wParam, lParam);
     case WM_LBUTTONUP:
         return OnLButtonUp(pWndData, wParam, lParam);
-    case WM_MOUSELEAVE:
-        return OnMouseLeave(pWndData, wParam, lParam);
     case WM_NOTIFYICON:
         return OnNotifyIcon(pWndData, wParam, lParam);
     case WM_TIMEALARM:

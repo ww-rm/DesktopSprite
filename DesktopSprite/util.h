@@ -24,11 +24,21 @@
 #define LoadIconRawSize(hInst, name) \
         ((HICON)LoadImageW((hInst), (name), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR))
 
+// 获取窗口 USERDATA
 #define GetWndData(hWnd) \
         GetWindowLongPtrW((hWnd), GWLP_USERDATA)
 
+// 设置窗口 USERDATA
 #define SetWndData(hWnd, dwNewData) \
         SetWindowLongPtrW((hWnd), GWLP_USERDATA, (LONG_PTR)(dwNewData))
+
+// 获取对话框 USER
+#define GetDlgData(hDlg) \
+        GetWindowLongPtrW((hDlg), DWLP_USER)
+
+// 设置对话框 USER
+#define SetDlgData(hDlg, dwNewData) \
+        SetWindowLongPtrW((hDlg), DWLP_USER, (LONG_PTR)(dwNewData))
 
 // 向注册表子键写入二进制数据
 #define RegSetBinValue(hKey, lpValueName, lpData, cbData) \
@@ -49,6 +59,18 @@
 // 打开 HEKY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize
 #define RegOpenPersonalizeKey(phkResult) \
         RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, KEY_READ, (phkResult))
+
+// 裁剪数字
+#define ClampNum(numVal, minVal, maxVal) \
+        (min(max((minVal), (numVal)), (maxVal)))
+
+// Alpha 和百分比转换
+#define AlphaToPercent(alpha) \
+        ((alpha) * 100 / 255)
+
+// 百分比和 Alpha 转换
+#define PercentToAlpha(percent) \
+        ((percent) * 255 / 100)
 
 // 设置应用开机自启
 DWORD SetAppAutoRun();

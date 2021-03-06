@@ -53,6 +53,9 @@
     <ClInclude Include="framework.h">
       <Filter>头文件\框架</Filter>
     </ClInclude>
+    <ClInclude Include="transdlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mainwnd.cpp">
@@ -71,6 +74,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="util.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="transdlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

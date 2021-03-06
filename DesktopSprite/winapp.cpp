@@ -26,20 +26,22 @@ INT APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLi
             GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
             HWND hMainWnd = CreateMainWnd(hInstance);
-
-            // 开启消息循环
-            BOOL bRet;
-            MSG msg;
-            while ((bRet = GetMessageW(&msg, NULL, 0, 0)))
+            if (hMainWnd != NULL)
             {
-                if (bRet == -1)
+                BOOL bRet;
+                MSG msg;
+                // 开启消息循环
+                while ((bRet = GetMessageW(&msg, NULL, 0, 0)))
                 {
-                    return -1;
-                }
-                else
-                {
-                    TranslateMessage(&msg);
-                    DispatchMessageW(&msg);
+                    if (bRet == -1)
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        TranslateMessage(&msg);
+                        DispatchMessageW(&msg);
+                    }
                 }
             }
 

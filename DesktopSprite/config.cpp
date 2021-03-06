@@ -30,7 +30,7 @@ DWORD LoadDefaultConfig(PCFGDATA pCfgData)
 
     pCfgData->bInfoSound = TRUE;                            // 开启提示声音
     pCfgData->bDarkTheme = TRUE;                            // 默认使用深色主题
-    pCfgData->byTransparency = 255 * 80 / 100;              // 默认透明度 80%
+    pCfgData->byTransparency = PercentToAlpha(80);          // 默认透明度 80%
     pCfgData->byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;    // 默认占用和网速都显示
    
     // 默认位置是屏幕的 1/6 处
@@ -105,7 +105,7 @@ DWORD SaveConfigToReg(PCFGDATA pCfgData)
     HKEY hkSoftware = NULL;
     HKEY hkApp = NULL;
     DWORD cbData = 0;
-
+    
     dwErrorCode = RegOpenSoftwareKey(&hkSoftware);
     if (dwErrorCode == ERROR_SUCCESS)
     {
