@@ -4,6 +4,10 @@
 
 - A small desktop tool used to show your real-time performance data of your PC.
 
+![Interface1.png](https://github.com/ww-rm/DesktopSprite/blob/main/img/interface1.png)
+
+![Interface2.png](https://github.com/ww-rm/DesktopSprite/blob/main/img/interface2.png)
+
 ## How to use it ?
 
 - Just go to [release page](https://github.com/ww-rm/DesktopSprite/releases) and download the lastest version of it.
