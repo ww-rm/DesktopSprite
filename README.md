@@ -25,8 +25,8 @@
 ## About
 
 - Source of material
-  - [Icon File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/appicon_dark.png): From: pixiv.net
-  - [Balloontip Icon File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/timealarm.png) From: pixiv.net
+  - [Icon File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/appicon_dark.png): From: [凪白みと](https://www.pixiv.net/artworks/56065927)
+  - [Balloontip Icon File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/timealarm.png) From: [むーらん@お仕事募集中](https://www.pixiv.net/artworks/67763478)
   - [Font File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/AGENCYR.TTF): From Internet.
 
 ---
