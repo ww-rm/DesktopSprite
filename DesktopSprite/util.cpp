@@ -160,6 +160,18 @@ BOOL IsSystemDarkTheme()
     return bRet;
 }
 
+UINT GetShellTrayDirection()
+{
+    UINT uDirection = ABE_BOTTOM;
+    APPBARDATA abData = { 0 };
+    abData.cbSize = sizeof(APPBARDATA);
+    if (SHAppBarMessage(ABM_GETTASKBARPOS, &abData))
+    {
+        uDirection = abData.uEdge;
+    }
+    return uDirection;
+}
+
 DWORD ExtractRes(UINT uResID, PCWSTR szResType, PCWSTR szFilePath)
 {
     DWORD dwErrorCode = ERROR_SUCCESS;

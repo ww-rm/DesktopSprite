@@ -702,17 +702,44 @@ static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         // 不是浮动的情况下显示显示弹窗
         if (!pWndData->bFloatWnd)
         {
+            UINT uDirection = GetShellTrayDirection();
+
+            // 通知区域图标位置大小
             RECT rcNotifyIcon = { 0 };
             GetNotifyIconRect(pWndData->hWnd, ID_NIDMAIN, &rcNotifyIcon);
+            SIZE sizeNotifyIcon = { rcNotifyIcon.right - rcNotifyIcon.left, rcNotifyIcon.bottom - rcNotifyIcon.top };
+
+            // 窗体位置大小
             RECT rcWnd = { 0 };
             GetWindowRect(pWndData->hWnd, &rcWnd);
             SIZE sizeWnd = { rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top };
 
+            // 根据任务栏位置计算窗口的位置
+            POINT ptWnd = { 0 };
+            LONG delta_cx = (sizeWnd.cx - sizeNotifyIcon.cx) / 2;
+            LONG delta_cy = (sizeWnd.cy - sizeNotifyIcon.cy) / 2;
+            switch (uDirection)
+            {
+            case ABE_LEFT:
+                ptWnd.x = rcNotifyIcon.right;
+                ptWnd.y = rcNotifyIcon.top - delta_cy;
+                break;
+            case ABE_TOP:
+                ptWnd.x = rcNotifyIcon.left - delta_cx;
+                ptWnd.y = rcNotifyIcon.bottom;
+                break;
+            case ABE_RIGHT:
+                ptWnd.x = rcNotifyIcon.left - sizeWnd.cx;
+                ptWnd.y = rcNotifyIcon.top - delta_cy;
+                break;
+            default:
+                ptWnd.x = rcNotifyIcon.left - delta_cx;
+                ptWnd.y = rcNotifyIcon.top - sizeWnd.cy;
+                break;
+            }
             SetWindowPos(
                 pWndData->hWnd, HWND_TOPMOST,
-                rcNotifyIcon.left - ((sizeWnd.cx - (rcNotifyIcon.right - rcNotifyIcon.left)) / 2),
-                rcNotifyIcon.top - sizeWnd.cy,
-                0, 0,
+                ptWnd.x, ptWnd.y, 0, 0,
                 SWP_NOACTIVATE | SWP_NOSIZE
             );
             ShowWindow(pWndData->hWnd, SW_SHOWNA);

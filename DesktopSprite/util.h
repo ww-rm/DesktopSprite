@@ -105,6 +105,9 @@ DWORD GetSystemCapitalFont(PLOGFONTW pLogFont);
 // 判断系统是否是深色主题
 BOOL IsSystemDarkTheme();
 
+// 获取任务栏方向
+UINT GetShellTrayDirection();
+
 //// 往 FilePath 解压资源
 DWORD ExtractRes(UINT uResID, PCWSTR szResType, PCWSTR szFilePath);
 
