@@ -137,6 +137,22 @@ DWORD GetSystemCapitalFont(PLOGFONTW pLogFont)
     return 0;
 }
 
+DWORD GetScreenResolution(PSIZE psizeResolution) 
+{
+    INT cx = GetSystemMetrics(SM_CXSCREEN);
+    INT cy = GetSystemMetrics(SM_CYSCREEN);
+    if (cx && cy)
+    {
+        psizeResolution->cx = cx;
+        psizeResolution->cy = cy;
+        return 0;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
 BOOL IsSystemDarkTheme()
 {
     BOOL bRet = TRUE;
@@ -223,4 +239,27 @@ PBYTE GetResPointer(UINT uResID, PCWSTR szResType, DWORD* cbData)
 
     *cbData = 0;
     return NULL;
+}
+
+DWORD ConvertPointForResolution(PPOINT ptOld, PSIZE sizeOld, PSIZE sizeNew, PPOINT ptNew)
+{
+    ptNew->x = ptOld->x * sizeNew->cx / sizeOld->cx;
+    ptNew->y = ptOld->y * sizeNew->cy / sizeOld->cy;
+    return 0;
+}
+
+// Copy POINT
+DWORD CopyPoint(PPOINT ptSrc, PPOINT ptDst)
+{
+    ptDst->x = ptSrc->x;
+    ptDst->y = ptSrc->y;
+    return 0;
+}
+
+// Copy SIZE
+DWORD CopySize(PSIZE sizeSrc, PSIZE sizeDst)
+{
+    sizeDst->cx = sizeSrc->cx;
+    sizeDst->cy = sizeSrc->cy;
+    return 0;
 }

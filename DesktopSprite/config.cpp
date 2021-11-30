@@ -14,6 +14,7 @@ static PCWSTR const REGVAL_TRANSPARENCY             = L"Transparency";
 static PCWSTR const REGVAL_SHOWCONTENT              = L"ShowContent";
 
 static PCWSTR const REGVAL_LASTFLOATPOS             = L"LastFloatPos";
+static PCWSTR const REGVAL_LASTRUNTIMERESOLUTION    = L"LastRunTimeResolution";
 
 
 DWORD LoadDefaultConfig(PCFGDATA pCfgData)
@@ -33,11 +34,14 @@ DWORD LoadDefaultConfig(PCFGDATA pCfgData)
     pCfgData->byTransparency = PercentToAlpha(80);          // 默认透明度 80%
     pCfgData->byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;    // 默认占用和网速都显示
    
-    // 默认位置是屏幕的 1/6 处
-    RECT rcScreen = { 0 };
-    GetWindowRect(GetDesktopWindow(), &rcScreen);
-    pCfgData->ptLastFloatPos.x = rcScreen.right * 5 / 6;
-    pCfgData->ptLastFloatPos.y = rcScreen.bottom * 1 / 6;
+    // 默认主窗口位置是屏幕的 1/6 处
+    SIZE sizeScreen = { 0 };
+    GetScreenResolution(&sizeScreen);
+    pCfgData->ptLastFloatPos.x = sizeScreen.cx * 5 / 6;
+    pCfgData->ptLastFloatPos.y = sizeScreen.cy * 1 / 6;
+
+    // 分辨率就是当前系统分辨率
+    GetScreenResolution(&pCfgData->sizeLastRuntimeResolution);    
     return 0;
 }
 
@@ -78,6 +82,8 @@ DWORD LoadConfigFromReg(PCFGDATA pCfgData)
 
             cbData = sizeof(POINT);
             RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, &cbData);
+            cbData = sizeof(SIZE);
+            RegQueryAnyValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, &pCfgData->sizeLastRuntimeResolution, &cbData);
         }
         else if (dwErrorCode != ERROR_FILE_NOT_FOUND)
         {
@@ -125,6 +131,7 @@ DWORD SaveConfigToReg(PCFGDATA pCfgData)
             RegSetBinValue(hkApp, REGVAL_SHOWCONTENT, &pCfgData->byShowContent, sizeof(BYTE));
 
             RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, sizeof(POINT));
+            RegSetBinValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, &pCfgData->sizeLastRuntimeResolution, sizeof(SIZE));
         }
         else
         {

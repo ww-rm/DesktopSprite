@@ -21,7 +21,7 @@ typedef struct _MAINWNDDATA
 {
     HWND            hWnd;
 
-    // 设置项
+    // 主窗口设置项
     BOOL            bFloatWnd;                      // 是否桌面浮窗
     BOOL            bInfoSound;                     // 气球提示是否有声音
     //WCHAR           szBalloonIconPath[MAX_PATH];    // 气球图标文件路径
@@ -29,10 +29,14 @@ typedef struct _MAINWNDDATA
     BYTE            byTransparency;                 // 整体透明度    // TODO: 不保留透明度
     BYTE            byShowContent;                  // 要显示的内容(调整窗体大小)
 
-    // 运行时
+    // 主窗口运行时
+    INT             wndSizeUnit;                    // 窗口单元格大小, 在运行时随 DPI 进行缩放
     BOOL            bWndFixed;                      // 窗口是否通过图标点击长期显示
     POINT           ptDragSrc;                      // 拖动窗口时的源点
     PrivateFontCollection* pFontColl;               // 文本字体容器
+
+    // 程序运行时
+    SIZE            runtimeResolution;              // 最近运行时系统分辨率
 }*PMAINWNDDATA, MAINWNDDATA;
 
 // 注册主窗口
@@ -60,11 +64,11 @@ BOOL DrawSpeedStair(
     const INT& nMaxLevel = 6
 );
 
-// 辅助函数创建字体, 需要使用 delete 释放指针
+// 从字体文件创建字体, 需要使用 delete 释放指针
 Font* CreateFontFromFile(PCWSTR szFontFilePath, REAL emSize = 9, INT style = 0, Unit unit = UnitPoint);
 
-// 辅助函数计算窗体大小
-DWORD GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent);
+// 根据当前显示内容与窗体单元格大小计算窗体大小, 像素单位
+DWORD GetWndSizeByShowContent(PMAINWNDDATA pWndData, PSIZE psizeWnd, BYTE byShowContent);
 
 // 应用设置项
 //DWORD ApplyAppConfig(PCFGDATA pCfgData, HWND hMainWnd);

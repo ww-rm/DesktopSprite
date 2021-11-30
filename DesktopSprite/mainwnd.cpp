@@ -6,14 +6,13 @@
 #include "transdlg.h"
 
 #include "mainwnd.h"
-// TODO: 响应缩放更改
 
 using namespace Gdiplus;
 
 // 常量定义
 static UINT     const   REFRESHINTERVAL                 = 1000;                     // 屏幕显示刷新间隔
 static UINT     const   ID_NIDMAIN                      = 1;                        // 图标 ID
-static INT      const   MAINWNDSIZE_UNIT                = 25;                       // 窗口单元格大小
+static UINT     const   BASE_WNDSIZE_PIXELS             = 20;                       // 主窗口的基本单元格像素大小
 
 static UINT             uMsgTaskbarCreated              = 0;                        // 任务栏重建消息
 
@@ -26,12 +25,14 @@ static LRESULT OnClose(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnSettingChange(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnContextMenu(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnDisplayChange(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnTimer(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnInitMenuPopup(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnMouseMove(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnLButtonDown(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnLButtonUp(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+static LRESULT OnDpiChanged(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnTimeAlarm(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnTaskBarCreated(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
@@ -42,6 +43,7 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // 初始化自身运行时需要的数据
     pWndData->bWndFixed = FALSE;
+    pWndData->wndSizeUnit = BASE_WNDSIZE_PIXELS * GetDpiForWindow(pWndData->hWnd) / 96; // DPI 感知
 
     // 添加图标
     AddNotifyIcon(
@@ -68,48 +70,66 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
     // 应用配置项
     PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
-    LoadConfigFromReg(pCfgData);
-
-    // 按照读取的配置项初始化窗口数据
-    pWndData->bFloatWnd = pCfgData->bFloatWnd;
-
-    // 声音
-    pWndData->bInfoSound = pCfgData->bInfoSound;
-
-    // 主题
-    pWndData->bDarkTheme = pCfgData->bDarkTheme;
-
-    // 设置透明度
-    SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
-
-    // 根据显示内容决定窗口大小
-    pWndData->byShowContent = pCfgData->byShowContent;
-    SIZE sizeWnd = { 0 };
-    GetWndSizeByShowContent(&sizeWnd, pCfgData->byShowContent);
-
-    // 设置位置大小
-    SetWindowPos(
-        pWndData->hWnd, HWND_TOPMOST,
-        pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
-        sizeWnd.cx, sizeWnd.cy,
-        SWP_NOACTIVATE
-    );
-    
-    // 是否显示浮动窗口
-    if (pCfgData->bFloatWnd)
+    if (pCfgData != NULL)
     {
-        ShowWindow(pWndData->hWnd, SW_SHOWNA);
-        InvalidateRect(pWndData->hWnd, NULL, TRUE);
-    }
+        LoadConfigFromReg(pCfgData);
 
-    // 是否整点报时
-    if (pCfgData->bTimeAlarm)
+        // 按照读取的配置项初始化窗口数据
+        pWndData->bFloatWnd = pCfgData->bFloatWnd;
+
+        // 声音
+        pWndData->bInfoSound = pCfgData->bInfoSound;
+
+        // 主题
+        pWndData->bDarkTheme = pCfgData->bDarkTheme;
+
+        // 设置透明度
+        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+
+        // 根据显示内容决定窗口大小
+        pWndData->byShowContent = pCfgData->byShowContent;
+        SIZE sizeWnd = { 0 };
+        GetWndSizeByShowContent(pWndData, &sizeWnd, pCfgData->byShowContent);
+
+        // 获取当前屏幕分辨率
+        // 并折算上一次运行时保存的窗口坐标到新分辨率
+        GetScreenResolution(&pWndData->runtimeResolution);
+
+        POINT newPos = { 0 };
+        ConvertPointForResolution(
+            &pCfgData->ptLastFloatPos,
+            &pCfgData->sizeLastRuntimeResolution, &pWndData->runtimeResolution,
+            &newPos
+        );
+
+        // 设置位置大小
+        SetWindowPos(
+            pWndData->hWnd, HWND_TOPMOST,
+            newPos.x, newPos.y,
+            sizeWnd.cx, sizeWnd.cy,
+            SWP_NOACTIVATE
+        );
+
+        // 是否显示浮动窗口
+        if (pCfgData->bFloatWnd)
+        {
+            ShowWindow(pWndData->hWnd, SW_SHOWNA);
+            InvalidateRect(pWndData->hWnd, NULL, TRUE);
+        }
+
+        // 是否整点报时
+        if (pCfgData->bTimeAlarm)
+        {
+            SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+        }
+
+        DefFreeMem(pCfgData);
+    }
+    else
     {
-        SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+        // 配置信息内存分配失败
+        return -1;
     }
-
-    DefFreeMem(pCfgData);
-
     return 0;
 }
 
@@ -151,6 +171,8 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     PAINTSTRUCT ps = { 0 };
     HDC hdc = BeginPaint(pWndData->hWnd, &ps);
 
+    REAL sizeUnit = (REAL)pWndData->wndSizeUnit;
+
     // 得到绘图窗体大小
     RECT rcClient;
     GetClientRect(pWndData->hWnd, &rcClient);
@@ -165,8 +187,8 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     graphicsMem.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);        // 文字渲染抗锯齿
 
     // 绘图属性对象
-    SizeF drawSize(MAINWNDSIZE_UNIT * 3, MAINWNDSIZE_UNIT * 3);                 // 绘制矩形
-    Pen pen(Color::Green, 5);                                                   // 图形颜色
+    SizeF drawSize(sizeUnit * 3, sizeUnit * 3);                 // 绘制矩形
+    Pen pen(Color::Green, sizeUnit/6);                                                   // 图形颜色
     SolidBrush textbrush(pWndData->bDarkTheme ? Color::White : Color::Black);   // 文本颜色
     SolidBrush bgbrush(pWndData->bDarkTheme ? Color::Black : Color::White);     // 背景颜色
 
@@ -174,7 +196,8 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     FontFamily fontFamily;
     INT found = 0;
     pWndData->pFontColl->GetFamilies(1, &fontFamily, &found);
-    Font textFont(&fontFamily, 9);
+    Font textFont(&fontFamily, sizeUnit*2/3, FontStyleRegular, UnitPixel);             // 字体大小用像素值衡量
+    
 
     StringFormat strformat(StringFormatFlagsNoClip);                            // 文字居于矩形中心
     strformat.SetAlignment(StringAlignmentCenter);
@@ -186,8 +209,8 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     // 绘制CPU与MEM
     if (pWndData->byShowContent & SHOWCONTENT_CPUMEM)
     {
-        drawSize.Width = MAINWNDSIZE_UNIT * 3;
-        drawSize.Height = MAINWNDSIZE_UNIT * 3;
+        drawSize.Width = sizeUnit * 3;
+        drawSize.Height = sizeUnit * 3;
         graphicsMem.TranslateTransform(0, 0);
 
         // CPU
@@ -213,7 +236,7 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         DrawCircle(
             graphicsMem, pen,
             PointF(drawSize.Width / 2, drawSize.Height / 2),
-            drawSize.Height / 2 - 8,
+            drawSize.Height / 2 - sizeUnit*0.3f,
             REAL(perfData.cpuPercent / 100)
         );
 
@@ -233,13 +256,13 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         }
         graphicsMem.DrawString(
             szDataBuffer, -1, &textFont,
-            RectF(PointF(MAINWNDSIZE_UNIT * 3, 0), drawSize),
+            RectF(PointF(sizeUnit * 3, 0), drawSize),
             &strformat, &textbrush
         );
         DrawCircle(
             graphicsMem, pen,
-            PointF(drawSize.Width / 2 + MAINWNDSIZE_UNIT * 3, drawSize.Height / 2),
-            drawSize.Height / 2 - 8,
+            PointF(drawSize.Width / 2 + sizeUnit * 3, drawSize.Height / 2),
+            drawSize.Height / 2 - sizeUnit * 0.3f,
             REAL(perfData.memPercent / 100)
         );
     }
@@ -247,13 +270,13 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     // 绘制网速
     if (pWndData->byShowContent & SHOWCONTENT_NETSPEED)
     {
-        drawSize.Width = MAINWNDSIZE_UNIT * 3;
-        drawSize.Height = MAINWNDSIZE_UNIT * 1;
+        drawSize.Width = sizeUnit * 3;
+        drawSize.Height = sizeUnit * 1;
         graphicsMem.TranslateTransform(0, 0);
 
         if (pWndData->byShowContent & SHOWCONTENT_CPUMEM)
         {
-            graphicsMem.TranslateTransform(0, MAINWNDSIZE_UNIT * 3);
+            graphicsMem.TranslateTransform(0, sizeUnit * 3);
         }
 
         // 绘制上传
@@ -272,12 +295,12 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         }
         graphicsMem.DrawString(
             szDataBuffer, -1, &textFont,
-            RectF(PointF(0, MAINWNDSIZE_UNIT), drawSize),
+            RectF(PointF(0, sizeUnit), drawSize),
             &strformat, &textbrush
         );
         DrawSpeedStair(
             graphicsMem, statusColor,
-            RectF(10, 2, drawSize.Width - 20, drawSize.Height - 4),
+            RectF(sizeUnit*0.4f, sizeUnit * 0.08f, drawSize.Width - sizeUnit * 0.8f, drawSize.Height - sizeUnit * 0.16f),
             TRUE, nLevel
         );
 
@@ -297,12 +320,12 @@ static LRESULT OnPaint(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         }
         graphicsMem.DrawString(
             szDataBuffer, -1, &textFont,
-            RectF(PointF(MAINWNDSIZE_UNIT * 3, MAINWNDSIZE_UNIT), drawSize),
+            RectF(PointF(sizeUnit * 3, sizeUnit), drawSize),
             &strformat, &textbrush
         );
         DrawSpeedStair(
             graphicsMem, statusColor,
-            RectF(MAINWNDSIZE_UNIT * 3 + 10, 2, drawSize.Width - 20, drawSize.Height - 4),
+            RectF(sizeUnit * 3.4f, sizeUnit * 0.08f, drawSize.Width - sizeUnit * 0.8f, drawSize.Height - sizeUnit * 0.16f),
             FALSE, nLevel
         );
     }
@@ -335,7 +358,7 @@ static LRESULT OnContextMenu(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam
     // 加载ContextMenu
     HMENU hContextMenuBar = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDR_CONTEXTMENU));
     HMENU hContextMenu = GetSubMenu(hContextMenuBar, 0);
-
+    
     // 解决在菜单外单击左键菜单不消失的问题
     SetForegroundWindow(pWndData->hWnd);
 
@@ -351,6 +374,35 @@ static LRESULT OnContextMenu(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam
     return 0;
 }
 
+static LRESULT OnDisplayChange(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
+{
+
+    SIZE newResolution = { 0 };
+    newResolution.cx = LOWORD(lParam);
+    newResolution.cy = HIWORD(lParam);
+
+    // 如果显示了窗口则需要修正窗口当前位置
+    if (pWndData->bFloatWnd)
+    {
+
+        RECT oldPos = { 0 };
+        GetWindowRect(pWndData->hWnd, &oldPos);
+        POINT newPos = { 0 };
+        ConvertPointForResolution((PPOINT)&oldPos, &pWndData->runtimeResolution, &newResolution, &newPos);
+
+        SetWindowPos(
+            pWndData->hWnd, HWND_TOPMOST,
+            newPos.x, newPos.y,
+            0, 0,
+            SWP_NOACTIVATE | SWP_NOSIZE
+        );
+    }
+
+    // 保存现在的分辨率
+    CopySize(&newResolution, &pWndData->runtimeResolution);
+    return 0;
+}
+
 static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // HIWORD(wParam) Menu: FALSE, Accelerator: TRUE
@@ -359,206 +411,216 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
     // 读取配置
     PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
-    LoadConfigFromReg(pCfgData);
+    if (pCfgData != NULL)
+    {
+        LoadConfigFromReg(pCfgData);
 
-    switch (LOWORD(wParam))
-    {
-        // 浮动窗口
-    case IDM_FLOATWND:
-    {
-        pCfgData->bFloatWnd = !pCfgData->bFloatWnd;
-        pWndData->bFloatWnd = pCfgData->bFloatWnd;
-        if (pCfgData->bFloatWnd)
+        switch (LOWORD(wParam))
         {
-            // 调整显示位置
-            SetWindowPos(
-                pWndData->hWnd, HWND_TOPMOST,
-                pCfgData->ptLastFloatPos.x, pCfgData->ptLastFloatPos.y,
-                0, 0,
-                SWP_NOACTIVATE | SWP_NOSIZE
-            );
-
-            // 显示窗口
-            ShowWindow(pWndData->hWnd, SW_SHOWNA);
-            InvalidateRect(pWndData->hWnd, NULL, TRUE);
-        }
-        else
+            // 浮动窗口
+        case IDM_FLOATWND:
         {
-            // 如果不显示浮动窗口就保存一次现在的窗口位置
-            RECT rcWnd = { 0 };
-            GetWindowRect(pWndData->hWnd, &rcWnd);
-            pCfgData->ptLastFloatPos.x = rcWnd.left;
-            pCfgData->ptLastFloatPos.y = rcWnd.top;
-            ShowWindow(pWndData->hWnd, SW_HIDE);
-        }
-        break;
-    }
-    // 显示子菜单
-    case IDM_SHOWCPUMEM:
-    {
-        if (pCfgData->byShowContent == SHOWCONTENT_CPUMEM)
-        {
-            WCHAR szTitle[MAX_LOADSTRING];
-            WCHAR szMsg[MAX_LOADSTRING];
-            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
-            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
-            MessageBoxW(NULL, szMsg, szTitle, MB_OK);
-        }
-        else
-        {
-            pCfgData->byShowContent ^= SHOWCONTENT_CPUMEM;
-            pWndData->byShowContent = pCfgData->byShowContent;
-            SIZE sizeWnd = { 0 };
-            GetWndSizeByShowContent(&sizeWnd, pCfgData->byShowContent);
-            SetWindowPos(
-                pWndData->hWnd, HWND_TOPMOST,
-                0, 0,
-                sizeWnd.cx, sizeWnd.cy,
-                SWP_NOACTIVATE | SWP_NOMOVE
-            );
-        }
-        break;
-    }
-    case IDM_SHOWNETSPEED:
-    {
-        if (pCfgData->byShowContent == SHOWCONTENT_NETSPEED)
-        {
-            WCHAR szTitle[MAX_LOADSTRING];
-            WCHAR szMsg[MAX_LOADSTRING];
-            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
-            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
-            MessageBoxW(NULL, szMsg, szTitle, MB_OK);
-        }
-        else
-        {
-            pCfgData->byShowContent ^= SHOWCONTENT_NETSPEED;
-            pWndData->byShowContent = pCfgData->byShowContent;
-            SIZE sizeWnd = { 0 };
-            GetWndSizeByShowContent(&sizeWnd, pCfgData->byShowContent);
-            SetWindowPos(
-                pWndData->hWnd, HWND_TOPMOST,
-                0, 0,
-                sizeWnd.cx, sizeWnd.cy,
-                SWP_NOACTIVATE | SWP_NOMOVE
-            );
-        }
-        break;
-    }
-    case IDM_DARKTHEME:
-    {
-        pCfgData->bDarkTheme = !pCfgData->bDarkTheme;
-        pWndData->bDarkTheme = pCfgData->bDarkTheme;
-        InvalidateRect(pWndData->hWnd, NULL, TRUE);
-        break;
-    }
-    case IDM_TRANS_100:
-    {
-        pCfgData->byTransparency = PercentToAlpha(100);
-        pWndData->byTransparency = pCfgData->byTransparency;
-        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
-        break;
-    }
-    case IDM_TRANS_75:
-    {
-        pCfgData->byTransparency = PercentToAlpha(75);
-        pWndData->byTransparency = pCfgData->byTransparency;
-        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
-        break;
-    }
-    case IDM_TRANS_50:
-    {
-        pCfgData->byTransparency = PercentToAlpha(50);
-        pWndData->byTransparency = pCfgData->byTransparency;
-        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
-        break;
-    }
-    case IDM_TRANS_25:
-    {
-        pCfgData->byTransparency = PercentToAlpha(25);
-        pWndData->byTransparency = pCfgData->byTransparency;
-        SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
-        break;
-    }
-    case IDM_TRANSPARENCY:
-    {
-        if (IsWindowEnabled(pWndData->hWnd))
-        {
-            PTRANSDLGFORM pInitForm = (PTRANSDLGFORM)DefAllocMem(sizeof(TRANSDLGFORM));
-            if (pInitForm != NULL)
+            pCfgData->bFloatWnd = !pCfgData->bFloatWnd;
+            pWndData->bFloatWnd = pCfgData->bFloatWnd;
+            if (pCfgData->bFloatWnd)
             {
-                // 填充表单初始值
-                pInitForm->byTransparency = pCfgData->byTransparency;
+                // 调整显示位置
+                POINT newPos = { 0 };
+                ConvertPointForResolution(
+                    &pCfgData->ptLastFloatPos,
+                    &pCfgData->sizeLastRuntimeResolution, &pWndData->runtimeResolution,
+                    &newPos
+                );
 
-                // 显示对话框
-                DialogBoxTrans(GetModuleHandleW(NULL), pWndData->hWnd, pInitForm);
+                SetWindowPos(
+                    pWndData->hWnd, HWND_TOPMOST,
+                    newPos.x, newPos.y,
+                    0, 0,
+                    SWP_NOACTIVATE | SWP_NOSIZE
+                );
 
-                // 获取返回表单值, 修改设置项
-                pCfgData->byTransparency = pInitForm->byTransparency;
-
-                // 应用设置
-                SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
-                DefFreeMem(pInitForm);
+                // 显示窗口
+                ShowWindow(pWndData->hWnd, SW_SHOWNA);
+                InvalidateRect(pWndData->hWnd, NULL, TRUE);
             }
+            else
+            {
+                // 如果不显示浮动窗口就保存一次现在的窗口位置和对应的分辨率
+                RECT rcWnd = { 0 };
+                GetWindowRect(pWndData->hWnd, &rcWnd);
+                CopyPoint((PPOINT)&rcWnd, &pCfgData->ptLastFloatPos);
+                CopySize(&pWndData->runtimeResolution, &pCfgData->sizeLastRuntimeResolution);
+                ShowWindow(pWndData->hWnd, SW_HIDE);
+            }
+            break;
         }
-        break;
-    }
-    // 设置子菜单
-    case IDM_AUTORUN:
-    {
-        pCfgData->bAutoRun = !pCfgData->bAutoRun;
-        if (pCfgData->bAutoRun)
+        // 显示子菜单
+        case IDM_SHOWCPUMEM:
         {
-            SetAppAutoRun();
+            if (pCfgData->byShowContent == SHOWCONTENT_CPUMEM)
+            {
+                WCHAR szTitle[MAX_LOADSTRING];
+                WCHAR szMsg[MAX_LOADSTRING];
+                LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
+                LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
+                MessageBoxW(NULL, szMsg, szTitle, MB_OK);
+            }
+            else
+            {
+                pCfgData->byShowContent ^= SHOWCONTENT_CPUMEM;
+                pWndData->byShowContent = pCfgData->byShowContent;
+                SIZE sizeWnd = { 0 };
+                GetWndSizeByShowContent(pWndData, &sizeWnd, pCfgData->byShowContent);
+                SetWindowPos(
+                    pWndData->hWnd, HWND_TOPMOST,
+                    0, 0,
+                    sizeWnd.cx, sizeWnd.cy,
+                    SWP_NOACTIVATE | SWP_NOMOVE
+                );
+            }
+            break;
         }
-        else
+        case IDM_SHOWNETSPEED:
         {
-            UnsetAppAutoRun();
+            if (pCfgData->byShowContent == SHOWCONTENT_NETSPEED)
+            {
+                WCHAR szTitle[MAX_LOADSTRING];
+                WCHAR szMsg[MAX_LOADSTRING];
+                LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
+                LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
+                MessageBoxW(NULL, szMsg, szTitle, MB_OK);
+            }
+            else
+            {
+                pCfgData->byShowContent ^= SHOWCONTENT_NETSPEED;
+                pWndData->byShowContent = pCfgData->byShowContent;
+                SIZE sizeWnd = { 0 };
+                GetWndSizeByShowContent(pWndData, &sizeWnd, pCfgData->byShowContent);
+                SetWindowPos(
+                    pWndData->hWnd, HWND_TOPMOST,
+                    0, 0,
+                    sizeWnd.cx, sizeWnd.cy,
+                    SWP_NOACTIVATE | SWP_NOMOVE
+                );
+            }
+            break;
         }
-        break;
-    }
-    case IDM_TIMEALARM:
-    {
-        pCfgData->bTimeAlarm = !pCfgData->bTimeAlarm;
-        if (pCfgData->bTimeAlarm)
+        case IDM_DARKTHEME:
         {
-            SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+            pCfgData->bDarkTheme = !pCfgData->bDarkTheme;
+            pWndData->bDarkTheme = pCfgData->bDarkTheme;
+            InvalidateRect(pWndData->hWnd, NULL, TRUE);
+            break;
         }
-        else
+        case IDM_TRANS_100:
         {
-            KillTimer(pWndData->hWnd, IDT_TIMEALARM);
+            pCfgData->byTransparency = PercentToAlpha(100);
+            pWndData->byTransparency = pCfgData->byTransparency;
+            SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+            break;
         }
-        break;
-    }
-    case IDM_INFOSOUND:
-    {
-        pCfgData->bInfoSound = !pCfgData->bInfoSound;
-        pWndData->bInfoSound = pCfgData->bInfoSound;
-        break;
-    }
-    // 退出
-    case IDM_EXIT:
-    {
-        if (pCfgData->bFloatWnd)
+        case IDM_TRANS_75:
         {
-            // 如果当前显示浮动窗口退出时就保存一次现在的窗口位置
-            RECT rcWnd = { 0 };
-            GetWindowRect(pWndData->hWnd, &rcWnd);
-            pCfgData->ptLastFloatPos.x = rcWnd.left;
-            pCfgData->ptLastFloatPos.y = rcWnd.top;
+            pCfgData->byTransparency = PercentToAlpha(75);
+            pWndData->byTransparency = pCfgData->byTransparency;
+            SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+            break;
         }
-        DestroyWindow(pWndData->hWnd);
-        break;
-    }
-    default:
-    {
-        DefFreeMem(pCfgData);
-        return DefWindowProcW(pWndData->hWnd, WM_COMMAND, wParam, lParam);
-    }
-    }
+        case IDM_TRANS_50:
+        {
+            pCfgData->byTransparency = PercentToAlpha(50);
+            pWndData->byTransparency = pCfgData->byTransparency;
+            SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+            break;
+        }
+        case IDM_TRANS_25:
+        {
+            pCfgData->byTransparency = PercentToAlpha(25);
+            pWndData->byTransparency = pCfgData->byTransparency;
+            SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+            break;
+        }
+        case IDM_TRANSPARENCY:
+        {
+            if (IsWindowEnabled(pWndData->hWnd))
+            {
+                PTRANSDLGFORM pInitForm = (PTRANSDLGFORM)DefAllocMem(sizeof(TRANSDLGFORM));
+                if (pInitForm != NULL)
+                {
+                    // 填充表单初始值
+                    pInitForm->byTransparency = pCfgData->byTransparency;
 
-    // 保存修改之后的配置
-    SaveConfigToReg(pCfgData);
-    DefFreeMem(pCfgData);
+                    // 显示对话框
+                    DialogBoxTrans(GetModuleHandleW(NULL), pWndData->hWnd, pInitForm);
+
+                    // 获取返回表单值, 修改设置项
+                    pCfgData->byTransparency = pInitForm->byTransparency;
+
+                    // 应用设置
+                    SetLayeredWindowAttributes(pWndData->hWnd, 0, pCfgData->byTransparency, LWA_ALPHA);
+                    DefFreeMem(pInitForm);
+                }
+            }
+            break;
+        }
+        // 设置子菜单
+        case IDM_AUTORUN:
+        {
+            pCfgData->bAutoRun = !pCfgData->bAutoRun;
+            if (pCfgData->bAutoRun)
+            {
+                SetAppAutoRun();
+            }
+            else
+            {
+                UnsetAppAutoRun();
+            }
+            break;
+        }
+        case IDM_TIMEALARM:
+        {
+            pCfgData->bTimeAlarm = !pCfgData->bTimeAlarm;
+            if (pCfgData->bTimeAlarm)
+            {
+                SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+            }
+            else
+            {
+                KillTimer(pWndData->hWnd, IDT_TIMEALARM);
+            }
+            break;
+        }
+        case IDM_INFOSOUND:
+        {
+            pCfgData->bInfoSound = !pCfgData->bInfoSound;
+            pWndData->bInfoSound = pCfgData->bInfoSound;
+            break;
+        }
+        // 退出
+        case IDM_EXIT:
+        {
+            if (pCfgData->bFloatWnd)
+            {
+                // 如果当前显示浮动窗口退出时就保存一次现在的窗口位置和分辨率
+                RECT rcWnd = { 0 };
+                GetWindowRect(pWndData->hWnd, &rcWnd);
+                CopyPoint((PPOINT)&rcWnd, &pCfgData->ptLastFloatPos);
+                CopySize(&pWndData->runtimeResolution, &pCfgData->sizeLastRuntimeResolution);
+            }
+            DestroyWindow(pWndData->hWnd);
+            break;
+        }
+        default:
+        {
+            DefFreeMem(pCfgData);
+            return DefWindowProcW(pWndData->hWnd, WM_COMMAND, wParam, lParam);
+        }
+        }
+
+        // 保存修改之后的配置
+        SaveConfigToReg(pCfgData);
+        DefFreeMem(pCfgData);
+    }
     return 0;
 }
 
@@ -656,6 +718,28 @@ static LRESULT OnLButtonUp(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     return DefWindowProcW(pWndData->hWnd, WM_LBUTTONUP, wParam, lParam);
 }
 
+static LRESULT OnDpiChanged(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
+{
+    // 清单文件里需要将程序的 DPI Awareness 设置为 Per Monitor High DPI Aware 才能接收此消息
+    // 重新计算窗体大小
+    pWndData->wndSizeUnit = BASE_WNDSIZE_PIXELS * GetDpiForWindow(pWndData->hWnd) / 96;
+    SIZE sizeWnd = { 0 };
+    GetWndSizeByShowContent(pWndData, &sizeWnd, pWndData->byShowContent);
+
+    // 设置新的窗体大小
+    SetWindowPos(
+        pWndData->hWnd, HWND_TOPMOST,
+        0, 0,
+        sizeWnd.cx, sizeWnd.cy,
+        SWP_NOACTIVATE | SWP_NOMOVE
+    );
+
+    // 重绘窗体内容
+    InvalidateRect(pWndData->hWnd, NULL, TRUE);
+
+    return 0;
+}
+
 static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     switch (LOWORD(lParam))
@@ -686,6 +770,21 @@ static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         break;
     }
     case NIN_SELECT:
+    //{
+    //    // DEBUG
+    //    WCHAR debugstr[128] = { 0 };
+    //    int x = GET_X_LPARAM(wParam);
+    //    int y = GET_Y_LPARAM(wParam);
+    //    int dpi = GetDpiForWindow(pWndData->hWnd);
+    //    int dpi2 = GetDpiForSystem();
+    //    swprintf_s(debugstr, 128, L"X:%d Y:%d DPI:%d SDPI:%d\n", x, y, dpi, dpi2);
+    //    OutputDebugStringW(debugstr);
+    //    RECT rcScreen = { 0 };
+    //    GetWindowRect(GetDesktopWindow(), &rcScreen);
+    //    swprintf_s(debugstr, 128, L"X:%d Y:%d\n", rcScreen.right, rcScreen.bottom);
+    //    OutputDebugStringW(debugstr);
+    //    break;
+    //}
     case NIN_KEYSELECT:
     {
         if (!pWndData->bFloatWnd)
@@ -830,6 +929,8 @@ static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         return OnSettingChange(pWndData, wParam, lParam);
     case WM_CONTEXTMENU:
         return OnContextMenu(pWndData, wParam, lParam);
+    case WM_DISPLAYCHANGE:
+        return OnDisplayChange(pWndData, wParam, lParam);
     case WM_COMMAND:
         return OnCommand(pWndData, wParam, lParam);
     case WM_TIMER:
@@ -842,6 +943,8 @@ static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         return OnLButtonDown(pWndData, wParam, lParam);
     case WM_LBUTTONUP:
         return OnLButtonUp(pWndData, wParam, lParam);
+    case WM_DPICHANGED:
+        return OnDpiChanged(pWndData, wParam, lParam);
     case WM_NOTIFYICON:
         return OnNotifyIcon(pWndData, wParam, lParam);
     case WM_TIMEALARM:
@@ -961,17 +1064,17 @@ Font* CreateFontFromFile(PCWSTR szFontFilePath, REAL emSize, INT style, Unit uni
     return pFont;
 }
 
-DWORD GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent)
+DWORD GetWndSizeByShowContent(PMAINWNDDATA pWndData, PSIZE psizeWnd, BYTE byShowContent)
 {
-    psizeWnd->cx = MAINWNDSIZE_UNIT * 6;
+    psizeWnd->cx = pWndData->wndSizeUnit * 6;
     psizeWnd->cy = 0;
     if (byShowContent & SHOWCONTENT_CPUMEM)
     {
-        psizeWnd->cy += MAINWNDSIZE_UNIT * 3;
+        psizeWnd->cy += pWndData->wndSizeUnit * 3;
     }
     if (byShowContent & SHOWCONTENT_NETSPEED)
     {
-        psizeWnd->cy += MAINWNDSIZE_UNIT * 2;
+        psizeWnd->cy += pWndData->wndSizeUnit * 2;
     }
     return 0;
 }

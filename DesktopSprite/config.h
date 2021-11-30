@@ -20,6 +20,7 @@ typedef struct _CFGDATA
 
     // 记忆数据
     POINT       ptLastFloatPos;                 // 上一次浮窗的屏幕位置
+    SIZE        sizeLastRuntimeResolution;      // 上一次运行时系统分辨率
 }*PCFGDATA, CFGDATA;
 
 // 加载默认配置参数

@@ -9,7 +9,12 @@ using namespace Gdiplus;
 static  PCWSTR  const       APPMUTEXNAME    = L"DesktopSpriteMutex";    // 防止重复启动的 MutexName
 static  HANDLE              hAppMutex       = NULL;                     // 防止重复启动的互斥锁
 
-INT APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, INT nCmdShow)
+INT APIENTRY wWinMain(
+    _In_ HINSTANCE hInstance,
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ LPWSTR lpCmdLine,
+    _In_ INT nShowCmd
+)
 {
     hAppMutex = CreateMutexW(NULL, FALSE, APPMUTEXNAME);
     if (hAppMutex != NULL)

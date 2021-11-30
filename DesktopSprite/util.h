@@ -105,6 +105,9 @@ DWORD GetSystemCapitalFont(PLOGFONTW pLogFont);
 // 判断系统是否是深色主题
 BOOL IsSystemDarkTheme();
 
+// 获取系统当前分辨率
+DWORD GetScreenResolution(PSIZE psizeResolution);
+
 // 获取任务栏方向
 UINT GetShellTrayDirection();
 
@@ -113,3 +116,12 @@ DWORD ExtractRes(UINT uResID, PCWSTR szResType, PCWSTR szFilePath);
 
 // 获取 TTF 资源内存
 PBYTE GetResPointer(UINT uResID, PCWSTR szResType, DWORD* cbData);
+
+// 在不同分辨率之间折算坐标相对位置
+DWORD ConvertPointForResolution(PPOINT ptOld, PSIZE sizeOld, PSIZE sizeNew, PPOINT ptNew);
+
+// Copy POINT
+DWORD CopyPoint(PPOINT ptSrc, PPOINT ptDst);
+
+// Copy SIZE
+DWORD CopySize(PSIZE sizeSrc, PSIZE sizeDst);
