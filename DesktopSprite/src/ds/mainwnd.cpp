@@ -1,11 +1,11 @@
-#include "framework.h"
-#include "util.h"
-#include "config.h"
-#include "notifyicon.h"
-#include "perfdata.h"
-#include "transdlg.h"
+#include <ds/framework.h>
+#include <ds/util.h>
+#include <ds/config.h>
+#include <ds/notifyicon.h>
+#include <ds/perfdata.h>
+#include <ds/transdlg.h>
 
-#include "mainwnd.h"
+#include <ds/mainwnd.h>
 
 using namespace Gdiplus;
 

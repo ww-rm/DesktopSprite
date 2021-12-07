@@ -1,7 +1,7 @@
-#include "framework.h"
-#include "util.h"
+#include <ds/framework.h>
+#include <ds/util.h>
 
-#include "config.h"
+#include <ds/config.h>
 
 // TODO: 设置项注册表名称
 static PCWSTR const REGVAL_SHOWMAINWND              = L"IsFloatWnd";

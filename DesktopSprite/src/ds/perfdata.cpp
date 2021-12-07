@@ -1,5 +1,5 @@
-#include "framework.h"
-#include "perfdata.h"
+#include <ds/framework.h>
+#include <ds/perfdata.h>
 
 // 此处开始的是模块内部使用的变量
 

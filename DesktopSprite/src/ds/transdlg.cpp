@@ -1,7 +1,7 @@
-#include "framework.h"
-#include "util.h"
+#include <ds/framework.h>
+#include <ds/util.h>
+#include <ds/transdlg.h>
 
-#include "transdlg.h"
 
 static INT_PTR CALLBACK TransDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static INT_PTR OnInitDialog(PTRANSDLGDATA pDlgData, WPARAM wParam, LPARAM lParam);

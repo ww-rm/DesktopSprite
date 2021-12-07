@@ -1,6 +1,5 @@
-#include "framework.h"
-
-#include "notifyicon.h"
+#include <ds/framework.h>
+#include <ds/notifyicon.h>
 
 DWORD AddNotifyIcon(HWND hWnd, UINT uID, UINT uCallbackMessage, HICON hIcon)
 {

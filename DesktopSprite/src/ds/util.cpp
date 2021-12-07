@@ -1,6 +1,5 @@
-#include "framework.h"
-
-#include "util.h"
+#include <ds/framework.h>
+#include <ds/util.h>
 
 DWORD SetAppAutoRun()
 {

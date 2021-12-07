@@ -19,39 +19,122 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="config.h" />
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="mainwnd.h" />
-    <ClInclude Include="notifyicon.h" />
-    <ClInclude Include="perfdata.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="transdlg.h" />
-    <ClInclude Include="util.h" />
-    <ClInclude Include="winapp.h" />
+    <ClInclude Include="include\ds\config.h" />
+    <ClInclude Include="include\ds\framework.h" />
+    <ClInclude Include="include\ds\mainwnd.h" />
+    <ClInclude Include="include\ds\notifyicon.h" />
+    <ClInclude Include="include\ds\perfdata.h" />
+    <ClInclude Include="include\spine\Animation.h" />
+    <ClInclude Include="include\spine\AnimationState.h" />
+    <ClInclude Include="include\spine\AnimationStateData.h" />
+    <ClInclude Include="include\spine\Array.h" />
+    <ClInclude Include="include\spine\Atlas.h" />
+    <ClInclude Include="include\spine\AtlasAttachmentLoader.h" />
+    <ClInclude Include="include\spine\Attachment.h" />
+    <ClInclude Include="include\spine\AttachmentLoader.h" />
+    <ClInclude Include="include\spine\Bone.h" />
+    <ClInclude Include="include\spine\BoneData.h" />
+    <ClInclude Include="include\spine\BoundingBoxAttachment.h" />
+    <ClInclude Include="include\spine\ClippingAttachment.h" />
+    <ClInclude Include="include\spine\Color.h" />
+    <ClInclude Include="include\spine\dll.h" />
+    <ClInclude Include="include\spine\Event.h" />
+    <ClInclude Include="include\spine\EventData.h" />
+    <ClInclude Include="include\spine\extension.h" />
+    <ClInclude Include="include\spine\IkConstraint.h" />
+    <ClInclude Include="include\spine\IkConstraintData.h" />
+    <ClInclude Include="include\spine\MeshAttachment.h" />
+    <ClInclude Include="include\spine\PathAttachment.h" />
+    <ClInclude Include="include\spine\PathConstraint.h" />
+    <ClInclude Include="include\spine\PathConstraintData.h" />
+    <ClInclude Include="include\spine\PointAttachment.h" />
+    <ClInclude Include="include\spine\RegionAttachment.h" />
+    <ClInclude Include="include\spine\Skeleton.h" />
+    <ClInclude Include="include\spine\SkeletonBinary.h" />
+    <ClInclude Include="include\spine\SkeletonBounds.h" />
+    <ClInclude Include="include\spine\SkeletonClipping.h" />
+    <ClInclude Include="include\spine\SkeletonData.h" />
+    <ClInclude Include="include\spine\SkeletonJson.h" />
+    <ClInclude Include="include\spine\Skin.h" />
+    <ClInclude Include="include\spine\Slot.h" />
+    <ClInclude Include="include\spine\SlotData.h" />
+    <ClInclude Include="include\spine\spine.h" />
+    <ClInclude Include="include\spine\TransformConstraint.h" />
+    <ClInclude Include="include\spine\TransformConstraintData.h" />
+    <ClInclude Include="include\spine\Triangulator.h" />
+    <ClInclude Include="include\spine\VertexAttachment.h" />
+    <ClInclude Include="include\spine\VertexEffect.h" />
+    <ClInclude Include="res\resource.h" />
+    <ClInclude Include="include\ds\spritewnd.h" />
+    <ClInclude Include="include\ds\transdlg.h" />
+    <ClInclude Include="include\ds\util.h" />
+    <ClInclude Include="include\ds\winapp.h" />
+    <ClInclude Include="src\spine\Json.h" />
+    <ClInclude Include="src\spine\kvec.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DesktopSprite.rc" />
+    <ResourceCompile Include="res\DesktopSprite.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\appicon_dark.ico" />
-    <Image Include="res\appicon_dark.png" />
-    <Image Include="res\appicon_light.ico" />
-    <Image Include="res\appicon_light.png" />
-    <Image Include="res\timealarm.ico" />
-    <Image Include="res\timealarm.png" />
+    <Image Include="res\image\appicon_dark.ico" />
+    <Image Include="res\image\appicon_dark.png" />
+    <Image Include="res\image\appicon_light.ico" />
+    <Image Include="res\image\appicon_light.png" />
+    <Image Include="res\image\timealarm.ico" />
+    <Image Include="res\image\timealarm.png" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="config.cpp" />
-    <ClCompile Include="mainwnd.cpp" />
-    <ClCompile Include="notifyicon.cpp" />
-    <ClCompile Include="perfdata.cpp" />
-    <ClCompile Include="transdlg.cpp" />
-    <ClCompile Include="util.cpp" />
-    <ClCompile Include="winapp.cpp" />
+    <ClCompile Include="src\ds\config.cpp" />
+    <ClCompile Include="src\ds\mainwnd.cpp" />
+    <ClCompile Include="src\ds\notifyicon.cpp" />
+    <ClCompile Include="src\ds\perfdata.cpp" />
+    <ClCompile Include="src\spine\Animation.c" />
+    <ClCompile Include="src\spine\AnimationState.c" />
+    <ClCompile Include="src\spine\AnimationStateData.c" />
+    <ClCompile Include="src\spine\Array.c" />
+    <ClCompile Include="src\spine\Atlas.c" />
+    <ClCompile Include="src\spine\AtlasAttachmentLoader.c" />
+    <ClCompile Include="src\spine\Attachment.c" />
+    <ClCompile Include="src\spine\AttachmentLoader.c" />
+    <ClCompile Include="src\spine\Bone.c" />
+    <ClCompile Include="src\spine\BoneData.c" />
+    <ClCompile Include="src\spine\BoundingBoxAttachment.c" />
+    <ClCompile Include="src\spine\ClippingAttachment.c" />
+    <ClCompile Include="src\spine\Color.c" />
+    <ClCompile Include="src\spine\Event.c" />
+    <ClCompile Include="src\spine\EventData.c" />
+    <ClCompile Include="src\spine\extension.c" />
+    <ClCompile Include="src\spine\IkConstraint.c" />
+    <ClCompile Include="src\spine\IkConstraintData.c" />
+    <ClCompile Include="src\spine\Json.c" />
+    <ClCompile Include="src\spine\MeshAttachment.c" />
+    <ClCompile Include="src\spine\PathAttachment.c" />
+    <ClCompile Include="src\spine\PathConstraint.c" />
+    <ClCompile Include="src\spine\PathConstraintData.c" />
+    <ClCompile Include="src\spine\PointAttachment.c" />
+    <ClCompile Include="src\spine\RegionAttachment.c" />
+    <ClCompile Include="src\spine\Skeleton.c" />
+    <ClCompile Include="src\spine\SkeletonBinary.c" />
+    <ClCompile Include="src\spine\SkeletonBounds.c" />
+    <ClCompile Include="src\spine\SkeletonClipping.c" />
+    <ClCompile Include="src\spine\SkeletonData.c" />
+    <ClCompile Include="src\spine\SkeletonJson.c" />
+    <ClCompile Include="src\spine\Skin.c" />
+    <ClCompile Include="src\spine\Slot.c" />
+    <ClCompile Include="src\spine\SlotData.c" />
+    <ClCompile Include="src\spine\TransformConstraint.c" />
+    <ClCompile Include="src\spine\TransformConstraintData.c" />
+    <ClCompile Include="src\spine\Triangulator.c" />
+    <ClCompile Include="src\spine\VertexAttachment.c" />
+    <ClCompile Include="src\spine\VertexEffect.c" />
+    <ClCompile Include="src\ds\spritewnd.cpp" />
+    <ClCompile Include="src\ds\transdlg.cpp" />
+    <ClCompile Include="src\ds\util.cpp" />
+    <ClCompile Include="src\ds\winapp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Font Include="res\AGENCYB.TTF" />
-    <Font Include="res\AGENCYR.TTF" />
+    <Font Include="res\font\AGENCYB.TTF" />
+    <Font Include="res\font\AGENCYR.TTF" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -107,15 +190,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>tmp\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>tmp\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>tmp\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>tmp\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -124,12 +215,14 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>D:\Projects\VsProjects\DesktopSprite\DesktopSprite\res;D:\Projects\VsProjects\DesktopSprite\DesktopSprite\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;Gdiplus.lib;Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'</AdditionalManifestDependencies>
+      <AdditionalLibraryDirectories>D:\Projects\VsProjects\DesktopSprite\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -144,12 +237,14 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>D:\Projects\VsProjects\DesktopSprite\DesktopSprite\res;D:\Projects\VsProjects\DesktopSprite\DesktopSprite\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;Gdiplus.lib;Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'</AdditionalManifestDependencies>
+      <AdditionalLibraryDirectories>D:\Projects\VsProjects\DesktopSprite\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -166,6 +261,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>D:\Projects\VsProjects\DesktopSprite\DesktopSprite\res;D:\Projects\VsProjects\DesktopSprite\DesktopSprite\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -174,6 +270,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;Gdiplus.lib;Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'</AdditionalManifestDependencies>
+      <AdditionalLibraryDirectories>D:\Projects\VsProjects\DesktopSprite\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -190,6 +287,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>D:\Projects\VsProjects\DesktopSprite\DesktopSprite\res;D:\Projects\VsProjects\DesktopSprite\DesktopSprite\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -198,6 +296,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>dwmapi.lib;Shlwapi.lib;Pathcch.lib;pdh.lib;Gdiplus.lib;Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'</AdditionalManifestDependencies>
+      <AdditionalLibraryDirectories>D:\Projects\VsProjects\DesktopSprite\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>

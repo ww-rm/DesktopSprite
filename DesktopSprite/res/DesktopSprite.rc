@@ -128,11 +128,11 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_APPICON_DARK        ICON                    "res\\appicon_dark.ico"
+IDI_APPICON_DARK        ICON                    "res\\image\\appicon_dark.ico"
 
-IDI_TIMEALARM           ICON                    "res\\timealarm.ico"
+IDI_TIMEALARM           ICON                    "res\\image\\timealarm.ico"
 
-IDI_APPICON_LIGHT       ICON                    "res\\appicon_light.ico"
+IDI_APPICON_LIGHT       ICON                    "res\\image\\appicon_light.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ IDI_APPICON_LIGHT       ICON                    "res\\appicon_light.ico"
 // TTF
 //
 
-IDR_TTF1                TTF                     "res\\AGENCYR.TTF"
+IDR_TTF1                TTF                     "res\\font\\AGENCYR.TTF"
 
 
 /////////////////////////////////////////////////////////////////////////////

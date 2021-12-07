@@ -1,8 +1,8 @@
-#include "framework.h"
-#include "mainwnd.h"
-#include "perfdata.h"
+#include <ds/framework.h>
+#include <ds/perfdata.h>
 
-#include "winapp.h"
+#include <ds/mainwnd.h>
+#include <ds/winapp.h>
 
 using namespace Gdiplus;
 
