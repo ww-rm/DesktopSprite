@@ -1,5 +1,5 @@
 #pragma once
-#include "framework.h"
+#include <ds/framework.h>
 
 typedef struct _TRANSDLGFORM
 {

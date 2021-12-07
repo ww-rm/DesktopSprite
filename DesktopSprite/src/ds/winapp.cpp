@@ -2,6 +2,7 @@
 #include <ds/perfdata.h>
 
 #include <ds/mainwnd.h>
+#include <ds/spritewnd.h>
 #include <ds/winapp.h>
 
 using namespace Gdiplus;
@@ -23,6 +24,7 @@ INT APIENTRY wWinMain(
         {
             // 初始工作
             RegisterMainWnd(hInstance);
+            RegisterSpriteWnd(hInstance);
             OpenPerfMonitor();
 
             // 初始化 GDI+.
@@ -31,6 +33,8 @@ INT APIENTRY wWinMain(
             GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
             HWND hMainWnd = CreateMainWnd(hInstance);
+            //HWND h = CreateSpriteWnd(hInstance, NULL);
+            //ShowWindow(h, SW_SHOWNA);
             if (hMainWnd != NULL)
             {
                 BOOL bRet;

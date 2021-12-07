@@ -1,5 +1,5 @@
 #pragma once
-#include "framework.h"
+#include <ds/framework.h>
 
 #define MAX_NIDTIP                      64                      // 通知区域的Tip消息最大长度
 #define MAX_NIDINFOTITLE                64                      //

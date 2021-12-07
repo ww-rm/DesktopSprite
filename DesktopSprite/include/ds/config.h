@@ -1,5 +1,5 @@
 #pragma once
-#include "framework.h"
+#include <ds/framework.h>
 
 // 标记要显示的内容
 #define SHOWCONTENT_CPUMEM          0x1

@@ -1,5 +1,5 @@
 #pragma once
-#include "framework.h"
+#include <ds/framework.h>
 
 #define MAX_COUNTER         32          // 计数器缓冲区列表最大值
 

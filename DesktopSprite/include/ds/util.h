@@ -1,20 +1,20 @@
 #pragma once
-#include "framework.h"
+#include <ds/framework.h>
 
 // 默认参数创建线程
 #define DefCreateThread(lpStartAddress, lpParameter) \
-        CreateThread(NULL, 0, (lpStartAddress), (lpParameter), 0, NULL)
+        (CreateThread(NULL, 0, (lpStartAddress), (lpParameter), 0, NULL))
 
 // 从进程默认堆分配已初始化零的内存
 #define DefAllocMem(dwBytes) \
-        HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (dwBytes))
+        (HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (dwBytes)))
 
 #define DefCreateFile(lpFileName, dwDesiredAccess, dwCreationDisposition) \
-        CreateFileW((lpFileName), (dwDesiredAccess), 0, NULL, (dwCreationDisposition), FILE_ATTRIBUTE_NORMAL, NULL)
+        (CreateFileW((lpFileName), (dwDesiredAccess), 0, NULL, (dwCreationDisposition), FILE_ATTRIBUTE_NORMAL, NULL))
 
 // 从进程默认堆释放内存
 #define DefFreeMem(lpMem) \
-        HeapFree(GetProcessHeap(), 0, (lpMem))
+        (HeapFree(GetProcessHeap(), 0, (lpMem)))
 
 // 从文件中读取图标文件(需要用DestroyIcon释放)
 #define LoadIconFromFile(name) \
@@ -26,39 +26,39 @@
 
 // 获取窗口 USERDATA
 #define GetWndData(hWnd) \
-        GetWindowLongPtrW((hWnd), GWLP_USERDATA)
+        (GetWindowLongPtrW((hWnd), GWLP_USERDATA))
 
 // 设置窗口 USERDATA
 #define SetWndData(hWnd, dwNewData) \
-        SetWindowLongPtrW((hWnd), GWLP_USERDATA, (LONG_PTR)(dwNewData))
+        (SetWindowLongPtrW((hWnd), GWLP_USERDATA, (LONG_PTR)(dwNewData)))
 
 // 获取对话框 USER
 #define GetDlgData(hDlg) \
-        GetWindowLongPtrW((hDlg), DWLP_USER)
+        (GetWindowLongPtrW((hDlg), DWLP_USER))
 
 // 设置对话框 USER
 #define SetDlgData(hDlg, dwNewData) \
-        SetWindowLongPtrW((hDlg), DWLP_USER, (LONG_PTR)(dwNewData))
+        (SetWindowLongPtrW((hDlg), DWLP_USER, (LONG_PTR)(dwNewData)))
 
 // 向注册表子键写入二进制数据
 #define RegSetBinValue(hKey, lpValueName, lpData, cbData) \
-        RegSetValueExW((hKey), (lpValueName), 0, REG_BINARY, (PBYTE)(lpData), (cbData))
+        (RegSetValueExW((hKey), (lpValueName), 0, REG_BINARY, (PBYTE)(lpData), (cbData)))
 
 // 从注册表子键查询二进制数据
 #define RegQueryAnyValue(hKey, lpValueName, lpData, lpcbData) \
-        RegQueryValueExW((hKey), (lpValueName), NULL, NULL, (PBYTE)(lpData), (lpcbData))
+        (RegQueryValueExW((hKey), (lpValueName), NULL, NULL, (PBYTE)(lpData), (lpcbData)))
 
 // 打开 HEKY_CURRENT_USER\SOFTWARE 子键
 #define RegOpenSoftwareKey(phkResult) \
-        RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE", 0, KEY_ALL_ACCESS, (phkResult))
+        (RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE", 0, KEY_ALL_ACCESS, (phkResult)))
 
 // 打开 HEKY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 #define RegOpenRunKey(phkResult) \
-        RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_ALL_ACCESS, (phkResult))
+        (RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_ALL_ACCESS, (phkResult)))
 
 // 打开 HEKY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize
 #define RegOpenPersonalizeKey(phkResult) \
-        RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, KEY_READ, (phkResult))
+        (RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, KEY_READ, (phkResult)))
 
 // 裁剪数字
 #define ClampNum(numVal, minVal, maxVal) \

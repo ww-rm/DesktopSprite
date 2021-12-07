@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DesktopSprite", "DesktopSprite\DesktopSprite.vcxproj", "{41226B32-84C7-489C-80EA-49BD0E4EF6B6}"
 EndProject
@@ -10,11 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		LICENSE = LICENSE
 		README.md = README.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{E112A856-BA7C-4E21-BCD6-EB8B238608A7}"
-	ProjectSection(SolutionItems) = preProject
-		libs\spine-c.lib = libs\spine-c.lib
 	EndProjectSection
 EndProject
 Global
