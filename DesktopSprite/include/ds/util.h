@@ -85,7 +85,7 @@ INT ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest);
 INT GetSpeedUnit(DOUBLE fSpeed, PWSTR szUnit, SIZE_T cchDest);
 
 // 获取与整点时间差毫秒
-UINT GetHourTimeDiff();
+UINT GetMillisecondsToNextHour();
 
 // 设置菜单项状态
 DWORD SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState);

@@ -120,7 +120,7 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         // 是否整点报时
         if (pCfgData->bTimeAlarm)
         {
-            SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+            SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetMillisecondsToNextHour(), (TIMERPROC)NULL);
         }
 
         DefFreeMem(pCfgData);
@@ -582,7 +582,7 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             pCfgData->bTimeAlarm = !pCfgData->bTimeAlarm;
             if (pCfgData->bTimeAlarm)
             {
-                SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+                SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetMillisecondsToNextHour(), (TIMERPROC)NULL);
             }
             else
             {
@@ -633,7 +633,7 @@ static LRESULT OnTimer(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         break;
     case IDT_TIMEALARM:
         PostMessageW(pWndData->hWnd, WM_TIMEALARM, 0, 0);
-        SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+        SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetMillisecondsToNextHour(), (TIMERPROC)NULL);
         break;
     default:
         return DefWindowProcW(pWndData->hWnd, WM_TIMER, wParam, lParam);
@@ -733,7 +733,7 @@ static LRESULT OnPowerBroadcast(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lPa
             if (pCfgData->bTimeAlarm)
             {
                 // 电源休眠的时候定时器会暂停, 所以整点报时的定时器要唤醒时重新设置
-                SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+                SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetMillisecondsToNextHour(), (TIMERPROC)NULL);
             }
             break;
         default:

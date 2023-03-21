@@ -79,7 +79,7 @@ INT GetSpeedUnit(DOUBLE fSpeed, PWSTR szUnit, SIZE_T cchDest)
     return nID;
 }
 
-UINT GetHourTimeDiff()
+UINT GetMillisecondsToNextHour()
 {
     SYSTEMTIME st = { 0 };
     GetLocalTime(&st);
