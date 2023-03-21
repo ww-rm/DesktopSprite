@@ -726,18 +726,13 @@ static LRESULT OnPowerBroadcast(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lPa
     {
         LoadConfigFromReg(pCfgData);
 
-        // 电源休眠的时候定时器会暂停, 所以整点报时的定时器要撤掉等到唤醒时重新设置
         switch (wParam)
         {
-        case PBT_APMSUSPEND:
-            if (pCfgData->bTimeAlarm)
-            {
-                KillTimer(pWndData->hWnd, IDT_TIMEALARM);
-            }
-            break;
+        //case PBT_APMSUSPEND:
         case PBT_APMRESUMEAUTOMATIC:
             if (pCfgData->bTimeAlarm)
             {
+                // 电源休眠的时候定时器会暂停, 所以整点报时的定时器要唤醒时重新设置
                 SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
             }
             break;
