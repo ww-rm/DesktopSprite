@@ -718,6 +718,39 @@ static LRESULT OnLButtonUp(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     return DefWindowProcW(pWndData->hWnd, WM_LBUTTONUP, wParam, lParam);
 }
 
+static LRESULT OnPowerBroadcast(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
+{
+    // 读取配置
+    PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
+    if (pCfgData != NULL)
+    {
+        LoadConfigFromReg(pCfgData);
+
+        // 电源休眠的时候定时器会暂停, 所以整点报时的定时器要撤掉等到唤醒时重新设置
+        switch (wParam)
+        {
+        case PBT_APMSUSPEND:
+            if (pCfgData->bTimeAlarm)
+            {
+                KillTimer(pWndData->hWnd, IDT_TIMEALARM);
+            }
+            break;
+        case PBT_APMRESUMEAUTOMATIC:
+            if (pCfgData->bTimeAlarm)
+            {
+                SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetHourTimeDiff(), (TIMERPROC)NULL);
+            }
+            break;
+        default:
+            DefFreeMem(pCfgData);
+            return DefWindowProcW(pWndData->hWnd, WM_POWERBROADCAST, wParam, lParam);;
+        }
+
+        DefFreeMem(pCfgData);
+    }
+    return TRUE;
+}
+
 static LRESULT OnDpiChanged(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
     // 清单文件里需要将程序的 DPI Awareness 设置为 Per Monitor High DPI Aware 才能接收此消息
@@ -746,7 +779,8 @@ static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     {
     case WM_LBUTTONDBLCLK:
     {
-        // TODO
+        // DEBUG here
+        OutputDebugStringW(L"Double Click on NotifyIcon!\n");
         break;
     }
     case WM_CONTEXTMENU:
@@ -943,6 +977,8 @@ static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         return OnLButtonDown(pWndData, wParam, lParam);
     case WM_LBUTTONUP:
         return OnLButtonUp(pWndData, wParam, lParam);
+    case WM_POWERBROADCAST:
+        return OnPowerBroadcast(pWndData, wParam, lParam);
     case WM_DPICHANGED:
         return OnDpiChanged(pWndData, wParam, lParam);
     case WM_NOTIFYICON:
