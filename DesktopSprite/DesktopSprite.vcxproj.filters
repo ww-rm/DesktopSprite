@@ -28,6 +28,12 @@
     <Filter Include="源文件\ds">
       <UniqueIdentifier>{7cbcf5e3-b533-42c2-b42c-233836163929}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\spine">
+      <UniqueIdentifier>{70fb5c06-5558-4e9e-a941-c29eb9b95590}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\spine">
+      <UniqueIdentifier>{b29b0bdc-160d-4296-b1d3-3f200f0bc908}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\DesktopSprite.rc">
@@ -65,6 +71,132 @@
     <ClInclude Include="include\ds\winapp.h">
       <Filter>头文件\ds</Filter>
     </ClInclude>
+    <ClInclude Include="src\spine\Json.h">
+      <Filter>源文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spine\kvec.h">
+      <Filter>源文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Animation.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\AnimationState.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\AnimationStateData.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Array.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Atlas.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\AtlasAttachmentLoader.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Attachment.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\AttachmentLoader.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Bone.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\BoneData.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\BoundingBoxAttachment.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\ClippingAttachment.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Color.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\dll.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Event.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\EventData.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\extension.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\IkConstraint.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\IkConstraintData.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\MeshAttachment.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\PathAttachment.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\PathConstraint.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\PathConstraintData.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\PointAttachment.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\RegionAttachment.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Skeleton.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\SkeletonBinary.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\SkeletonBounds.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\SkeletonClipping.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\SkeletonData.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\SkeletonJson.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Skin.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Slot.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\SlotData.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\spine.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\TransformConstraint.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\TransformConstraintData.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\Triangulator.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\VertexAttachment.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\spine\VertexEffect.h">
+      <Filter>头文件\spine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ds\config.cpp">
@@ -90,6 +222,123 @@
     </ClCompile>
     <ClCompile Include="src\ds\winapp.cpp">
       <Filter>源文件\ds</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Animation.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\AnimationState.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\AnimationStateData.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Array.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Atlas.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\AtlasAttachmentLoader.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Attachment.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\AttachmentLoader.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Bone.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\BoneData.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\BoundingBoxAttachment.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\ClippingAttachment.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Color.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Event.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\EventData.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\extension.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\IkConstraint.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\IkConstraintData.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Json.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\MeshAttachment.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\PathAttachment.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\PathConstraint.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\PathConstraintData.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\PointAttachment.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\RegionAttachment.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Skeleton.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\SkeletonBinary.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\SkeletonBounds.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\SkeletonClipping.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\SkeletonData.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\SkeletonJson.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Skin.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Slot.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\SlotData.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\TransformConstraint.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\TransformConstraintData.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\Triangulator.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\VertexAttachment.c">
+      <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spine\VertexEffect.c">
+      <Filter>源文件\spine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
