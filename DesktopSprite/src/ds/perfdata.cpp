@@ -1,6 +1,8 @@
 #include <ds/framework.h>
 #include <ds/perfdata.h>
 
+// 用全局变量实现是因为要保证同一个程序同一时刻不同地方获取的性能数据一定相同
+
 // 此处开始的是模块内部使用的变量
 
 // handles and flags
