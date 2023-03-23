@@ -417,7 +417,7 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
         switch (LOWORD(wParam))
         {
-            // 浮动窗口
+        // 浮动窗口
         case IDM_FLOATWND:
         {
             pCfgData->bFloatWnd = !pCfgData->bFloatWnd;
