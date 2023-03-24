@@ -83,8 +83,15 @@ UINT GetMillisecondsToNextHour()
 {
     SYSTEMTIME st = { 0 };
     GetLocalTime(&st);
-    UINT uTimeDiff = (59 - st.wMinute) * 60 * 1000 + (60 - st.wSecond) * 1000 + 1000;
+    UINT uTimeDiff = (59 - st.wMinute) * 60 * 1000 + (59 - st.wSecond) * 1000 + (1000 - st.wMilliseconds) + 1000;
     return uTimeDiff;
+}
+
+BOOL IsOnTheHour()
+{
+    SYSTEMTIME st = { 0 };
+    GetLocalTime(&st);
+    return (st.wMinute == 0);
 }
 
 DWORD SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState)

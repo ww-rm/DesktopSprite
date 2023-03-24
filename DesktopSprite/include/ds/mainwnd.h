@@ -26,6 +26,7 @@ typedef struct _MAINWNDDATA
     // 主窗口运行时
     INT             wndSizeUnit;                    // 窗口单元格大小, 在运行时随 DPI 进行缩放
     BOOL            bWndFixed;                      // 窗口是否通过图标点击长期显示
+    BOOL            bClocked;                       // 保存整点内是否报过时
     POINT           ptDragSrc;                      // 拖动窗口时的源点
     PrivateFontCollection* pFontColl;               // 文本字体容器
 
@@ -63,6 +64,9 @@ Font* CreateFontFromFile(PCWSTR szFontFilePath, REAL emSize = 9, INT style = 0, 
 
 // 根据当前显示内容与窗体单元格大小计算窗体大小, 像素单位
 DWORD GetWndSizeByShowContent(PMAINWNDDATA pWndData, PSIZE psizeWnd, BYTE byShowContent);
+
+// 报时
+DWORD TimeAlarm(PMAINWNDDATA pWndData);
 
 // 应用设置项
 //DWORD ApplyAppConfig(PCFGDATA pCfgData, HWND hMainWnd);
