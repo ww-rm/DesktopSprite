@@ -60,7 +60,7 @@ INT APIENTRY wWinMain(
         }
         else
         {
-            // TODO: 重复启动处理
+            MessageBoxW(NULL, L"程序已在运行, 请勿重复启动", L"提示消息", MB_OK);
         }
     }
     else

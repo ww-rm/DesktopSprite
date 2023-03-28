@@ -87,6 +87,9 @@ INT GetSpeedUnit(DOUBLE fSpeed, PWSTR szUnit, SIZE_T cchDest);
 // 获取与整点时间差毫秒
 UINT GetMillisecondsToNextHour();
 
+// 判断现在是否是整点 (分钟数为 0)
+BOOL IsOnTheHour();
+
 // 设置菜单项状态
 DWORD SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState);
 

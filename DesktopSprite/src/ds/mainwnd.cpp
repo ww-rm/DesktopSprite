@@ -32,6 +32,7 @@ static LRESULT OnInitMenuPopup(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lPar
 static LRESULT OnMouseMove(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnLButtonDown(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnLButtonUp(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
+//static LRESULT OnPowerBroadcast(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnDpiChanged(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
 static LRESULT OnTimeAlarm(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam);
@@ -120,7 +121,7 @@ static LRESULT OnCreate(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         // 是否整点报时
         if (pCfgData->bTimeAlarm)
         {
-            SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetMillisecondsToNextHour(), (TIMERPROC)NULL);
+            SetTimer(pWndData->hWnd, IDT_TIMEALARM, 100, (TIMERPROC)NULL);
         }
 
         DefFreeMem(pCfgData);
@@ -582,7 +583,7 @@ static LRESULT OnCommand(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
             pCfgData->bTimeAlarm = !pCfgData->bTimeAlarm;
             if (pCfgData->bTimeAlarm)
             {
-                SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetMillisecondsToNextHour(), (TIMERPROC)NULL);
+                SetTimer(pWndData->hWnd, IDT_TIMEALARM, 100, (TIMERPROC)NULL);
             }
             else
             {
@@ -633,7 +634,6 @@ static LRESULT OnTimer(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
         break;
     case IDT_TIMEALARM:
         PostMessageW(pWndData->hWnd, WM_TIMEALARM, 0, 0);
-        SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetMillisecondsToNextHour(), (TIMERPROC)NULL);
         break;
     default:
         return DefWindowProcW(pWndData->hWnd, WM_TIMER, wParam, lParam);
@@ -718,33 +718,40 @@ static LRESULT OnLButtonUp(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     return DefWindowProcW(pWndData->hWnd, WM_LBUTTONUP, wParam, lParam);
 }
 
-static LRESULT OnPowerBroadcast(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
-{
-    // 读取配置
-    PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
-    if (pCfgData != NULL)
-    {
-        LoadConfigFromReg(pCfgData);
-
-        switch (wParam)
-        {
-        //case PBT_APMSUSPEND:
-        case PBT_APMRESUMEAUTOMATIC:
-            if (pCfgData->bTimeAlarm)
-            {
-                // 电源休眠的时候定时器会暂停, 所以整点报时的定时器要唤醒时重新设置
-                SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetMillisecondsToNextHour(), (TIMERPROC)NULL);
-            }
-            break;
-        default:
-            DefFreeMem(pCfgData);
-            return DefWindowProcW(pWndData->hWnd, WM_POWERBROADCAST, wParam, lParam);;
-        }
-
-        DefFreeMem(pCfgData);
-    }
-    return TRUE;
-}
+////static LRESULT OnPowerBroadcast(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
+////{
+////    OutputDebugStringA("okokokokokokokokookokoko\n");
+////    char msg[128] = { 0 };
+////    sprintf_s(msg, 128, "PowerBroadcast: wParam: 0x%x lParam 0x%x.\n", (int)wParam, (int)lParam);
+////    MessageBoxA(pWndData->hWnd, msg, "OnPowerBroadcast", MB_OK);
+////     读取配置
+////    PCFGDATA pCfgData = (PCFGDATA)DefAllocMem(sizeof(CFGDATA));
+////    if (pCfgData != NULL)
+////    {
+////        LoadConfigFromReg(pCfgData);
+////
+////        switch (wParam)
+////        {
+////        case PBT_APMSUSPEND:
+////        case PBT_APMRESUMEAUTOMATIC:
+////            if (pCfgData->bTimeAlarm)
+////            {
+////                char tip[128] = { 0 };
+////                sprintf_s(tip, 128, "Reset timer to : %d ms.\n", GetMillisecondsToNextHour());
+////                MessageBoxA(pWndData->hWnd, tip, "PBT_APMRESUMEAUTOMATIC", MB_OK);
+////                 电源休眠的时候定时器会暂停, 所以整点报时的定时器要唤醒时重新设置
+////                SetTimer(pWndData->hWnd, IDT_TIMEALARM, GetMillisecondsToNextHour(), (TIMERPROC)NULL);
+////            }
+////            break;
+////        default:
+////            DefFreeMem(pCfgData);
+////            return DefWindowProcW(pWndData->hWnd, WM_POWERBROADCAST, wParam, lParam);;
+////        }
+////
+////        DefFreeMem(pCfgData);
+////    }
+////    return TRUE;
+////}
 
 static LRESULT OnDpiChanged(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
@@ -775,6 +782,8 @@ static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDBLCLK:
     {
         // DEBUG here
+        //MessageBoxW(pWndData->hWnd, L"Double Click on NotifyIcon!\n", L"Double Click on NotifyIcon!\n", MB_OK);
+        //TimeAlarm(pWndData);
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
         break;
     }
@@ -894,24 +903,21 @@ static LRESULT OnNotifyIcon(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
 static LRESULT OnTimeAlarm(PMAINWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    SYSTEMTIME st = { 0 };
-    GetLocalTime(&st);
-
-    HINSTANCE hInstance = GetModuleHandleW(NULL);
-
-    WCHAR szInfoTitle[MAX_NIDINFOTITLE] = { 0 };
-    LoadStringW(hInstance, IDS_TIMEALARMTITLE, szInfoTitle, MAX_NIDINFOTITLE);
-
-    WCHAR szInfo[MAX_NIDINFO] = { 0 };
-    WCHAR szInfoFormat[MAX_NIDINFO] = { 0 };
-    LoadStringW(hInstance, IDS_TIMEALARMINFO, szInfoFormat, MAX_NIDINFO);
-    StringCchPrintfW(szInfo, MAX_NIDINFO, szInfoFormat, st.wHour, st.wMinute);
-    
-    //HICON hIcon = LoadIconFromFile(szBalloonIconPath);
-    HICON hIcon = LoadIconRawSize(hInstance, MAKEINTRESOURCEW(IDI_TIMEALARM));
-    SetNotifyIconInfo(pWndData->hWnd, ID_NIDMAIN, szInfoTitle, szInfo, hIcon, pWndData->bInfoSound);
-
-    DestroyIcon(hIcon);
+    // 是否整点内
+    if (IsOnTheHour())
+    {
+        // 是否已报过时
+        if (!pWndData->bClocked)
+        {
+            pWndData->bClocked = TRUE;
+            TimeAlarm(pWndData);
+        }
+    }
+    else
+    {
+        // 非整点清空报时记录
+        pWndData->bClocked = FALSE;
+    }
     return 0;
 }
 
@@ -972,8 +978,8 @@ static LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         return OnLButtonDown(pWndData, wParam, lParam);
     case WM_LBUTTONUP:
         return OnLButtonUp(pWndData, wParam, lParam);
-    case WM_POWERBROADCAST:
-        return OnPowerBroadcast(pWndData, wParam, lParam);
+    //case WM_POWERBROADCAST: // XXX: 收不到这个消息
+    //    return OnPowerBroadcast(pWndData, wParam, lParam);
     case WM_DPICHANGED:
         return OnDpiChanged(pWndData, wParam, lParam);
     case WM_NOTIFYICON:
@@ -1107,5 +1113,29 @@ DWORD GetWndSizeByShowContent(PMAINWNDDATA pWndData, PSIZE psizeWnd, BYTE byShow
     {
         psizeWnd->cy += pWndData->wndSizeUnit * 2;
     }
+    return 0;
+}
+
+DWORD TimeAlarm(PMAINWNDDATA pWndData)
+{
+    SYSTEMTIME st = { 0 };
+    GetLocalTime(&st);
+
+    HINSTANCE hInstance = GetModuleHandleW(NULL);
+
+    WCHAR szInfoTitle[MAX_NIDINFOTITLE] = { 0 };
+    LoadStringW(hInstance, IDS_TIMEALARMTITLE, szInfoTitle, MAX_NIDINFOTITLE);
+
+    WCHAR szInfo[MAX_NIDINFO] = { 0 };
+    WCHAR szInfoFormat[MAX_NIDINFO] = { 0 };
+    LoadStringW(hInstance, IDS_TIMEALARMINFO, szInfoFormat, MAX_NIDINFO);
+    StringCchPrintfW(szInfo, MAX_NIDINFO, szInfoFormat, st.wHour, st.wMinute);
+
+    //HICON hIcon = LoadIconFromFile(szBalloonIconPath);
+    HICON hIcon = LoadIconRawSize(hInstance, MAKEINTRESOURCEW(IDI_TIMEALARM));
+    SetNotifyIconInfo(pWndData->hWnd, ID_NIDMAIN, szInfoTitle, szInfo, hIcon, pWndData->bInfoSound);
+
+    DestroyIcon(hIcon);
+
     return 0;
 }
