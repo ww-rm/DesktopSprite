@@ -50,6 +50,8 @@ private:
     BOOL                                bClocked = FALSE;               // 保存整点内是否报过时
     POINT                               ptDragSrc = { 0 };              // 拖动窗口时的源点
     Gdiplus::PrivateFontCollection      fontColl;                       // 文本字体容器
+
+    POINT                               lastFloatPos = { 0 };           // 最近一次浮动窗口位置
     SIZE                                lastResolution = { 0 };         // 最近运行时系统分辨率
 
 public:
@@ -59,8 +61,8 @@ public:
 public:
     MainWindow(const WinApp* app);
 
-    DWORD LoadPosDataFromReg(PPOINT ppoint, PSIZE psize);
-    DWORD SavePosDataToReg();
+    DWORD LoadFloatPosDataFromReg();
+    DWORD UpdateFloatPosDataToReg(PPOINT ppoint, PSIZE psize);
 
     DWORD ApplyConfig();
     DWORD ApplyConfig(PCFGDATA pcfgdata); // 应用更改, 只修改发生变化的设置项

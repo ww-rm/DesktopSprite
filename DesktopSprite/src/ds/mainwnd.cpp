@@ -147,12 +147,12 @@ MainWindow::MainWindow(const WinApp* app)
     }
 }
 
-DWORD MainWindow::LoadPosDataFromReg(PPOINT point, PSIZE resolution)
+DWORD MainWindow::LoadFloatPosDataFromReg()
 {
     // 默认主窗口位置是屏幕的 1/6 处
-    GetScreenResolution(resolution);
-    point->x = resolution->cx * 5 / 6;
-    point->y = resolution->cy * 1 / 6;
+    GetScreenResolution(&this->lastResolution);
+    this->lastFloatPos.x = this->lastResolution.cx * 5 / 6;
+    this->lastFloatPos.y = this->lastResolution.cy * 1 / 6;
 
     DWORD dwErrorCode = ERROR_SUCCESS;
 
@@ -168,9 +168,9 @@ DWORD MainWindow::LoadPosDataFromReg(PPOINT point, PSIZE resolution)
     if (dwErrorCode == ERROR_SUCCESS && dwDisposition == REG_OPENED_EXISTING_KEY)
     {
         cbData = sizeof(POINT);
-        RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)point, &cbData);
+        RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)&this->lastFloatPos, &cbData);
         cbData = sizeof(SIZE);
-        RegQueryAnyValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, (PBYTE)resolution, &cbData);
+        RegQueryAnyValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, (PBYTE)&this->lastResolution, &cbData);
     }
     else
     {
@@ -185,15 +185,12 @@ DWORD MainWindow::LoadPosDataFromReg(PPOINT point, PSIZE resolution)
     return dwErrorCode;
 }
 
-DWORD MainWindow::SavePosDataToReg()
+DWORD MainWindow::UpdateFloatPosDataToReg(PPOINT newPos, PSIZE newResolution)
 {
-    DWORD dwErrorCode = ERROR_SUCCESS;
+    CopyPoint(newPos, &this->lastFloatPos);
+    CopySize(newResolution, &this->lastResolution);
 
-    // 获得当前坐标和分辨率
-    RECT point = { 0 };
-    SIZE resolution = { 0 };
-    GetWindowRect(this->hWnd, &point);
-    GetScreenResolution(&resolution);
+    DWORD dwErrorCode = ERROR_SUCCESS;
 
     // 打开注册表项
     HKEY hkApp = NULL;
@@ -206,8 +203,8 @@ DWORD MainWindow::SavePosDataToReg()
     dwErrorCode = RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition);
     if (dwErrorCode == ERROR_SUCCESS && dwDisposition == REG_OPENED_EXISTING_KEY)
     {
-        RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)&point, sizeof(POINT));
-        RegSetBinValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, (PBYTE)&resolution, sizeof(SIZE));
+        RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)&this->lastFloatPos, sizeof(POINT));
+        RegSetBinValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, (PBYTE)&this->lastResolution, sizeof(SIZE));
     }
     else
     {
@@ -228,6 +225,7 @@ DWORD MainWindow::ApplyConfig()
     // 是否显示浮动窗口
     if (this->config.bFloatWnd)
     {
+        SetWindowPos(this->hWnd, HWND_TOPMOST, this->lastFloatPos.x, this->lastFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
         ShowWindow(this->hWnd, SW_SHOWNA);
     }
     else
@@ -273,6 +271,7 @@ DWORD MainWindow::ApplyConfig(PCFGDATA pcfgdata)
     {
         if (pcfgdata->bFloatWnd)
         {
+            SetWindowPos(this->hWnd, HWND_TOPMOST, this->lastFloatPos.x, this->lastFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
             ShowWindow(this->hWnd, SW_SHOWNA);
         }
         else
@@ -435,17 +434,18 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     this->wndSizeUnit = BASE_WNDSIZE_PIXELS * GetDpiForWindow(this->hWnd) / 96;
 
     // 设置窗口位置与大小, 获取当前屏幕分辨率, 并折算上一次运行时保存的窗口坐标到新分辨率
-    POINT lastPoint = { 0 };
+    this->LoadFloatPosDataFromReg();
+
     SIZE sizeWnd = { 0 };
     POINT point = { 0 };
     SIZE resolution = { 0 };
-    this->LoadPosDataFromReg(&lastPoint, &this->lastResolution);
     this->GetWndSizeByShowContent(&sizeWnd, this->config.byShowContent);
     GetScreenResolution(&resolution);
-    ConvertPointForResolution(&lastPoint, &this->lastResolution, &resolution, &point);
+    ConvertPointForResolution(&this->lastFloatPos, &this->lastResolution, &resolution, &point);
     SetWindowPos(this->hWnd, HWND_TOPMOST, point.x, point.y, sizeWnd.cx, sizeWnd.cy, SWP_NOACTIVATE);
-    CopySize(&resolution, &this->lastResolution);
-    this->SavePosDataToReg(); // 记录新的位置和分辨率
+
+    // 记录新的位置和分辨率
+    this->UpdateFloatPosDataToReg(&point, &resolution);
 
     // 向字体容器添加私有字体
     DWORD cbData = 0;
@@ -475,7 +475,6 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
     this->config.SaveToReg(this->app->GetAppName());
-    this->SavePosDataToReg();
     delete this->pNotifyIcon;
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
@@ -711,15 +710,18 @@ LRESULT MainWindow::OnDisplayChange(WPARAM wParam, LPARAM lParam)
     newResolution.cx = LOWORD(lParam);
     newResolution.cy = HIWORD(lParam);
 
-    RECT oldPos = { 0 };
     POINT newPos = { 0 };
-    GetWindowRect(this->hWnd, &oldPos);
-    ConvertPointForResolution((PPOINT)&oldPos, &this->lastResolution, &newResolution, &newPos);
-    SetWindowPos(this->hWnd, HWND_TOPMOST, newPos.x, newPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
+    ConvertPointForResolution(&this->lastFloatPos, &this->lastResolution, &newResolution, &newPos);
 
-    // 保存现在的位置和分辨率
-    CopySize(&newResolution, &this->lastResolution);
-    this->SavePosDataToReg();
+    // 更新并保存现在的位置和分辨率
+    this->UpdateFloatPosDataToReg(&newPos, &newResolution);
+
+    // 如果当前浮动显示则修正位置
+    if (this->config.bFloatWnd)
+    {
+        SetWindowPos(this->hWnd, HWND_TOPMOST, this->lastFloatPos.x, this->lastFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
+    }
+
     return 0;
 }
 
@@ -907,7 +909,15 @@ LRESULT MainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
     // 保存一次现在的窗口位置和对应的分辨率
-    this->SavePosDataToReg();
+    if (this->config.bFloatWnd)
+    {
+        // 获得当前坐标和分辨率
+        RECT point = { 0 };
+        SIZE resolution = { 0 };
+        GetWindowRect(this->hWnd, &point);
+        GetScreenResolution(&resolution);
+        this->UpdateFloatPosDataToReg((PPOINT)&point, &resolution);
+    }
     return 0;
 }
 
