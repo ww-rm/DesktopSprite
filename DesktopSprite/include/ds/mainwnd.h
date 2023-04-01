@@ -62,7 +62,7 @@ public:
     MainWindow(const WinApp* app);
 
     DWORD LoadFloatPosDataFromReg();
-    DWORD UpdateFloatPosDataToReg(PPOINT ppoint, PSIZE psize);
+    DWORD UpdateFloatPosDataToRegByCurrentResolution();
 
     DWORD ApplyConfig();
     DWORD ApplyConfig(PCFGDATA pcfgdata); // 应用更改, 只修改发生变化的设置项

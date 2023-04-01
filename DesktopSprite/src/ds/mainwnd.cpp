@@ -185,10 +185,12 @@ DWORD MainWindow::LoadFloatPosDataFromReg()
     return dwErrorCode;
 }
 
-DWORD MainWindow::UpdateFloatPosDataToReg(PPOINT newPos, PSIZE newResolution)
+DWORD MainWindow::UpdateFloatPosDataToRegByCurrentResolution()
 {
-    CopyPoint(newPos, &this->lastFloatPos);
-    CopySize(newResolution, &this->lastResolution);
+    SIZE newResolution = { 0 };
+    GetScreenResolution(&newResolution);
+    ConvertPointForResolution(&this->lastFloatPos, &this->lastResolution, &newResolution, &this->lastFloatPos);
+    CopySize(&newResolution, &this->lastResolution);
 
     DWORD dwErrorCode = ERROR_SUCCESS;
 
@@ -232,6 +234,11 @@ DWORD MainWindow::ApplyConfig()
     {
         ShowWindow(this->hWnd, SW_HIDE);
     }
+
+    // 设置显示内容
+    SIZE sizeWnd = { 0 };
+    GetWndSizeByShowContent(&sizeWnd, this->config.byShowContent);
+    SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, sizeWnd.cx, sizeWnd.cy, SWP_NOACTIVATE | SWP_NOMOVE);
 
     // 设置透明度
     SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(this->config.transparencyPercent), LWA_ALPHA);
@@ -423,29 +430,12 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 {
-    // 初始化配置参数相关
-    this->config.LoadFromReg(this->app->GetAppName());
-    //if (PathFileExistsW(this->GetConfigPath()))
-    //{
-    //    this->config.LoadFromFile(this->GetConfigPath());
-    //}
-
     // DPI 相关
     this->wndSizeUnit = BASE_WNDSIZE_PIXELS * GetDpiForWindow(this->hWnd) / 96;
 
-    // 设置窗口位置与大小, 获取当前屏幕分辨率, 并折算上一次运行时保存的窗口坐标到新分辨率
+    // 按新分辨率更新浮动窗口位置
     this->LoadFloatPosDataFromReg();
-
-    SIZE sizeWnd = { 0 };
-    POINT point = { 0 };
-    SIZE resolution = { 0 };
-    this->GetWndSizeByShowContent(&sizeWnd, this->config.byShowContent);
-    GetScreenResolution(&resolution);
-    ConvertPointForResolution(&this->lastFloatPos, &this->lastResolution, &resolution, &point);
-    SetWindowPos(this->hWnd, HWND_TOPMOST, point.x, point.y, sizeWnd.cx, sizeWnd.cy, SWP_NOACTIVATE);
-
-    // 记录新的位置和分辨率
-    this->UpdateFloatPosDataToReg(&point, &resolution);
+    this->UpdateFloatPosDataToRegByCurrentResolution();
 
     // 向字体容器添加私有字体
     DWORD cbData = 0;
@@ -463,6 +453,12 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     LoadStringW(GetModuleHandleW(NULL), IDS_APPNAME, szTip, MAX_NIDTIP);
     this->pNotifyIcon->SetTip(szTip);
 
+    // 初始化配置参数相关
+    this->config.LoadFromReg(this->app->GetAppName());
+    //if (PathFileExistsW(this->GetConfigPath()))
+    //{
+    //    this->config.LoadFromFile(this->GetConfigPath());
+    //}
     // 应用配置项
     this->ApplyConfig();
 
@@ -706,15 +702,7 @@ LRESULT MainWindow::OnContextMenu(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnDisplayChange(WPARAM wParam, LPARAM lParam)
 {
-    SIZE newResolution = { 0 };
-    newResolution.cx = LOWORD(lParam);
-    newResolution.cy = HIWORD(lParam);
-
-    POINT newPos = { 0 };
-    ConvertPointForResolution(&this->lastFloatPos, &this->lastResolution, &newResolution, &newPos);
-
-    // 更新并保存现在的位置和分辨率
-    this->UpdateFloatPosDataToReg(&newPos, &newResolution);
+    this->UpdateFloatPosDataToRegByCurrentResolution();
 
     // 如果当前浮动显示则修正位置
     if (this->config.bFloatWnd)
@@ -911,12 +899,11 @@ LRESULT MainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
     // 保存一次现在的窗口位置和对应的分辨率
     if (this->config.bFloatWnd)
     {
-        // 获得当前坐标和分辨率
-        RECT point = { 0 };
-        SIZE resolution = { 0 };
-        GetWindowRect(this->hWnd, &point);
-        GetScreenResolution(&resolution);
-        this->UpdateFloatPosDataToReg((PPOINT)&point, &resolution);
+        // 获得当前坐标
+        RECT newPos = { 0 };
+        GetWindowRect(this->hWnd, &newPos);
+        CopyPoint((PPOINT)&newPos, &this->lastFloatPos);
+        this->UpdateFloatPosDataToRegByCurrentResolution();
     }
     return 0;
 }

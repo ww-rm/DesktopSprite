@@ -98,7 +98,7 @@ DWORD ExtractRes(UINT uResID, PCWSTR szResType, PCWSTR szFilePath);
 // 获取 TTF 资源内存
 PBYTE GetResPointer(UINT uResID, PCWSTR szResType, DWORD* cbData);
 
-// 在不同分辨率之间折算坐标相对位置
+// 在不同分辨率之间折算坐标相对位置, ptOld 和 ptNew 可以是同一个指针
 DWORD ConvertPointForResolution(PPOINT ptOld, PSIZE sizeOld, PSIZE sizeNew, PPOINT ptNew);
 
 // Copy POINT

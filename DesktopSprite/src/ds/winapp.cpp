@@ -7,7 +7,7 @@
 
 WinApp::WinApp()
 {
-    this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutexDEBUG");
+    this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex");
     if (!this->hAppMutex)
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
@@ -92,7 +92,7 @@ PCWSTR WinApp::GetAppDir() const
     return this->szExeFullDir;
 }
 
-INT APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, INT nShowCmd)
+INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ INT nShowCmd)
 {
     INT errCode = EXIT_SUCCESS;
     WinApp* app = new WinApp();
