@@ -311,7 +311,7 @@ PBYTE GetResPointer(UINT uResID, PCWSTR szResType, DWORD* cbData)
     return NULL;
 }
 
-DWORD ConvertPointForResolution(PPOINT ptOld, PSIZE sizeOld, PSIZE sizeNew, PPOINT ptNew)
+DWORD ConvertPointForResolution(const PSIZE sizeOld, const PPOINT ptOld, const PSIZE sizeNew, PPOINT ptNew)
 {
     ptNew->x = ptOld->x * sizeNew->cx / sizeOld->cx;
     ptNew->y = ptOld->y * sizeNew->cy / sizeOld->cy;

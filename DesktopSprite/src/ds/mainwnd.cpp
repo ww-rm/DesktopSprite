@@ -189,7 +189,7 @@ DWORD MainWindow::UpdateFloatPosDataToRegByCurrentResolution()
 {
     SIZE newResolution = { 0 };
     GetScreenResolution(&newResolution);
-    ConvertPointForResolution(&this->lastFloatPos, &this->lastResolution, &newResolution, &this->lastFloatPos);
+    ConvertPointForResolution(&this->lastResolution, &this->lastFloatPos, &newResolution, &this->lastFloatPos);
     CopySize(&newResolution, &this->lastResolution);
 
     DWORD dwErrorCode = ERROR_SUCCESS;
