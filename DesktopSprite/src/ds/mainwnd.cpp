@@ -786,13 +786,13 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             PTRANSDLGFORM pInitForm = new TRANSDLGFORM;
             // 填充表单初始值
-            pInitForm->transparencyPercent = (UINT)pcfgdata->transparencyPercent;
+            pInitForm->transparencyPercent = pcfgdata->transparencyPercent;
 
             // 显示对话框
             DialogBoxTrans(GetModuleHandleW(NULL), this->hWnd, pInitForm);
 
             // 获取返回表单值, 修改设置项
-            pcfgdata->transparencyPercent = (DOUBLE)pInitForm->transparencyPercent;
+            pcfgdata->transparencyPercent = pInitForm->transparencyPercent;
             delete pInitForm;
         }
         break;

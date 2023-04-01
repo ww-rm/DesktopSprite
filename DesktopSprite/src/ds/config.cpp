@@ -77,7 +77,7 @@ DWORD AppConfig::LoadFromReg(PCWSTR appname)
         RegQueryAnyValue(hkApp, CFGKEY_INFOSOUND, (PBYTE)&this->bInfoSound, &cbData);
         cbData = sizeof(BOOL);
         RegQueryAnyValue(hkApp, CFGKEY_DARKTHEME, (PBYTE)&this->bDarkTheme, &cbData);
-        cbData = sizeof(BYTE);
+        cbData = sizeof(DOUBLE);
         RegQueryAnyValue(hkApp, CFGKEY_TRANSPARENCY, (PBYTE)&this->transparencyPercent, &cbData);
         cbData = sizeof(BYTE);
         RegQueryAnyValue(hkApp, CFGKEY_SHOWCONTENT, (PBYTE)&this->byShowContent, &cbData);
@@ -118,7 +118,7 @@ DWORD AppConfig::SaveToReg(PCWSTR appname)
         //RegSetValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, REG_SZ, (PBYTE)this->szBalloonIconPath, (DWORD)(cbData+1)*sizeof(WCHAR));
         RegSetBinValue(hkApp, CFGKEY_INFOSOUND, (PBYTE)&this->bInfoSound, sizeof(BOOL));
         RegSetBinValue(hkApp, CFGKEY_DARKTHEME, (PBYTE)&this->bDarkTheme, sizeof(BOOL));
-        RegSetBinValue(hkApp, CFGKEY_TRANSPARENCY, (PBYTE)&this->transparencyPercent, sizeof(BYTE));
+        RegSetBinValue(hkApp, CFGKEY_TRANSPARENCY, (PBYTE)&this->transparencyPercent, sizeof(DOUBLE));
         RegSetBinValue(hkApp, CFGKEY_SHOWCONTENT, (PBYTE)&this->byShowContent, sizeof(BYTE));
     }
     else
