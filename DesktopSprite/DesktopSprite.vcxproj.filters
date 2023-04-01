@@ -34,6 +34,12 @@
     <Filter Include="头文件\spine">
       <UniqueIdentifier>{b29b0bdc-160d-4296-b1d3-3f200f0bc908}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\json">
+      <UniqueIdentifier>{e52c16d6-2245-4790-97a2-e6b960cfe402}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\json">
+      <UniqueIdentifier>{82375dc6-b8f4-452e-b703-27998c69f940}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\DesktopSprite.rc">
@@ -56,7 +62,7 @@
     <ClInclude Include="include\ds\notifyicon.h">
       <Filter>头文件\ds</Filter>
     </ClInclude>
-    <ClInclude Include="include\ds\perfdata.h">
+    <ClInclude Include="include\ds\perfmonitor.h">
       <Filter>头文件\ds</Filter>
     </ClInclude>
     <ClInclude Include="include\ds\spritewnd.h">
@@ -65,7 +71,7 @@
     <ClInclude Include="include\ds\transdlg.h">
       <Filter>头文件\ds</Filter>
     </ClInclude>
-    <ClInclude Include="include\ds\util.h">
+    <ClInclude Include="include\ds\utils.h">
       <Filter>头文件\ds</Filter>
     </ClInclude>
     <ClInclude Include="include\ds\winapp.h">
@@ -197,6 +203,42 @@
     <ClInclude Include="include\spine\VertexEffect.h">
       <Filter>头文件\spine</Filter>
     </ClInclude>
+    <ClInclude Include="include\ds\basewindow.h">
+      <Filter>头文件\ds</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\allocator.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\assertions.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\config.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\forwards.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\json.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\json_features.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\reader.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\value.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\version.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="include\json\writer.h">
+      <Filter>头文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="src\json\json_tool.h">
+      <Filter>源文件\json</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ds\config.cpp">
@@ -208,7 +250,7 @@
     <ClCompile Include="src\ds\notifyicon.cpp">
       <Filter>源文件\ds</Filter>
     </ClCompile>
-    <ClCompile Include="src\ds\perfdata.cpp">
+    <ClCompile Include="src\ds\perfmonitor.cpp">
       <Filter>源文件\ds</Filter>
     </ClCompile>
     <ClCompile Include="src\ds\spritewnd.cpp">
@@ -217,128 +259,140 @@
     <ClCompile Include="src\ds\transdlg.cpp">
       <Filter>源文件\ds</Filter>
     </ClCompile>
-    <ClCompile Include="src\ds\util.cpp">
+    <ClCompile Include="src\ds\utils.cpp">
       <Filter>源文件\ds</Filter>
     </ClCompile>
     <ClCompile Include="src\ds\winapp.cpp">
       <Filter>源文件\ds</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Animation.c">
+    <ClCompile Include="src\spine\Animation.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\AnimationState.c">
+    <ClCompile Include="src\spine\AnimationState.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\AnimationStateData.c">
+    <ClCompile Include="src\spine\AnimationStateData.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Array.c">
+    <ClCompile Include="src\spine\Array.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Atlas.c">
+    <ClCompile Include="src\spine\Atlas.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\AtlasAttachmentLoader.c">
+    <ClCompile Include="src\spine\AtlasAttachmentLoader.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Attachment.c">
+    <ClCompile Include="src\spine\Attachment.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\AttachmentLoader.c">
+    <ClCompile Include="src\spine\AttachmentLoader.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Bone.c">
+    <ClCompile Include="src\spine\Bone.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\BoneData.c">
+    <ClCompile Include="src\spine\BoneData.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\BoundingBoxAttachment.c">
+    <ClCompile Include="src\spine\BoundingBoxAttachment.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\ClippingAttachment.c">
+    <ClCompile Include="src\spine\ClippingAttachment.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Color.c">
+    <ClCompile Include="src\spine\Color.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Event.c">
+    <ClCompile Include="src\spine\Event.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\EventData.c">
+    <ClCompile Include="src\spine\EventData.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\extension.c">
+    <ClCompile Include="src\spine\extension.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\IkConstraint.c">
+    <ClCompile Include="src\spine\IkConstraint.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\IkConstraintData.c">
+    <ClCompile Include="src\spine\IkConstraintData.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Json.c">
+    <ClCompile Include="src\spine\Json.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\MeshAttachment.c">
+    <ClCompile Include="src\spine\MeshAttachment.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\PathAttachment.c">
+    <ClCompile Include="src\spine\PathAttachment.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\PathConstraint.c">
+    <ClCompile Include="src\spine\PathConstraint.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\PathConstraintData.c">
+    <ClCompile Include="src\spine\PathConstraintData.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\PointAttachment.c">
+    <ClCompile Include="src\spine\PointAttachment.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\RegionAttachment.c">
+    <ClCompile Include="src\spine\RegionAttachment.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Skeleton.c">
+    <ClCompile Include="src\spine\Skeleton.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\SkeletonBinary.c">
+    <ClCompile Include="src\spine\SkeletonBinary.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\SkeletonBounds.c">
+    <ClCompile Include="src\spine\SkeletonBounds.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\SkeletonClipping.c">
+    <ClCompile Include="src\spine\SkeletonClipping.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\SkeletonData.c">
+    <ClCompile Include="src\spine\SkeletonData.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\SkeletonJson.c">
+    <ClCompile Include="src\spine\SkeletonJson.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Skin.c">
+    <ClCompile Include="src\spine\Skin.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Slot.c">
+    <ClCompile Include="src\spine\Slot.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\SlotData.c">
+    <ClCompile Include="src\spine\SlotData.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\TransformConstraint.c">
+    <ClCompile Include="src\spine\TransformConstraint.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\TransformConstraintData.c">
+    <ClCompile Include="src\spine\TransformConstraintData.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\Triangulator.c">
+    <ClCompile Include="src\spine\Triangulator.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\VertexAttachment.c">
+    <ClCompile Include="src\spine\VertexAttachment.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="src\spine\VertexEffect.c">
+    <ClCompile Include="src\spine\VertexEffect.cpp">
       <Filter>源文件\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="basewindow.cpp">
+      <Filter>源文件\ds</Filter>
+    </ClCompile>
+    <ClCompile Include="src\json\json_reader.cpp">
+      <Filter>源文件\json</Filter>
+    </ClCompile>
+    <ClCompile Include="src\json\json_value.cpp">
+      <Filter>源文件\json</Filter>
+    </ClCompile>
+    <ClCompile Include="src\json\json_writer.cpp">
+      <Filter>源文件\json</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -368,5 +422,10 @@
     <Font Include="res\font\AGENCYR.TTF">
       <Filter>资源文件\字体</Filter>
     </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\json\json_valueiterator.inl">
+      <Filter>源文件\json</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,9 +1,26 @@
 #pragma once
+#ifndef DS_WINAPP_H
+#define DS_WINAPP_H
+
 #include <ds/framework.h>
 
-typedef struct _APPDATA
+class WinApp
 {
-    HWND hMainWnd;
-    HWND hSpriteWnd;
-    
-} APPDATA, *PAPPDATA;
+private:
+    HANDLE hAppMutex = NULL;
+    ULONG_PTR gdiplusToken = 0;
+    WCHAR szExeFullDir[MAX_PATH] = { 0 };
+    WCHAR szExeFullPath[MAX_PATH] = { 0 };
+
+public:
+    WinApp();
+    ~WinApp();
+    INT Mainloop();
+
+public:
+    PCWSTR GetAppName() const;
+    PCWSTR GetAppPath() const;
+    PCWSTR GetAppDir() const;
+};
+
+#endif // !DS_WINAPP_H

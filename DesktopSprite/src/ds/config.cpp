@@ -1,152 +1,145 @@
 #include <ds/framework.h>
-#include <ds/util.h>
+#include <ds/utils.h>
 
 #include <ds/config.h>
 
 // TODO: 设置项注册表名称
-static PCWSTR const REGVAL_SHOWMAINWND              = L"IsFloatWnd";
-static PCWSTR const REGVAL_AUTORUN                  = L"IsAutoRun";
-static PCWSTR const REGVAL_TIMEAlARM                = L"IsTimeAlarm";
-//static PCWSTR const REGVAL_BALLOONICONPATH          = L"BalloonIconPath";
-static PCWSTR const REGVAL_INFOSOUND                = L"IsInfoSound";
-static PCWSTR const REGVAL_DARKTHEME                = L"IsDarkTheme";
-static PCWSTR const REGVAL_TRANSPARENCY             = L"Transparency";
-static PCWSTR const REGVAL_SHOWCONTENT              = L"ShowContent";
+static PCWSTR const CFGKEY_SHOWMAINWND              = L"IsFloatWnd";
+static PCWSTR const CFGKEY_AUTORUN                  = L"IsAutoRun";
+static PCWSTR const CFGKEY_TIMEAlARM                = L"IsTimeAlarm";
+static PCWSTR const CFGKEY_BALLOONICONPATH          = L"BalloonIconPath";
+static PCWSTR const CFGKEY_INFOSOUND                = L"IsInfoSound";
+static PCWSTR const CFGKEY_DARKTHEME                = L"IsDarkTheme";
+static PCWSTR const CFGKEY_TRANSPARENCY             = L"Transparency";
+static PCWSTR const CFGKEY_SHOWCONTENT              = L"ShowContent";
 
-static PCWSTR const REGVAL_LASTFLOATPOS             = L"LastFloatPos";
-static PCWSTR const REGVAL_LASTRUNTIMERESOLUTION    = L"LastRunTimeResolution";
-
-
-DWORD LoadDefaultConfig(PCFGDATA pCfgData)
+AppConfig::AppConfig()
 {
-    // TODO: 应用默认设置
-    pCfgData->bFloatWnd = TRUE;                             // 默认显示浮窗
-    pCfgData->bAutoRun = FALSE;                             // 禁止开机自启
-    pCfgData->bTimeAlarm = TRUE;                            // 开启整点报时
+    this->bFloatWnd = TRUE;                                             // 默认显示浮窗
+    this->bAutoRun = FALSE;                                             // 禁止开机自启
+    this->bTimeAlarm = TRUE;                                            // 开启整点报时
+    StringCchCopyW(this->szBalloonIconPath, MAX_PATH, L"res\\image\\timealarm.ico");
+    this->bInfoSound = TRUE;                                            // 开启提示声音
+    this->bDarkTheme = TRUE;                                            // 默认使用深色主题
+    this->transparencyPercent = 80.0;                                   // 默认透明度 80%
+    this->byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;    // 默认占用和网速都显示
+}
 
-    //WCHAR szExeFullDir[MAX_PATH] = { 0 };
-    //GetModuleFileNameW(NULL, szExeFullDir, MAX_PATH);
-    //PathCchRemoveFileSpec(szExeFullDir, MAX_PATH);
-    //PathCchCombine(pCfgData->szBalloonIconPath, MAX_PATH, szExeFullDir, L"data\\default_balloonicon.ico");
+void AppConfig::Get(PCFGDATA pcfgdata) const
+{
+    pcfgdata->bFloatWnd = this->bFloatWnd;
+    pcfgdata->bAutoRun = this->bAutoRun;
+    pcfgdata->bTimeAlarm = this->bTimeAlarm;
+    StringCchCopyW(pcfgdata->szBalloonIconPath, MAX_PATH, this->szBalloonIconPath);
+    pcfgdata->bInfoSound = this->bInfoSound;
+    pcfgdata->bDarkTheme = this->bDarkTheme;
+    pcfgdata->transparencyPercent = this->transparencyPercent;
+    pcfgdata->byShowContent = this->byShowContent;
+}
 
-    pCfgData->bInfoSound = TRUE;                            // 开启提示声音
-    pCfgData->bDarkTheme = TRUE;                            // 默认使用深色主题
-    pCfgData->byTransparency = PercentToAlpha(80);          // 默认透明度 80%
-    pCfgData->byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;    // 默认占用和网速都显示
-   
-    // 默认主窗口位置是屏幕的 1/6 处
-    SIZE sizeScreen = { 0 };
-    GetScreenResolution(&sizeScreen);
-    pCfgData->ptLastFloatPos.x = sizeScreen.cx * 5 / 6;
-    pCfgData->ptLastFloatPos.y = sizeScreen.cy * 1 / 6;
+void AppConfig::Set(const PCFGDATA pcfgdata)
+{
+    this->bFloatWnd = pcfgdata->bFloatWnd;
+    this->bAutoRun = pcfgdata->bAutoRun;
+    this->bTimeAlarm = pcfgdata->bTimeAlarm;
+    StringCchCopyW(this->szBalloonIconPath, MAX_PATH, pcfgdata->szBalloonIconPath);
+    this->bInfoSound = pcfgdata->bInfoSound;
+    this->bDarkTheme = pcfgdata->bDarkTheme;
+    this->transparencyPercent = pcfgdata->transparencyPercent;
+    this->byShowContent = pcfgdata->byShowContent;
+}
 
-    // 分辨率就是当前系统分辨率
-    GetScreenResolution(&pCfgData->sizeLastRuntimeResolution);    
+DWORD AppConfig::LoadFromReg(PCWSTR appname)
+{
+    DWORD dwErrorCode = ERROR_SUCCESS;
+
+    // 打开注册表项
+    HKEY hkApp = NULL;
+    DWORD dwDisposition = 0;
+    DWORD cbData = 0;
+
+    WCHAR subkey[128] = { 0 };
+    StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", appname);
+
+    dwErrorCode = RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition);
+    if (dwErrorCode == ERROR_SUCCESS && dwDisposition == REG_OPENED_EXISTING_KEY)
+    {
+        // TODO: 读取配置
+        cbData = sizeof(BOOL);
+        RegQueryAnyValue(hkApp, CFGKEY_SHOWMAINWND, (PBYTE)&this->bFloatWnd, &cbData);
+        cbData = sizeof(BOOL);
+        RegQueryAnyValue(hkApp, CFGKEY_AUTORUN, (PBYTE)&this->bAutoRun, &cbData);
+        cbData = sizeof(BOOL);
+        RegQueryAnyValue(hkApp, CFGKEY_TIMEAlARM, (PBYTE)&this->bTimeAlarm, &cbData);
+        //cbData = MAX_PATH;
+        //RegQueryValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, NULL, (PBYTE)this->szBalloonIconPath, &cbData);
+        cbData = sizeof(BOOL);
+        RegQueryAnyValue(hkApp, CFGKEY_INFOSOUND, (PBYTE)&this->bInfoSound, &cbData);
+        cbData = sizeof(BOOL);
+        RegQueryAnyValue(hkApp, CFGKEY_DARKTHEME, (PBYTE)&this->bDarkTheme, &cbData);
+        cbData = sizeof(BYTE);
+        RegQueryAnyValue(hkApp, CFGKEY_TRANSPARENCY, (PBYTE)&this->transparencyPercent, &cbData);
+        cbData = sizeof(BYTE);
+        RegQueryAnyValue(hkApp, CFGKEY_SHOWCONTENT, (PBYTE)&this->byShowContent, &cbData);
+    }
+    else
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+    }
+    // 关闭注册表
+    if (hkApp != NULL)
+    {
+        RegCloseKey(hkApp);
+    }
+    return dwErrorCode;
+}
+
+DWORD AppConfig::SaveToReg(PCWSTR appname)
+{
+    DWORD dwErrorCode = ERROR_SUCCESS;
+
+    // 打开注册表项
+    HKEY hkApp = NULL;
+    DWORD dwDisposition = 0;
+    DWORD cbData = 0;
+
+    WCHAR subkey[128] = { 0 };
+    StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", appname);
+
+    dwErrorCode = RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition);
+    if (dwErrorCode == ERROR_SUCCESS)
+    {
+        // TODO: 保存应用配置
+        RegSetBinValue(hkApp, CFGKEY_SHOWMAINWND, (PBYTE)&this->bFloatWnd, sizeof(BOOL));
+        RegSetBinValue(hkApp, CFGKEY_AUTORUN, (PBYTE)&this->bAutoRun, sizeof(BOOL));
+        RegSetBinValue(hkApp, CFGKEY_TIMEAlARM, (PBYTE)&this->bTimeAlarm, sizeof(BOOL));
+        //SIZE_T cbData = 0;
+        //StringCchLengthW(this->szBalloonIconPath, MAX_PATH, &cbData);
+        //RegSetValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, REG_SZ, (PBYTE)this->szBalloonIconPath, (DWORD)(cbData+1)*sizeof(WCHAR));
+        RegSetBinValue(hkApp, CFGKEY_INFOSOUND, (PBYTE)&this->bInfoSound, sizeof(BOOL));
+        RegSetBinValue(hkApp, CFGKEY_DARKTHEME, (PBYTE)&this->bDarkTheme, sizeof(BOOL));
+        RegSetBinValue(hkApp, CFGKEY_TRANSPARENCY, (PBYTE)&this->transparencyPercent, sizeof(BYTE));
+        RegSetBinValue(hkApp, CFGKEY_SHOWCONTENT, (PBYTE)&this->byShowContent, sizeof(BYTE));
+    }
+    else
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+    }
+
+    // 关闭注册表
+    if (hkApp != NULL)
+    {
+        RegCloseKey(hkApp);
+    }
+    return dwErrorCode;
+}
+
+DWORD AppConfig::LoadFromFile(PCWSTR path)
+{
     return 0;
 }
 
-DWORD LoadConfigFromReg(PCFGDATA pCfgData)
+DWORD AppConfig::SaveToFile(PCWSTR path)
 {
-    LoadDefaultConfig(pCfgData); // 保证有默认值
-
-    DWORD dwErrorCode = ERROR_SUCCESS;
-
-    // 打开注册表项
-    HKEY hkSoftware = NULL;
-    HKEY hkApp = NULL;
-    DWORD cbData = 0;
-
-    dwErrorCode = RegOpenSoftwareKey(&hkSoftware);
-    if (dwErrorCode == ERROR_SUCCESS)
-    {
-        dwErrorCode = RegOpenKeyExW(hkSoftware, APPNAME, 0, KEY_ALL_ACCESS, &hkApp);
-        if (dwErrorCode == ERROR_SUCCESS)
-        {
-            // TODO: 读取配置
-            cbData = sizeof(BOOL);
-            RegQueryAnyValue(hkApp, REGVAL_SHOWMAINWND, &pCfgData->bFloatWnd, &cbData);
-            cbData = sizeof(BOOL);
-            RegQueryAnyValue(hkApp, REGVAL_AUTORUN, &pCfgData->bAutoRun, &cbData);
-            cbData = sizeof(BOOL);
-            RegQueryAnyValue(hkApp, REGVAL_TIMEAlARM, &pCfgData->bTimeAlarm, &cbData);
-            //cbData = MAX_PATH;
-            //RegQueryValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, NULL, (PBYTE)pCfgData->szBalloonIconPath, &cbData);
-            cbData = sizeof(BOOL);
-            RegQueryAnyValue(hkApp, REGVAL_INFOSOUND, &pCfgData->bInfoSound, &cbData);
-            cbData = sizeof(BOOL);
-            RegQueryAnyValue(hkApp, REGVAL_DARKTHEME, &pCfgData->bDarkTheme, &cbData);
-            cbData = sizeof(BYTE);
-            RegQueryAnyValue(hkApp, REGVAL_TRANSPARENCY, &pCfgData->byTransparency, &cbData);
-            cbData = sizeof(BYTE);
-            RegQueryAnyValue(hkApp, REGVAL_SHOWCONTENT, &pCfgData->byShowContent, &cbData);
-
-            cbData = sizeof(POINT);
-            RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, &cbData);
-            cbData = sizeof(SIZE);
-            RegQueryAnyValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, &pCfgData->sizeLastRuntimeResolution, &cbData);
-        }
-        else if (dwErrorCode != ERROR_FILE_NOT_FOUND)
-        {
-            // TODO: 错误处理
-        }
-    }
-
-    // 关闭注册表
-    if (hkApp != NULL)
-    {
-        RegCloseKey(hkApp);
-    }
-    if (hkSoftware != NULL)
-    {
-        RegCloseKey(hkSoftware);
-    }
-    return dwErrorCode;
-}
-
-DWORD SaveConfigToReg(PCFGDATA pCfgData)
-{
-    DWORD dwErrorCode = ERROR_SUCCESS;
-
-    // 打开注册表项
-    HKEY hkSoftware = NULL;
-    HKEY hkApp = NULL;
-    DWORD cbData = 0;
-    
-    dwErrorCode = RegOpenSoftwareKey(&hkSoftware);
-    if (dwErrorCode == ERROR_SUCCESS)
-    {
-        dwErrorCode = RegCreateKeyExW(hkSoftware, APPNAME, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, NULL);
-        if (dwErrorCode == ERROR_SUCCESS)
-        {
-            // TODO: 保存应用配置
-            RegSetBinValue(hkApp, REGVAL_SHOWMAINWND, &pCfgData->bFloatWnd, sizeof(BOOL));
-            RegSetBinValue(hkApp, REGVAL_AUTORUN, &pCfgData->bAutoRun, sizeof(BOOL));
-            RegSetBinValue(hkApp, REGVAL_TIMEAlARM, &pCfgData->bTimeAlarm, sizeof(BOOL));
-            //SIZE_T cbData = 0;
-            //StringCchLengthW(pCfgData->szBalloonIconPath, MAX_PATH, &cbData);
-            //RegSetValueExW(hkApp, REGVAL_BALLOONICONPATH, 0, REG_SZ, (PBYTE)pCfgData->szBalloonIconPath, (DWORD)(cbData+1)*sizeof(WCHAR));
-            RegSetBinValue(hkApp, REGVAL_INFOSOUND, &pCfgData->bInfoSound, sizeof(BOOL));
-            RegSetBinValue(hkApp, REGVAL_DARKTHEME, &pCfgData->bDarkTheme, sizeof(BOOL));
-            RegSetBinValue(hkApp, REGVAL_TRANSPARENCY, &pCfgData->byTransparency, sizeof(BYTE));
-            RegSetBinValue(hkApp, REGVAL_SHOWCONTENT, &pCfgData->byShowContent, sizeof(BYTE));
-
-            RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, &pCfgData->ptLastFloatPos, sizeof(POINT));
-            RegSetBinValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, &pCfgData->sizeLastRuntimeResolution, sizeof(SIZE));
-        }
-        else
-        {
-            // TODO: 错误处理
-        }
-    }
-
-    // 关闭注册表
-    if (hkApp != NULL)
-    {
-        RegCloseKey(hkApp);
-    }
-    if (hkSoftware != NULL)
-    {
-        RegCloseKey(hkSoftware);
-    }
-    return dwErrorCode;
+    return 0;
 }

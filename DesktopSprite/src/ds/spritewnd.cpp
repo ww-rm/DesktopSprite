@@ -1,7 +1,8 @@
 #include <ds/spritewnd.h>
 #include <ds/framework.h>
 
-#include <ds/util.h>
+#include <ds/utils.h>
+#include <spine/spine.h>
 
 
 using namespace Gdiplus;
@@ -54,7 +55,32 @@ static LRESULT OnClose(PSPRITEWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 
 static LRESULT OnPaint(PSPRITEWNDDATA pWndData, WPARAM wParam, LPARAM lParam)
 {
-    
+    // ¿ªÊ¼»æÍ¼
+    PAINTSTRUCT ps = { 0 };
+    HDC hdc = BeginPaint(pWndData->hWnd, &ps);
+
+    REAL sizeUnit = 20.0f;
+
+    // µÃµ½»æÍ¼´°Ìå´óÐ¡
+    RECT rcClient;
+    GetClientRect(pWndData->hWnd, &rcClient);
+    SizeF sizeClient(REAL(rcClient.right - rcClient.left), REAL(rcClient.bottom - rcClient.top));
+
+
+    SolidBrush bgbrush(Color::Green);     // ±³¾°ÑÕÉ«
+
+    Graphics graphics(hdc);
+    graphics.FillRectangle(&bgbrush, 0., 0., sizeClient.Width, sizeClient.Height);
+
+    Bitmap* picbmp = new Bitmap(L"D:\\ACGN\\C\\illusts\\AzurLane\\skin\\IllustriousPledge.png");
+
+    // ¿½±´»º´æÍ¼, ½áÊø»æÍ¼
+    CachedBitmap* pCachedBmp = new CachedBitmap(picbmp, &graphics);
+    graphics.DrawCachedBitmap(pCachedBmp, 0, 0);
+    EndPaint(pWndData->hWnd, &ps);
+
+    delete pCachedBmp;
+    delete picbmp;
     return 0;
 }
 
@@ -151,14 +177,14 @@ static LRESULT CALLBACK SpriteWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
     switch (uMsg)
     {
     case WM_NCCREATE:
-        pWndData = (PSPRITEWNDDATA)DefAllocMem(sizeof(MAINWNDDATA));
+        pWndData = new SPRITEWNDDATA;
         if (pWndData == NULL)
             return FALSE;
         pWndData->hWnd = hWnd;
-        SetWndData(hWnd, pWndData);
+        SetWndData(hWnd, (LONG_PTR)pWndData);
         return DefWindowProcW(hWnd, uMsg, wParam, lParam);
     case WM_NCDESTROY:
-        DefFreeMem(pWndData);
+        delete pWndData;
         return DefWindowProcW(hWnd, uMsg, wParam, lParam);
     case WM_CREATE:
         return OnCreate(pWndData, wParam, lParam);
@@ -204,7 +230,7 @@ ATOM RegisterSpriteWnd(HINSTANCE hInstance)
     wcex.lpszClassName = SPRITEWNDCLASSNAME;
     wcex.lpfnWndProc = SpriteWndProc;
     wcex.hInstance = hInstance;
-    wcex.style = CS_DBLCLKS | CS_DROPSHADOW | CS_HREDRAW | CS_VREDRAW;
+    wcex.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hIcon = NULL;
@@ -219,10 +245,10 @@ ATOM RegisterSpriteWnd(HINSTANCE hInstance)
 HWND CreateSpriteWnd(HINSTANCE hInstance, LPVOID pAppData)
 {
     return CreateWindowExW(
-        //WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED,
-        WS_EX_OVERLAPPEDWINDOW,
+        //WS_EX_TOPMOST,
+        0,
         SPRITEWNDCLASSNAME, NULL,
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        WS_OVERLAPPED | WS_VISIBLE,
         CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
         NULL, NULL, hInstance, pAppData
     );

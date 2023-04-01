@@ -1,27 +1,37 @@
 #pragma once
+#ifndef DS_NOTIFYICON_H
+#define DS_NOTIFYICON_H
+
 #include <ds/framework.h>
 
 #define MAX_NIDTIP                      64                      // 通知区域的Tip消息最大长度
 #define MAX_NIDINFOTITLE                64                      //
 #define MAX_NIDINFO                     256                     //
 
-// 添加通知区域图标
-DWORD AddNotifyIcon(HWND hWnd, UINT uID, UINT uCallbackMessage, HICON hIcon);
+class NotifyIcon
+{
+private:
+    HWND hWnd = NULL;
+    UINT uID = 0;
 
-// 修饰通知区域图标
-DWORD SetNotifyIcon(HWND hWnd, UINT uID, HICON hIcon);
+public:
+    NotifyIcon(HWND hWnd, UINT uID, UINT uCallbackMessage, HICON hIcon);
+    ~NotifyIcon();
 
-// 设置图标Tip消息
-DWORD SetNotifyIconTip(HWND hWnd, UINT uID, PCWSTR szTip);
+    // 修饰通知区域图标
+    DWORD SetIcon(HICON hIcon);
 
-// 弹出气泡消息
-DWORD SetNotifyIconInfo(HWND hWnd, UINT uID, PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloonIcon, BOOL bSound);
+    // 设置图标 Tip 消息
+    DWORD SetTip(PCWSTR szTip);
 
-// NIM_SETFOCUS
-DWORD SetFocusNotifyIcon(HWND hWnd, UINT uID);
+    // 弹出气泡消息
+    DWORD PopIconInfo(PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloonIcon, BOOL bSound);
 
-// 删除图标
-DWORD DeleteNotifyIcon(HWND hWnd, UINT uID);
+    // NIM_SETFOCUS
+    DWORD SetFocus();
 
-// 获得图标矩形范围
-DWORD GetNotifyIconRect(HWND hWnd, UINT uID, PRECT pRect);
+    // 获得图标矩形范围
+    DWORD GetRect(PRECT pRect);
+};
+
+#endif // !DS_NOTIFYICON_H

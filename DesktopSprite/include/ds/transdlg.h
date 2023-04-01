@@ -3,7 +3,7 @@
 
 typedef struct _TRANSDLGFORM
 {
-    BYTE byTransparency;
+    DOUBLE transparencyPercent;
 }TRANSDLGFORM, *PTRANSDLGFORM;
 
 typedef struct _TRANSDLGDATA

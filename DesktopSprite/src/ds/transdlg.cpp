@@ -1,5 +1,5 @@
 #include <ds/framework.h>
-#include <ds/util.h>
+#include <ds/utils.h>
 #include <ds/transdlg.h>
 
 
@@ -15,12 +15,11 @@ static INT_PTR OnInitDialog(PTRANSDLGDATA pDlgData, WPARAM wParam, LPARAM lParam
     // 拷贝表单数据
     CopyMemory(&pDlgData->formData, pDlgData->pResultFormData, sizeof(TRANSDLGFORM));
 
+    WCHAR percentStr[128] = { 0 };
+    StringCchPrintfW(percentStr, 128, L"%.2lf", pDlgData->pResultFormData->transparencyPercent);
+
     // 初始化对话框控件显示
-    SetDlgItemInt(
-        pDlgData->hDlg, IDC_EDIT_TRANSPARENCY, 
-        AlphaToPercent(pDlgData->pResultFormData->byTransparency), 
-        FALSE
-    );
+    SetDlgItemTextW(pDlgData->hDlg, IDC_EDIT_TRANSPARENCY, percentStr);
     return TRUE;
 }
 
@@ -34,11 +33,9 @@ static INT_PTR OnCommand(PTRANSDLGDATA pDlgData, WPARAM wParam, LPARAM lParam)
     case IDOK:
     {
         // 检查数据合法性
-        UINT alphaPercent = ClampNum(
-            GetDlgItemInt(pDlgData->hDlg, IDC_EDIT_TRANSPARENCY, NULL, FALSE),
-            1, 100
-        );
-        pDlgData->formData.byTransparency = PercentToAlpha(alphaPercent);
+        WCHAR percentStr[128] = { 0 };
+        GetDlgItemTextW(pDlgData->hDlg, IDC_EDIT_TRANSPARENCY, percentStr, 128);
+        pDlgData->formData.transparencyPercent = ClampNum(wcstod(percentStr, NULL), 1, 100);
         
         // 拷贝至传入表单
         CopyMemory(pDlgData->pResultFormData, &pDlgData->formData, sizeof(TRANSDLGFORM));
@@ -60,14 +57,14 @@ static INT_PTR CALLBACK TransDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        pDlgData = (PTRANSDLGDATA)DefAllocMem(sizeof(TRANSDLGDATA));
+        pDlgData = new TRANSDLGDATA;
         if (pDlgData == NULL)
             return EndDialog(hDlg, FALSE);
         pDlgData->hDlg = hDlg;
-        SetWndData(hDlg, pDlgData);
+        SetWndData(hDlg, (LONG_PTR)pDlgData);
         return OnInitDialog(pDlgData, wParam, lParam);
     case WM_NCDESTROY:
-        DefFreeMem(pDlgData);
+        delete pDlgData;
         return TRUE;
     case WM_COMMAND:
         return OnCommand(pDlgData, wParam, lParam);

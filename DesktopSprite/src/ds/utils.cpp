@@ -1,7 +1,74 @@
 #include <ds/framework.h>
-#include <ds/util.h>
+#include <ds/utils.h>
 
-DWORD SetAppAutoRun()
+HANDLE DefCreateThread(LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter)
+{
+    return CreateThread(NULL, 0, lpStartAddress, lpParameter, 0, NULL);
+}
+
+HANDLE DefCreateFile(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwCreationDisposition)
+{
+    return CreateFileW(lpFileName, dwDesiredAccess, 0, NULL, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
+}
+
+LONG_PTR GetWndData(HWND hWnd)
+{
+    return GetWindowLongPtrW(hWnd, GWLP_USERDATA);
+}
+
+LONG_PTR SetWndData(HWND hWnd, LONG_PTR dwNewData)
+{
+    return SetWindowLongPtrW(hWnd, GWLP_USERDATA, dwNewData);
+}
+
+LONG_PTR GetDlgData(HWND hDlg)
+{
+    return GetWindowLongPtrW(hDlg, DWLP_USER);
+}
+
+LONG_PTR SetDlgData(HWND hDlg, LONG_PTR dwNewData)
+{
+    return SetWindowLongPtrW(hDlg, DWLP_USER, dwNewData);
+}
+
+LSTATUS RegSetBinValue(HKEY hKey, PCWSTR lpValueName, PBYTE lpData, DWORD cbData)
+{
+    return RegSetValueExW(hKey, lpValueName, 0, REG_BINARY, lpData, cbData);
+}
+
+LSTATUS RegQueryAnyValue(HKEY hKey, PCWSTR lpValueName, PBYTE lpData, PDWORD lpcbData)
+{
+    return RegQueryValueExW(hKey, lpValueName, NULL, NULL, lpData, lpcbData);
+}
+
+LSTATUS RegOpenRunKey(PHKEY phkResult)
+{
+    return RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_ALL_ACCESS, phkResult);
+}
+
+LSTATUS RegOpenPersonalizeKey(PHKEY phkResult)
+{
+    return RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, KEY_ALL_ACCESS, phkResult);
+}
+
+DOUBLE ClampNum(DOUBLE numVal, DOUBLE minVal, DOUBLE maxVal)
+{
+    numVal = (numVal >= minVal) ? numVal : minVal;
+    numVal = (numVal <= maxVal) ? numVal : maxVal;
+    return numVal;
+}
+
+DOUBLE AlphaToPercent(BYTE alpha)
+{
+    return (DOUBLE)((DOUBLE)alpha / 255.0 * 100.0);
+}
+
+BYTE PercentToAlpha(DOUBLE percent)
+{
+    return (BYTE)(percent / 100.0 * 255.0);
+}
+
+DWORD SetAppAutoRun(PCWSTR appname)
 {
     DWORD dwErrorCode = ERROR_SUCCESS;
     HKEY hkRun = NULL;
@@ -18,11 +85,7 @@ DWORD SetAppAutoRun()
         // 得到要写入的数据大小
         size_t cchPath = 0;
         StringCchLengthW(szExeFullPath, MAX_PATH, &cchPath);
-
-        dwErrorCode = RegSetValueExW(
-            hkRun, APPNAME, 0, REG_SZ,
-            (LPBYTE)szExeFullPath, (DWORD)(sizeof(WCHAR) * (cchPath + 1))
-        );
+        dwErrorCode = RegSetValueExW(hkRun, appname, 0, REG_SZ, (LPBYTE)szExeFullPath, (DWORD)(sizeof(WCHAR) * (cchPath + 1)));
     }
 
     if (hkRun != NULL)
@@ -32,7 +95,7 @@ DWORD SetAppAutoRun()
     return dwErrorCode;
 }
 
-DWORD UnsetAppAutoRun()
+DWORD UnsetAppAutoRun(PCWSTR appname)
 {
     DWORD dwErrorCode = ERROR_SUCCESS;
     HKEY hkRun = NULL;
@@ -41,9 +104,10 @@ DWORD UnsetAppAutoRun()
     dwErrorCode = RegOpenRunKey(&hkRun);
     if (dwErrorCode == ERROR_SUCCESS)
     {
-        dwErrorCode = RegDeleteValueW(hkRun, APPNAME);
+        dwErrorCode = RegDeleteValueW(hkRun, appname);
 
     }
+
     if (hkRun != NULL)
     {
         RegCloseKey(hkRun);
@@ -167,7 +231,7 @@ BOOL IsSystemDarkTheme()
     {
         DWORD dwSystemUsesLightTheme = 0;
         DWORD cbData = sizeof(DWORD);
-        RegQueryAnyValue(hkPersonalize, L"SystemUsesLightTheme", &dwSystemUsesLightTheme, &cbData);
+        RegQueryAnyValue(hkPersonalize, L"SystemUsesLightTheme", (PBYTE)&dwSystemUsesLightTheme, &cbData);
         bRet = !dwSystemUsesLightTheme;
     }
     else
@@ -268,4 +332,23 @@ DWORD CopySize(PSIZE sizeSrc, PSIZE sizeDst)
     sizeDst->cx = sizeSrc->cx;
     sizeDst->cy = sizeSrc->cy;
     return 0;
+}
+
+// Show error Line and GetLastError
+void ShowLastError(PCWSTR func, INT line)
+{
+    LPWSTR lastErrMsg = NULL;
+    DWORD length = 0;
+    length = FormatMessageW(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+        GetLastError(), 0,
+        (LPWSTR)&lastErrMsg, 0, NULL
+    );
+
+    PWSTR errMsg = new WCHAR[length + 1024]{ 0 };
+    StringCchPrintfW(errMsg, length + 1024, L"Func: %s\nLine: %d\nCode: 0x%X\nMsg: %s\n", func, line, GetLastError(), lastErrMsg);
+    MessageBoxW(NULL, errMsg, L"GetLastError", MB_ICONERROR);
+
+    LocalFree(lastErrMsg);
+    delete[] errMsg;
 }

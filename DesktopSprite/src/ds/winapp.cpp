@@ -1,71 +1,102 @@
 #include <ds/framework.h>
-#include <ds/perfdata.h>
+#include <ds/utils.h>
 
 #include <ds/mainwnd.h>
-#include <ds/spritewnd.h>
 #include <ds/winapp.h>
+#include <ds/spritewnd.h>
 
-using namespace Gdiplus;
-
-static  PCWSTR  const       APPMUTEXNAME    = L"DesktopSpriteMutex";    // 防止重复启动的 MutexName
-static  HANDLE              hAppMutex       = NULL;                     // 防止重复启动的互斥锁
-
-INT APIENTRY wWinMain(
-    _In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPWSTR lpCmdLine,
-    _In_ INT nShowCmd
-)
+WinApp::WinApp()
 {
-    hAppMutex = CreateMutexW(NULL, FALSE, APPMUTEXNAME);
-    if (hAppMutex != NULL)
+    this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutexDEBUG");
+    if (!this->hAppMutex)
     {
-        if (GetLastError() != ERROR_ALREADY_EXISTS)
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        MessageBoxW(NULL, L"程序已在运行, 请勿重复启动", L"提示消息", MB_OK | MB_ICONWARNING);
+        exit(EXIT_SUCCESS);
+    }
+
+    // 初始化 GDI+.
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    Gdiplus::Status status = Gdiplus::GdiplusStartup(&this->gdiplusToken, &gdiplusStartupInput, NULL);
+    if (status != Gdiplus::Status::Ok)
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+
+    // 获得程序路径
+    GetModuleFileNameW(NULL, this->szExeFullDir, MAX_PATH);
+    PathCchRemoveFileSpec(this->szExeFullDir, MAX_PATH);
+    GetModuleFileNameW(NULL, this->szExeFullPath, MAX_PATH);
+
+    // 修改当前目录
+    if (!SetCurrentDirectoryW(this->GetAppDir()))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+}
+
+WinApp::~WinApp()
+{
+    GdiplusShutdown(this->gdiplusToken);
+    CloseHandle(this->hAppMutex);
+}
+
+INT WinApp::Mainloop()
+{
+    INT errCode = EXIT_SUCCESS;
+
+    MainWindow* mainWindow = new MainWindow(this);
+    HWND h = CreateSpriteWnd(GetModuleHandleW(NULL), NULL);
+    ShowWindow(h, SW_SHOWNA);
+
+    BOOL bRet;
+    MSG msg;
+    // 开启消息循环
+    while ((bRet = GetMessageW(&msg, NULL, 0, 0)))
+    {
+        if (bRet == -1)
         {
-            // 初始工作
-            RegisterMainWnd(hInstance);
-            RegisterSpriteWnd(hInstance);
-            OpenPerfMonitor();
-
-            // 初始化 GDI+.
-            GdiplusStartupInput gdiplusStartupInput;
-            ULONG_PTR           gdiplusToken;
-            GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-            HWND hMainWnd = CreateMainWnd(hInstance);
-            //HWND h = CreateSpriteWnd(hInstance, NULL);
-            //ShowWindow(h, SW_SHOWNA);
-            if (hMainWnd != NULL)
-            {
-                BOOL bRet;
-                MSG msg;
-                // 开启消息循环
-                while ((bRet = GetMessageW(&msg, NULL, 0, 0)))
-                {
-                    if (bRet == -1)
-                    {
-                        return -1;
-                    }
-                    else
-                    {
-                        TranslateMessage(&msg);
-                        DispatchMessageW(&msg);
-                    }
-                }
-            }
-
-            // 清理工作
-            GdiplusShutdown(gdiplusToken);
-            ClosePerfMonitor();
+            errCode = EXIT_FAILURE;
+            break;
         }
         else
         {
-            MessageBoxW(NULL, L"程序已在运行, 请勿重复启动", L"提示消息", MB_OK);
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
         }
     }
-    else
-    {
-        // TODO: 错误处理
-    }
-    return EXIT_SUCCESS;
+
+    delete mainWindow;
+    return errCode;
+}
+
+PCWSTR WinApp::GetAppName() const
+{
+    return L"DesktopSprite";
+}
+
+PCWSTR WinApp::GetAppPath() const
+{
+    return this->szExeFullPath;
+}
+
+PCWSTR WinApp::GetAppDir() const
+{
+    return this->szExeFullDir;
+}
+
+INT APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, INT nShowCmd)
+{
+    INT errCode = EXIT_SUCCESS;
+    WinApp* app = new WinApp();
+    errCode = app->Mainloop();
+    delete app;
+    return errCode;
 }

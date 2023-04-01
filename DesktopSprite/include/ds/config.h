@@ -1,35 +1,48 @@
 #pragma once
+#ifndef DS_CONFIG_H
+#define DS_CONFIG_H
+
 #include <ds/framework.h>
 
 // 标记要显示的内容
-#define SHOWCONTENT_CPUMEM          0x1
-#define SHOWCONTENT_NETSPEED        0x2
+#define SHOWCONTENT_CPUMEM              0x1
+#define SHOWCONTENT_NETSPEED            0x2
 
-// 程序所有设置项
 typedef struct _CFGDATA
 {
-    // TODO: 应用设置
     BOOL        bFloatWnd;                      // 是否显示主窗口
     BOOL        bAutoRun;                       // 开机自启
     BOOL        bTimeAlarm;                     // 整点报时
-    //WCHAR       szBalloonIconPath[MAX_PATH];    // 气泡图标路径
+    WCHAR       szBalloonIconPath[MAX_PATH];    // 气泡图标路径
     BOOL        bInfoSound;                     // 气泡消息声音
     BOOL        bDarkTheme;                     // 是否使用深色主题
-    BYTE        byTransparency;                 // 透明度
-    BYTE        byShowContent;               // 要显示的内容
-
-    // 记忆数据
-    POINT       ptLastFloatPos;                 // 上一次浮窗的屏幕位置
-    SIZE        sizeLastRuntimeResolution;      // 上一次运行时系统分辨率
+    DOUBLE      transparencyPercent;            // 透明度
+    BYTE        byShowContent;                  // 要显示的内容
 }*PCFGDATA, CFGDATA;
 
-// 加载默认配置参数
-DWORD LoadDefaultConfig(PCFGDATA pCfgData);
+class AppConfig
+{
+public:
+    BOOL    bFloatWnd = TRUE;                                           // 是否显示主窗口
+    BOOL    bAutoRun = FALSE;                                           // 开机自启
+    BOOL    bTimeAlarm = TRUE;                                          // 整点报时
+    WCHAR   szBalloonIconPath[MAX_PATH] = { 0 };                        // 气泡图标路径
+    BOOL    bInfoSound = TRUE;                                          // 气泡消息声音
+    BOOL    bDarkTheme = TRUE;                                          // 是否使用深色主题
+    DOUBLE  transparencyPercent = 80.0;                                 // 透明度
+    BYTE    byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;  // 要显示的内容
 
-//DWORD LoadConfigFromFile(PCFGDATA pCfgData);
+public:
+    AppConfig();
 
-//DWORD SaveConfigToFile(PCFGDATA pCfgData);
+    void Get(PCFGDATA pcfgdata) const;
+    void Set(const PCFGDATA pcfgdata);
 
-DWORD LoadConfigFromReg(PCFGDATA pCfgData);
+    DWORD LoadFromReg(PCWSTR appname);
+    DWORD SaveToReg(PCWSTR appname);
 
-DWORD SaveConfigToReg(PCFGDATA pCfgData);
+    DWORD LoadFromFile(PCWSTR path);
+    DWORD SaveToFile(PCWSTR path);
+};
+
+#endif // !DS_CONFIG_H

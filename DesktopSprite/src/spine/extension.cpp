@@ -32,6 +32,8 @@
 
 #include <spine/extension.h>
 #include <stdio.h>
+#include <Windows.h>
+#include <gdiplus.h>
 
 float _spInternalRandom () {
 	return rand() / (float)RAND_MAX;
@@ -130,14 +132,30 @@ float _spMath_pow2out_apply(float a) {
 }
 
 /* Implemented by user. */
-
 void _spAtlasPage_createTexture(spAtlasPage* self, const char* path) {
-	self->rendererObject = 0;
-	self->width = 2048;
-	self->height = 2048;
+    WCHAR wpath[MAX_PATH] = { 0 };
+    MultiByteToWideChar(CP_ACP, 0, path, -1, wpath, MAX_PATH);
+
+	Gdiplus::Bitmap* bitmap = new Gdiplus::Bitmap(wpath);
+	if (!bitmap)
+	{
+		self->rendererObject = NULL;
+		self->width = 0;
+		self->height = 0;
+	}
+	else
+	{
+		self->rendererObject = bitmap;
+		self->width = bitmap->GetWidth();
+		self->height = bitmap->GetHeight();
+	}
 }
 
 void _spAtlasPage_disposeTexture(spAtlasPage* self) {
+	if (self->rendererObject)
+	{
+		delete self->rendererObject;
+	}
 }
 
 char* _spUtil_readFile(const char* path, int* length) {

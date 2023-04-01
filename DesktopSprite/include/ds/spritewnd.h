@@ -10,7 +10,7 @@ using namespace Gdiplus;
 
 typedef struct _SPRITEWNDDATA 
 {
-    PMAINWNDDATA pAppData;                  // 应用数据
+    //PMAINWNDDATA pAppData;                  // 应用数据
 
 
     HWND hWnd;                              // 窗体句柄
