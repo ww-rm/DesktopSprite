@@ -23,10 +23,8 @@
 #include <stdlib.h>
 
 // C++ headers
-#include <string>
 #include <list>
 #include <fstream>
-#include <iostream>
 
 #include "resource.h"
 

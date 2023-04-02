@@ -26,15 +26,13 @@ public:
     BOOL    bFloatWnd = TRUE;                                           // 是否显示主窗口
     BOOL    bAutoRun = FALSE;                                           // 开机自启
     BOOL    bTimeAlarm = TRUE;                                          // 整点报时
-    WCHAR   szBalloonIconPath[MAX_PATH] = { 0 };                        // 气泡图标路径
+    WCHAR   szBalloonIconPath[MAX_PATH] = L"res\\image\\timealarm.ico"; // 气泡图标路径
     BOOL    bInfoSound = TRUE;                                          // 气泡消息声音
     BOOL    bDarkTheme = TRUE;                                          // 是否使用深色主题
     DOUBLE  transparencyPercent = 80.0;                                 // 透明度
     BYTE    byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;  // 要显示的内容
 
 public:
-    AppConfig();
-
     void Get(PCFGDATA pcfgdata) const;
     void Set(const PCFGDATA pcfgdata);
 
