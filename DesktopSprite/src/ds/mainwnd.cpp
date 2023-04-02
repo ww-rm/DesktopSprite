@@ -266,7 +266,7 @@ DWORD MainWindow::ApplyConfig()
     // 重绘一次
     InvalidateRect(this->hWnd, NULL, TRUE);
 
-    this->config.SaveToReg(this->app->GetAppName());
+    this->config.SaveToFile(this->GetConfigPath());
 
     return 0;
 }
@@ -331,7 +331,7 @@ DWORD MainWindow::ApplyConfig(PCFGDATA pcfgdata)
     InvalidateRect(this->hWnd, NULL, TRUE);
 
     this->config.Set(pcfgdata);
-    this->config.SaveToReg(this->app->GetAppName());
+    this->config.SaveToFile(this->GetConfigPath());
 
     return 0;
 }
@@ -454,11 +454,10 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     this->pNotifyIcon->SetTip(szTip);
 
     // 初始化配置参数相关
-    this->config.LoadFromReg(this->app->GetAppName());
-    //if (PathFileExistsW(this->GetConfigPath()))
-    //{
-    //    this->config.LoadFromFile(this->GetConfigPath());
-    //}
+    if (PathFileExistsW(this->GetConfigPath()))
+    {
+        this->config.LoadFromFile(this->GetConfigPath());
+    }
     // 应用配置项
     this->ApplyConfig();
 
@@ -471,7 +470,7 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
     this->UpdateFloatPosDataToRegByCurrentResolution();
-    this->config.SaveToReg(this->app->GetAppName());
+    this->config.SaveToFile(this->GetConfigPath());
     delete this->pNotifyIcon;
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
@@ -935,8 +934,8 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         // DEBUG here
         //MessageBoxW(this->hWnd, L"Double Click on NotifyIcon!\n", L"Double Click on NotifyIcon!\n", MB_OK);
         //TimeAlarm(this);
-        //this->config.SaveToFile(this->GetConfigPath());
-        //this->config.LoadFromFile(this->GetConfigPath());
+        //this->config.SaveToFile(L"C:\\Users\\ljh\\Desktop\\config.json");
+        //this->config.LoadFromFile(L"C:\\Users\\ljh\\Desktop\\config.json");
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
         break;
     }

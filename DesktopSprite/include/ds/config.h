@@ -36,9 +36,6 @@ public:
     void Get(PCFGDATA pcfgdata) const;
     void Set(const PCFGDATA pcfgdata);
 
-    DWORD LoadFromReg(PCWSTR appname);
-    DWORD SaveToReg(PCWSTR appname);
-
     DWORD LoadFromFile(PCWSTR path);
     DWORD SaveToFile(PCWSTR path);
 };
