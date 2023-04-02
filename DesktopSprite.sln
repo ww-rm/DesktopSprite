@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{885B3AD9-2218-488E-AF5B-FDB656DC7ECD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -28,6 +30,10 @@ Global
 		{41226B32-84C7-489C-80EA-49BD0E4EF6B6}.Release|x64.Build.0 = Release|x64
 		{41226B32-84C7-489C-80EA-49BD0E4EF6B6}.Release|x86.ActiveCfg = Release|Win32
 		{41226B32-84C7-489C-80EA-49BD0E4EF6B6}.Release|x86.Build.0 = Release|Win32
+		{885B3AD9-2218-488E-AF5B-FDB656DC7ECD}.Debug|x64.ActiveCfg = Debug
+		{885B3AD9-2218-488E-AF5B-FDB656DC7ECD}.Debug|x86.ActiveCfg = Debug
+		{885B3AD9-2218-488E-AF5B-FDB656DC7ECD}.Release|x64.ActiveCfg = Release
+		{885B3AD9-2218-488E-AF5B-FDB656DC7ECD}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
