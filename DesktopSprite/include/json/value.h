@@ -321,6 +321,7 @@ public:
 #endif // if defined(JSON_HAS_INT64)
   Value(double value);
   Value(const char* value); ///< Copy til first 0. (NULL causes to seg-fault.)
+  Value(const wchar_t* value); // Support wide char string
   Value(const char* begin, const char* end); ///< Copy all, incl zeroes.
   /**
    * \brief Constructs a value from a static string.
@@ -473,9 +474,11 @@ public:
   /// \note Because of our implementation, keys are limited to 2^30 -1 chars.
   /// Exceeding that will cause an exception.
   Value& operator[](const char* key);
+  Value& operator[](const wchar_t* key); // Support wide char string
   /// Access an object value by name, returns null if there is no member with
   /// that name.
   const Value& operator[](const char* key) const;
+  const Value& operator[](const wchar_t* key) const; // Support wide char string
   /// Access an object value by name, create a null member if it does not exist.
   /// \param key may contain embedded nulls.
   Value& operator[](const String& key);
@@ -499,6 +502,7 @@ public:
   /// Return the member named key if it exist, defaultValue otherwise.
   /// \note deep copy
   Value get(const char* key, const Value& defaultValue) const;
+  Value get(wchar_t const* key, const Value& defaultValue) const; // Support wide char string
   /// Return the member named key if it exist, defaultValue otherwise.
   /// \note deep copy
   /// \note key may contain embedded nulls.
@@ -522,12 +526,14 @@ public:
   /// \pre type() is objectValue or nullValue
   /// \post type() is unchanged
   void removeMember(const char* key);
+  void removeMember(const wchar_t* key); // Support wide char string
   /// Same as removeMember(const char*)
   /// \param key may contain embedded nulls.
   void removeMember(const String& key);
   /// Same as removeMember(const char* begin, const char* end, Value* removed),
   /// but 'key' is null-terminated.
   bool removeMember(const char* key, Value* removed);
+  bool removeMember(const wchar_t* key, Value* removed); // Support wide char string
   /** \brief Remove the named map member.
    *
    *  Update 'removed' iff removed.
@@ -548,6 +554,7 @@ public:
   /// Return true if the object has a member named key.
   /// \note 'key' must be null-terminated.
   bool isMember(const char* key) const;
+  bool isMember(wchar_t const* key) const; // Support wide char string
   /// Return true if the object has a member named key.
   /// \param key may contain embedded nulls.
   bool isMember(const String& key) const;

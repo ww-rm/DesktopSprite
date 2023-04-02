@@ -17,6 +17,8 @@
 #include <sstream>
 #include <utility>
 
+#include <codecvt> // To support wide char string
+
 // Provide implementation equivalent of std::snprintf for older _MSC compilers
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #include <stdarg.h>
@@ -404,6 +406,12 @@ Value::Value(const char* value) {
                       "Null Value Passed to Value Constructor");
   value_.string_ = duplicateAndPrefixStringValue(
       value, static_cast<unsigned>(strlen(value)));
+}
+// Support wide char string
+Value::Value(const wchar_t* value) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string value_ = converter.to_bytes(value);
+    this->Value::Value(value_);
 }
 
 Value::Value(const char* begin, const char* end) {
@@ -1104,6 +1112,12 @@ const Value& Value::operator[](const char* key) const {
     return nullSingleton();
   return *found;
 }
+// Support wide char string
+const Value& Value::operator[](const wchar_t* key) const {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string key_ = converter.to_bytes(key);
+    return operator[](key_.c_str());
+}
 Value const& Value::operator[](const String& key) const {
   Value const* found = find(key.data(), key.data() + key.length());
   if (!found)
@@ -1113,6 +1127,12 @@ Value const& Value::operator[](const String& key) const {
 
 Value& Value::operator[](const char* key) {
   return resolveReference(key, key + strlen(key));
+}
+// Support wide char string
+Value& Value::operator[](const wchar_t* key) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string key_ = converter.to_bytes(key);
+    return operator[](key_.c_str());
 }
 
 Value& Value::operator[](const String& key) {
@@ -1160,6 +1180,12 @@ Value Value::get(char const* begin, char const* end,
 Value Value::get(char const* key, Value const& defaultValue) const {
   return get(key, key + strlen(key), defaultValue);
 }
+// Support wide char string
+Value Value::get(wchar_t const* key, Value const& defaultValue) const {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string key_ = converter.to_bytes(key);
+    return get(key_.c_str(), defaultValue);
+}
 Value Value::get(String const& key, Value const& defaultValue) const {
   return get(key.data(), key.data() + key.length(), defaultValue);
 }
@@ -1181,6 +1207,11 @@ bool Value::removeMember(const char* begin, const char* end, Value* removed) {
 bool Value::removeMember(const char* key, Value* removed) {
   return removeMember(key, key + strlen(key), removed);
 }
+bool Value::removeMember(const wchar_t* key, Value* removed) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string key_ = converter.to_bytes(key);
+    return removeMember(key_.c_str(), removed);
+}
 bool Value::removeMember(String const& key, Value* removed) {
   return removeMember(key.data(), key.data() + key.length(), removed);
 }
@@ -1192,6 +1223,12 @@ void Value::removeMember(const char* key) {
 
   CZString actualKey(key, unsigned(strlen(key)), CZString::noDuplication);
   value_.map_->erase(actualKey);
+}
+// Support wide char string
+void Value::removeMember(const wchar_t* key) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string key_ = converter.to_bytes(key);
+    return removeMember(key_.c_str());
 }
 void Value::removeMember(const String& key) { removeMember(key.c_str()); }
 
@@ -1225,6 +1262,12 @@ bool Value::isMember(char const* begin, char const* end) const {
 }
 bool Value::isMember(char const* key) const {
   return isMember(key, key + strlen(key));
+}
+// Support wide char string
+bool Value::isMember(wchar_t const* key) const {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string key_ = converter.to_bytes(key);
+    return isMember(key_.c_str());
 }
 bool Value::isMember(String const& key) const {
   return isMember(key.data(), key.data() + key.length());
