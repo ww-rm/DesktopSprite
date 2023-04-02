@@ -52,7 +52,7 @@ DWORD AppConfig::LoadFromFile(PCWSTR path)
     this->bInfoSound = (BOOL)root.get(CFGKEY_INFOSOUND, (bool)this->bInfoSound).asBool();
     this->bDarkTheme = (BOOL)root.get(CFGKEY_DARKTHEME, (bool)this->bDarkTheme).asBool();
     this->transparencyPercent = (DOUBLE)root.get(CFGKEY_TRANSPARENCY, (double)this->transparencyPercent).asDouble();
-    this->byShowContent = (BOOL)root.get(CFGKEY_SHOWCONTENT, (bool)this->byShowContent).asBool();
+    this->byShowContent = (BYTE)root.get(CFGKEY_SHOWCONTENT, (UINT)this->byShowContent).asUInt();
 
     return 0;
 }
@@ -68,7 +68,7 @@ DWORD AppConfig::SaveToFile(PCWSTR path)
     root[CFGKEY_INFOSOUND] = (bool)this->bInfoSound;
     root[CFGKEY_DARKTHEME] = (bool)this->bDarkTheme;
     root[CFGKEY_TRANSPARENCY] = (double)this->transparencyPercent;
-    root[CFGKEY_SHOWCONTENT] = (bool)this->byShowContent;
+    root[CFGKEY_SHOWCONTENT] = (UINT)this->byShowContent;
 
     std::ofstream file(path);
     file << root;
