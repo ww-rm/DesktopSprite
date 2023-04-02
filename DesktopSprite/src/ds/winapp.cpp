@@ -16,7 +16,7 @@ WinApp::WinApp()
 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
-        MessageBoxW(NULL, L"程序已在运行, 请勿重复启动", L"提示消息", MB_OK | MB_ICONWARNING);
+        MessageBoxW(NULL, L"程序已在运行, 请勿重复启动", L"提示消息", MB_OK | MB_ICONINFORMATION);
         exit(EXIT_SUCCESS);
     }
 

@@ -62,13 +62,15 @@ public:
     MainWindow(const WinApp* app);
 
     DWORD LoadFloatPosDataFromReg();
-    DWORD UpdateFloatPosDataToRegByCurrentResolution();
+    DWORD SaveFloatPosDataToReg();
+    DWORD UpdateFloatPosByResolution(PSIZE newResolution = NULL);
 
     DWORD ApplyConfig();
     DWORD ApplyConfig(PCFGDATA pcfgdata); // 应用更改, 只修改发生变化的设置项
 
     DWORD GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent);
     DWORD TimeAlarm();
+    INT ShowNoConentWarningMsg();
 
 public:
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);

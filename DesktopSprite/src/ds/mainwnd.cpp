@@ -185,13 +185,8 @@ DWORD MainWindow::LoadFloatPosDataFromReg()
     return dwErrorCode;
 }
 
-DWORD MainWindow::UpdateFloatPosDataToRegByCurrentResolution()
+DWORD MainWindow::SaveFloatPosDataToReg()
 {
-    SIZE newResolution = { 0 };
-    GetScreenResolution(&newResolution);
-    ConvertPointForResolution(&this->lastResolution, &this->lastFloatPos, &newResolution, &this->lastFloatPos);
-    CopySize(&newResolution, &this->lastResolution);
-
     DWORD dwErrorCode = ERROR_SUCCESS;
 
     // 打开注册表项
@@ -220,6 +215,21 @@ DWORD MainWindow::UpdateFloatPosDataToRegByCurrentResolution()
     }
     return dwErrorCode;
 
+}
+
+DWORD MainWindow::UpdateFloatPosByResolution(PSIZE newResolution)
+{
+    SIZE currentResolution = { 0 };
+    if (!newResolution)
+    {
+        GetScreenResolution(&currentResolution);
+        newResolution = &currentResolution;
+    }
+
+    ConvertPointForResolution(&this->lastResolution, &this->lastFloatPos, newResolution, &this->lastFloatPos);
+    CopySize(newResolution, &this->lastResolution);
+
+    return 0;
 }
 
 DWORD MainWindow::ApplyConfig()
@@ -375,6 +385,15 @@ DWORD MainWindow::TimeAlarm()
     return 0;
 }
 
+INT MainWindow::ShowNoConentWarningMsg()
+{
+    WCHAR szTitle[MAX_LOADSTRING];
+    WCHAR szMsg[MAX_LOADSTRING];
+    LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
+    LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
+    return MessageBoxW(this->hWnd, szMsg, szTitle, MB_OK | MB_ICONINFORMATION);
+}
+
 ///////////////////////////// Message Process ////////////////////////////////
 
 LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -435,7 +454,8 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
     // 按新分辨率更新浮动窗口位置
     this->LoadFloatPosDataFromReg();
-    this->UpdateFloatPosDataToRegByCurrentResolution();
+    this->UpdateFloatPosByResolution();
+    this->SaveFloatPosDataToReg();
 
     // 向字体容器添加私有字体
     DWORD cbData = 0;
@@ -469,7 +489,7 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
-    this->UpdateFloatPosDataToRegByCurrentResolution();
+    this->SaveFloatPosDataToReg();
     this->config.SaveToFile(this->GetConfigPath());
     delete this->pNotifyIcon;
     PostQuitMessage(EXIT_SUCCESS);
@@ -702,7 +722,10 @@ LRESULT MainWindow::OnContextMenu(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnDisplayChange(WPARAM wParam, LPARAM lParam)
 {
-    this->UpdateFloatPosDataToRegByCurrentResolution();
+    SIZE newResolution = { 0 };
+    newResolution.cx = LOWORD(lParam);
+    newResolution.cy = HIWORD(lParam);
+    this->UpdateFloatPosByResolution(&newResolution);
 
     // 如果当前浮动显示则修正位置
     if (this->config.bFloatWnd)
@@ -731,11 +754,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     case IDM_SHOWCPUMEM:
         if (pcfgdata->byShowContent == SHOWCONTENT_CPUMEM)
         {
-            WCHAR szTitle[MAX_LOADSTRING];
-            WCHAR szMsg[MAX_LOADSTRING];
-            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
-            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
-            MessageBoxW(NULL, szMsg, szTitle, MB_OK);
+            this->ShowNoConentWarningMsg();
         }
         else
         {
@@ -745,11 +764,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     case IDM_SHOWNETSPEED:
         if (pcfgdata->byShowContent == SHOWCONTENT_NETSPEED)
         {
-            WCHAR szTitle[MAX_LOADSTRING];
-            WCHAR szMsg[MAX_LOADSTRING];
-            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
-            LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
-            MessageBoxW(NULL, szMsg, szTitle, MB_OK);
+            this->ShowNoConentWarningMsg();
         }
         else
         {
@@ -903,7 +918,7 @@ LRESULT MainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
         RECT newPos = { 0 };
         GetWindowRect(this->hWnd, &newPos);
         CopyPoint((PPOINT)&newPos, &this->lastFloatPos);
-        this->UpdateFloatPosDataToRegByCurrentResolution();
+        this->SaveFloatPosDataToReg();
     }
     return 0;
 }
