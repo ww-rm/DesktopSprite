@@ -134,7 +134,7 @@ float _spMath_pow2out_apply(float a) {
 /* Implemented by user. */
 void _spAtlasPage_createTexture(spAtlasPage* self, const char* path) {
     WCHAR wpath[MAX_PATH] = { 0 };
-    MultiByteToWideChar(CP_ACP, 0, path, -1, wpath, MAX_PATH);
+    MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_PATH);
 
 	Gdiplus::Bitmap* bitmap = new Gdiplus::Bitmap(wpath);
 	if (!bitmap)

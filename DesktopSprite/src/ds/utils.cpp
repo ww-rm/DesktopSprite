@@ -318,7 +318,6 @@ DWORD ConvertPointForResolution(const PSIZE sizeOld, const PPOINT ptOld, const P
     return 0;
 }
 
-// Copy POINT
 DWORD CopyPoint(PPOINT ptSrc, PPOINT ptDst)
 {
     ptDst->x = ptSrc->x;
@@ -326,12 +325,21 @@ DWORD CopyPoint(PPOINT ptSrc, PPOINT ptDst)
     return 0;
 }
 
-// Copy SIZE
 DWORD CopySize(PSIZE sizeSrc, PSIZE sizeDst)
 {
     sizeDst->cx = sizeSrc->cx;
     sizeDst->cy = sizeSrc->cy;
     return 0;
+}
+
+INT StrAtoW(PCSTR aStr, PWSTR wStr, INT wStrLen)
+{
+    return MultiByteToWideChar(CP_UTF8, 0, aStr, -1, wStr, wStrLen);
+}
+
+INT StrWtoA(PCWSTR wStr, PSTR aStr, INT aStrLen)
+{
+    return WideCharToMultiByte(CP_UTF8, 0, wStr, -1, aStr, aStrLen, NULL, NULL);
 }
 
 // Show error Line and GetLastError

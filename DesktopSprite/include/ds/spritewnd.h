@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ds/framework.h>
-#include <ds/mainwnd.h>
 
 using namespace Gdiplus;
 

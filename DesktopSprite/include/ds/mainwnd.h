@@ -4,9 +4,9 @@
 
 #include <ds/framework.h>
 #include <ds/perfmonitor.h>
+#include <ds/notifyicon.h>
 #include <ds/config.h>
 #include <ds/basewindow.h>
-#include <ds/notifyicon.h>
 #include <ds/winapp.h>
 
 using namespace Gdiplus;

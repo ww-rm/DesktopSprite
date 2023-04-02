@@ -1,10 +1,10 @@
 #include <ds/framework.h>
 #include <ds/utils.h>
+#include <json/json.h>
 
 #include <ds/config.h>
 
-// TODO: ÉèÖÃÏî×¢²á±íÃû³Æ
-static PCWSTR const CFGKEY_SHOWMAINWND              = L"IsFloatWnd";
+static PCWSTR const CFGKEY_FLOATWND                 = L"IsFloatWnd";
 static PCWSTR const CFGKEY_AUTORUN                  = L"IsAutoRun";
 static PCWSTR const CFGKEY_TIMEAlARM                = L"IsTimeAlarm";
 static PCWSTR const CFGKEY_BALLOONICONPATH          = L"BalloonIconPath";
@@ -13,16 +13,18 @@ static PCWSTR const CFGKEY_DARKTHEME                = L"IsDarkTheme";
 static PCWSTR const CFGKEY_TRANSPARENCY             = L"Transparency";
 static PCWSTR const CFGKEY_SHOWCONTENT              = L"ShowContent";
 
+static PCWSTR const DEAULT_BALLOONICON_PATH         = L"res\\image\\timealarm.ico";
+
 AppConfig::AppConfig()
 {
-    this->bFloatWnd = TRUE;                                             // Ä¬ÈÏÏÔÊ¾¸¡´°
-    this->bAutoRun = FALSE;                                             // ½ûÖ¹¿ª»ú×ÔÆô
-    this->bTimeAlarm = TRUE;                                            // ¿ªÆôÕûµã±¨Ê±
-    StringCchCopyW(this->szBalloonIconPath, MAX_PATH, L"res\\image\\timealarm.ico");
-    this->bInfoSound = TRUE;                                            // ¿ªÆôÌáÊ¾ÉùÒô
-    this->bDarkTheme = TRUE;                                            // Ä¬ÈÏÊ¹ÓÃÉîÉ«Ö÷Ìâ
-    this->transparencyPercent = 80.0;                                   // Ä¬ÈÏÍ¸Ã÷¶È 80%
-    this->byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;    // Ä¬ÈÏÕ¼ÓÃºÍÍøËÙ¶¼ÏÔÊ¾
+    this->bFloatWnd = TRUE;                                             // é»˜è®¤æ˜¾ç¤ºæµ®çª—
+    this->bAutoRun = FALSE;                                             // ç¦æ­¢å¼€æœºè‡ªå¯
+    this->bTimeAlarm = TRUE;                                            // å¼€å¯æ•´ç‚¹æŠ¥æ—¶
+    StringCchCopyW(this->szBalloonIconPath, MAX_PATH, DEAULT_BALLOONICON_PATH);
+    this->bInfoSound = TRUE;                                            // å¼€å¯æç¤ºå£°éŸ³
+    this->bDarkTheme = TRUE;                                            // é»˜è®¤ä½¿ç”¨æ·±è‰²ä¸»é¢˜
+    this->transparencyPercent = 80.0;                                   // é»˜è®¤é€æ˜Žåº¦ 80%
+    this->byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;    // é»˜è®¤å ç”¨å’Œç½‘é€Ÿéƒ½æ˜¾ç¤º
 }
 
 void AppConfig::Get(PCFGDATA pcfgdata) const
@@ -53,7 +55,7 @@ DWORD AppConfig::LoadFromReg(PCWSTR appname)
 {
     DWORD dwErrorCode = ERROR_SUCCESS;
 
-    // ´ò¿ª×¢²á±íÏî
+    // æ‰“å¼€æ³¨å†Œè¡¨é¡¹
     HKEY hkApp = NULL;
     DWORD dwDisposition = 0;
     DWORD cbData = 0;
@@ -64,9 +66,9 @@ DWORD AppConfig::LoadFromReg(PCWSTR appname)
     dwErrorCode = RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition);
     if (dwErrorCode == ERROR_SUCCESS && dwDisposition == REG_OPENED_EXISTING_KEY)
     {
-        // TODO: ¶ÁÈ¡ÅäÖÃ
+        // TODO: è¯»å–é…ç½®
         cbData = sizeof(BOOL);
-        RegQueryAnyValue(hkApp, CFGKEY_SHOWMAINWND, (PBYTE)&this->bFloatWnd, &cbData);
+        RegQueryAnyValue(hkApp, CFGKEY_FLOATWND, (PBYTE)&this->bFloatWnd, &cbData);
         cbData = sizeof(BOOL);
         RegQueryAnyValue(hkApp, CFGKEY_AUTORUN, (PBYTE)&this->bAutoRun, &cbData);
         cbData = sizeof(BOOL);
@@ -86,7 +88,7 @@ DWORD AppConfig::LoadFromReg(PCWSTR appname)
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
     }
-    // ¹Ø±Õ×¢²á±í
+    // å…³é—­æ³¨å†Œè¡¨
     if (hkApp != NULL)
     {
         RegCloseKey(hkApp);
@@ -98,7 +100,7 @@ DWORD AppConfig::SaveToReg(PCWSTR appname)
 {
     DWORD dwErrorCode = ERROR_SUCCESS;
 
-    // ´ò¿ª×¢²á±íÏî
+    // æ‰“å¼€æ³¨å†Œè¡¨é¡¹
     HKEY hkApp = NULL;
     DWORD dwDisposition = 0;
     DWORD cbData = 0;
@@ -109,8 +111,8 @@ DWORD AppConfig::SaveToReg(PCWSTR appname)
     dwErrorCode = RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition);
     if (dwErrorCode == ERROR_SUCCESS)
     {
-        // TODO: ±£´æÓ¦ÓÃÅäÖÃ
-        RegSetBinValue(hkApp, CFGKEY_SHOWMAINWND, (PBYTE)&this->bFloatWnd, sizeof(BOOL));
+        // TODO: ä¿å­˜åº”ç”¨é…ç½®
+        RegSetBinValue(hkApp, CFGKEY_FLOATWND, (PBYTE)&this->bFloatWnd, sizeof(BOOL));
         RegSetBinValue(hkApp, CFGKEY_AUTORUN, (PBYTE)&this->bAutoRun, sizeof(BOOL));
         RegSetBinValue(hkApp, CFGKEY_TIMEAlARM, (PBYTE)&this->bTimeAlarm, sizeof(BOOL));
         //SIZE_T cbData = 0;
@@ -126,7 +128,7 @@ DWORD AppConfig::SaveToReg(PCWSTR appname)
         ShowLastError(__FUNCTIONW__, __LINE__);
     }
 
-    // ¹Ø±Õ×¢²á±í
+    // å…³é—­æ³¨å†Œè¡¨
     if (hkApp != NULL)
     {
         RegCloseKey(hkApp);
@@ -136,10 +138,81 @@ DWORD AppConfig::SaveToReg(PCWSTR appname)
 
 DWORD AppConfig::LoadFromFile(PCWSTR path)
 {
+    char key[128] = { 0 };
+    int keyMaxLen = 128;
+    char strValue[1024] = { 0 };
+    int strValueMaxLen = 1024;
+
+    Json::Value root;
+
+    std::ifstream file(path);
+    file >> root;
+    file.close();
+
+    StrWtoA(CFGKEY_FLOATWND, key, keyMaxLen);
+    this->bFloatWnd = (BOOL)root.get(key, false).asBool();
+
+    StrWtoA(CFGKEY_AUTORUN, key, keyMaxLen);
+    this->bAutoRun = (BOOL)root.get(key, false).asBool();
+
+    StrWtoA(CFGKEY_TIMEAlARM, key, keyMaxLen);
+    this->bTimeAlarm = (BOOL)root.get(key, false).asBool();
+
+    StrWtoA(CFGKEY_BALLOONICONPATH, key, keyMaxLen);
+    StrWtoA(DEAULT_BALLOONICON_PATH, strValue, strValueMaxLen);
+    StrAtoW(root.get(key, strValue).asCString(), this->szBalloonIconPath, MAX_PATH);
+    
+    StrWtoA(CFGKEY_INFOSOUND, key, keyMaxLen);
+    this->bInfoSound = (BOOL)root.get(key, false).asBool();
+
+    StrWtoA(CFGKEY_DARKTHEME, key, keyMaxLen);
+    this->bDarkTheme = (BOOL)root.get(key, false).asBool();
+
+    StrWtoA(CFGKEY_TRANSPARENCY, key, keyMaxLen);
+    this->transparencyPercent = (DOUBLE)(BOOL)root.get(key, false).asDouble();
+
+    StrWtoA(CFGKEY_SHOWCONTENT, key, keyMaxLen);
+    this->byShowContent = (BOOL)root.get(key, false).asBool();
+
     return 0;
 }
 
 DWORD AppConfig::SaveToFile(PCWSTR path)
 {
+    char key[128] = { 0 };
+    int keyMaxLen = 128;
+    char strValue[1024] = { 0 };
+    int strValueMaxLen = 1024;
+
+    Json::Value root;
+
+    StrWtoA(CFGKEY_FLOATWND, key, keyMaxLen);
+    root[key] = (bool)this->bFloatWnd;
+
+    StrWtoA(CFGKEY_AUTORUN, key, keyMaxLen);
+    root[key] = (bool)this->bAutoRun;
+
+    StrWtoA(CFGKEY_TIMEAlARM, key, keyMaxLen);
+    root[key] = (bool)this->bTimeAlarm;
+
+    StrWtoA(CFGKEY_BALLOONICONPATH, key, keyMaxLen);
+    StrWtoA(this->szBalloonIconPath, strValue, strValueMaxLen);
+    root[key] = std::string(strValue);
+
+    StrWtoA(CFGKEY_INFOSOUND, key, keyMaxLen);
+    root[key] = (bool)this->bInfoSound;
+
+    StrWtoA(CFGKEY_DARKTHEME, key, keyMaxLen);
+    root[key] = (bool)this->bDarkTheme;
+
+    StrWtoA(CFGKEY_TRANSPARENCY, key, keyMaxLen);
+    root[key] = (double)this->transparencyPercent;
+
+    StrWtoA(CFGKEY_SHOWCONTENT, key, keyMaxLen);
+    root[key] = (bool)this->byShowContent;
+
+    std::ofstream file(path);
+    file << root;
+    file.close();
     return 0;
 }

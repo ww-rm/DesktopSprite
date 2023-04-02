@@ -107,6 +107,12 @@ DWORD CopyPoint(PPOINT ptSrc, PPOINT ptDst);
 // Copy SIZE
 DWORD CopySize(PSIZE sizeSrc, PSIZE sizeDst);
 
+// Õ­×Ö·û×ª¿í×Ö·û
+INT StrAtoW(PCSTR aStr, PWSTR wStr, INT wStrLen);
+
+// ¿í×Ö·û×ªÕ­×Ö·û
+INT StrWtoA(PCWSTR wStr, PSTR aStr, INT aStrLen);
+
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line = -1);
 

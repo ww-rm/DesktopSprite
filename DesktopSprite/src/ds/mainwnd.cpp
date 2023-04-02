@@ -470,6 +470,7 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
+    this->UpdateFloatPosDataToRegByCurrentResolution();
     this->config.SaveToReg(this->app->GetAppName());
     delete this->pNotifyIcon;
     PostQuitMessage(EXIT_SUCCESS);
@@ -934,6 +935,8 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         // DEBUG here
         //MessageBoxW(this->hWnd, L"Double Click on NotifyIcon!\n", L"Double Click on NotifyIcon!\n", MB_OK);
         //TimeAlarm(this);
+        //this->config.SaveToFile(this->GetConfigPath());
+        //this->config.LoadFromFile(this->GetConfigPath());
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
         break;
     }
