@@ -158,7 +158,7 @@ DWORD MainWindow::LoadFloatPosDataFromReg()
     StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", this->app->GetAppName());
 
     dwErrorCode = RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition);
-    if (dwErrorCode == ERROR_SUCCESS && dwDisposition == REG_OPENED_EXISTING_KEY)
+    if (dwErrorCode == ERROR_SUCCESS)
     {
         cbData = sizeof(POINT);
         RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)&this->lastFloatPos, &cbData);
@@ -945,12 +945,15 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
     {
     case WM_LBUTTONDBLCLK:
     {
+#ifdef _DEBUG
         // DEBUG here
+        // 加设置对话框
+        // 增加气泡修改后的气泡提示, 也就是立即显示一次效果
+        // 加关于对话框
         //MessageBoxW(this->hWnd, L"Double Click on NotifyIcon!\n", L"Double Click on NotifyIcon!\n", MB_OK);
-        //this->TimeAlarm();
-        //this->config.SaveToFile(L"C:\\Users\\ljh\\Desktop\\config.json");
-        //this->config.LoadFromFile(L"C:\\Users\\ljh\\Desktop\\config.json");
-        //OutputDebugStringW(L"Double Click on NotifyIcon!\n");
+        this->TimeAlarm();
+        OutputDebugStringW(L"Double Click on NotifyIcon!\n");
+#endif // !_DEBUG
         break;
     }
     case WM_CONTEXTMENU:
