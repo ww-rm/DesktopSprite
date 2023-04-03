@@ -15,6 +15,12 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_2936EB51C1F34C12B1BD6271BA38DFB5"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_4ADF7EA8229645E69D9242AC728A573A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -29,6 +35,18 @@
         {
         "MsmKey" = "8:_698A80141339D88FBA43EDA81F58658B"
         "OwnerKey" = "8:_4ADF7EA8229645E69D9242AC728A573A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_7637C3B762714DE2B6D4221AD733C2E6"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_912B8F279BF44296B4FB96EF8E1AD698"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -73,6 +91,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:FALSE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 和 x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
         "Release"
         {
@@ -89,6 +123,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:FALSE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 和 x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -110,6 +160,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2936EB51C1F34C12B1BD6271BA38DFB5"
+            {
+            "SourcePath" = "8:..\\DesktopSprite\\res\\image\\timealarm.png"
+            "TargetName" = "8:timealarm.png"
+            "Tag" = "8:"
+            "Folder" = "8:_D163558C2AA344E5AD5D885C31D822CC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4B6BD621D53351E27E5DA471EC2E374A"
             {
             "SourcePath" = "8:VCRUNTIME140_1D.dll"
@@ -148,6 +218,46 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7637C3B762714DE2B6D4221AD733C2E6"
+            {
+            "SourcePath" = "8:..\\DesktopSprite\\res\\image\\timealarm.ico"
+            "TargetName" = "8:timealarm.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_D163558C2AA344E5AD5D885C31D822CC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_912B8F279BF44296B4FB96EF8E1AD698"
+            {
+            "SourcePath" = "8:..\\DesktopSprite\\res\\font\\AGENCYR.TTF"
+            "TargetName" = "8:AGENCYR.TTF"
+            "Tag" = "8:"
+            "Folder" = "8:_FC69EC52D09C4B3E8444A058E0604A2B"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_AFCF7692A9ECE5E792C9A3ECCE1208A3"
@@ -249,7 +359,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_46CD9A4D49F5436B9FF28A5B9E2F1D7E"
             {
-            "DefaultLocation" = "8:[ProgramFiles64Folder][Manufacturer]\\[ProductName]"
+            "DefaultLocation" = "8:[ProgramFiles64Folder][ProductName]"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -257,6 +367,39 @@
             "Property" = "8:TARGETDIR"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_3CF042A0281B48BABCCFD0B6B8286478"
+                    {
+                    "Name" = "8:res"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_9BE98AC69A38433586DFC4740EE068DC"
+                        "Folders"
+                        {
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_D163558C2AA344E5AD5D885C31D822CC"
+                            {
+                            "Name" = "8:image"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_E4B7912BCBD445098ED6F06B7DD2F892"
+                                "Folders"
+                                {
+                                }
+                            }
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_FC69EC52D09C4B3E8444A058E0604A2B"
+                            {
+                            "Name" = "8:font"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_56AD47A1D3CF4605A8345A31FEE8AADC"
+                                "Folders"
+                                {
+                                }
+                            }
+                        }
+                    }
                 }
             }
             "{1525181F-901A-416C-8A58-119130FE478E}:_4D01922FC604474BB0F44F2DE41DDEFE"
@@ -286,18 +429,18 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DesktopSprite"
-        "ProductCode" = "8:{67E9C020-85FD-40B6-BF0D-1B179113084C}"
-        "PackageCode" = "8:{0FE72A89-7583-4395-BC96-55B7FA93FE4D}"
-        "UpgradeCode" = "8:{26838466-FEC8-45A9-95EE-9D34C53700DE}"
+        "ProductCode" = "8:{AE32B116-6131-47E3-8541-2B3C9D71E0FB}"
+        "PackageCode" = "8:{056CC480-675C-416D-AA94-F8A4DF7E4C58}"
+        "UpgradeCode" = "8:{D42E3F16-6883-400A-84C0-221705B85235}"
         "AspNetVersion" = "8:"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
         "ProductVersion" = "8:1.0.0"
         "Manufacturer" = "8:ww-rm's studio"
         "ARPHELPTELEPHONE" = "8:"
-        "ARPHELPLINK" = "8:"
+        "ARPHELPLINK" = "8:https://github.com/ww-rm/DesktopSprite"
         "Title" = "8:DesktopSprite"
         "Subject" = "8:"
         "ARPCONTACT" = "8:ww-rm"
@@ -330,7 +473,7 @@
                         {
                             "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_31323116D5234849AD4ABEBDFC5CEA40"
                             {
-                            "Name" = "8:[Manufacturer]"
+                            "Name" = "8:[ProductName]"
                             "Condition" = "8:"
                             "AlwaysCreate" = "11:FALSE"
                             "DeleteAtUninstall" = "11:FALSE"
@@ -340,6 +483,22 @@
                                 }
                                 "Values"
                                 {
+                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_596EAE4B55634BBFAD80C40118855190"
+                                    {
+                                    "Name" = "8:InstallPath"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:\"[TARGETDIR]\""
+                                    }
+                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_AB7C357380B046EAA54041ADA01C236B"
+                                    {
+                                    "Name" = "8:"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "ValueTypes" = "3:1"
+                                    "Value" = "8:"
+                                    }
                                 }
                             }
                         }
@@ -364,7 +523,7 @@
                         {
                             "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_5F377E438A284D40AB1437E951CC81AF"
                             {
-                            "Name" = "8:[Manufacturer]"
+                            "Name" = "8:[ProductName]"
                             "Condition" = "8:"
                             "AlwaysCreate" = "11:FALSE"
                             "DeleteAtUninstall" = "11:FALSE"
@@ -407,20 +566,6 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_01525ECEF5D9481484AC574CA311F469"
-            {
-            "Name" = "8:DesktopSprite"
-            "Arguments" = "8:"
-            "Description" = "8:"
-            "ShowCmd" = "3:1"
-            "IconIndex" = "3:0"
-            "Transitive" = "11:FALSE"
-            "Target" = "8:_4ADF7EA8229645E69D9242AC728A573A"
-            "Folder" = "8:_4D01922FC604474BB0F44F2DE41DDEFE"
-            "WorkingFolder" = "8:_46CD9A4D49F5436B9FF28A5B9E2F1D7E"
-            "Icon" = "8:"
-            "Feature" = "8:"
-            }
         }
         "UserInterface"
         {

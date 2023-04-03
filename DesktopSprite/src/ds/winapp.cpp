@@ -33,13 +33,14 @@ WinApp::WinApp()
     GetModuleFileNameW(NULL, this->szExeFullDir, MAX_PATH);
     PathCchRemoveFileSpec(this->szExeFullDir, MAX_PATH);
     GetModuleFileNameW(NULL, this->szExeFullPath, MAX_PATH);
-
+#ifndef _DEBUG
     // 修改当前目录
     if (!SetCurrentDirectoryW(this->GetAppDir()))
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
         exit(EXIT_FAILURE);
     }
+#endif // _DEBUG
 }
 
 WinApp::~WinApp()
