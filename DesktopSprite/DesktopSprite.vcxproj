@@ -25,6 +25,7 @@
     <ClInclude Include="include\ds\mainwnd.h" />
     <ClInclude Include="include\ds\notifyicon.h" />
     <ClInclude Include="include\ds\perfmonitor.h" />
+    <ClInclude Include="include\ds\version.h" />
     <ClInclude Include="include\json\allocator.h" />
     <ClInclude Include="include\json\assertions.h" />
     <ClInclude Include="include\json\config.h" />
@@ -85,7 +86,12 @@
     <ClInclude Include="src\spine\kvec.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="res\DesktopSprite.rc" />
+    <ResourceCompile Include="res\DesktopSprite.rc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Projects\VsProjects\DesktopSprite\DesktopSprite\include\ds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\Projects\VsProjects\DesktopSprite\DesktopSprite\include\ds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\Projects\VsProjects\DesktopSprite\DesktopSprite\include\ds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Projects\VsProjects\DesktopSprite\DesktopSprite\include\ds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\image\appicon_dark.ico" />

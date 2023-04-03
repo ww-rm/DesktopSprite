@@ -239,6 +239,9 @@
     <ClInclude Include="src\json\json_tool.h">
       <Filter>源文件\json</Filter>
     </ClInclude>
+    <ClInclude Include="include\ds\version.h">
+      <Filter>头文件\框架</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ds\config.cpp">

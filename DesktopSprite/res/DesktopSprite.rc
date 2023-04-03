@@ -2,6 +2,10 @@
 //
 #include "resource.h"
 
+// Version.h
+//
+#include "version.h"
+
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -64,7 +68,7 @@ BEGIN
             MENUITEM "深色主题(&D)",                    IDM_DARKTHEME
             POPUP "透明度(&T)"
             BEGIN
-                MENUITEM "100%\t",                      IDM_TRANS_100
+                MENUITEM "100%",                        IDM_TRANS_100
                 MENUITEM "75%",                         IDM_TRANS_75
                 MENUITEM "50%",                         IDM_TRANS_50
                 MENUITEM "25%",                         IDM_TRANS_25
@@ -88,8 +92,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION FILE_VERSION_VAL
+ PRODUCTVERSION PRODUCT_VERSION_VAL
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -106,12 +110,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "ww-rm's studio"
             VALUE "FileDescription", "DesktopSprite"
-            VALUE "FileVersion", "1.0.0.1"
+            VALUE "FileVersion", FILE_VERSION_STR
             VALUE "InternalName", "DesktopSprite.exe"
             VALUE "LegalCopyright", "Copyright (C) 2021"
             VALUE "OriginalFilename", "DesktopSprite.exe"
             VALUE "ProductName", "DesktopSprite"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductVersion", PRODUCT_VERSION_STR
         END
     END
     BLOCK "VarFileInfo"
@@ -210,159 +214,6 @@ BEGIN
 END
 
 #endif    // 中文(简体，中国) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_CONTEXTMENU MENU
-BEGIN
-    POPUP ""
-    BEGIN
-        MENUITEM "Floating Window(&F)",         IDM_FLOATWND
-        MENUITEM SEPARATOR
-        POPUP "Show(&S)"
-        BEGIN
-            MENUITEM "Show Usage(&U)",              IDM_SHOWCPUMEM
-            MENUITEM "Show Speed(&S)",              IDM_SHOWNETSPEED
-            MENUITEM SEPARATOR
-            MENUITEM "Dark Theme(&D)",              IDM_DARKTHEME
-            POPUP "Transparency(&T)"
-            BEGIN
-                MENUITEM "100%\t",                      IDM_TRANS_100
-                MENUITEM "75%",                         IDM_TRANS_75
-                MENUITEM "50%",                         IDM_TRANS_50
-                MENUITEM "25%",                         IDM_TRANS_25
-                MENUITEM "Custom(&C)...",               IDM_TRANSPARENCY
-            END
-        END
-        POPUP "Configure(&C)"
-        BEGIN
-            MENUITEM "Autorun(&A)",                 IDM_AUTORUN
-            MENUITEM "Hourly Alarm(&T)",            IDM_TIMEALARM
-            MENUITEM "Notice Sound(&S)",            IDM_INFOSOUND
-        END
-        MENUITEM "Exit(&E)",                    IDM_EXIT
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904b0"
-        BEGIN
-            VALUE "CompanyName", "ww-rm's studio"
-            VALUE "FileDescription", "DesktopSprite"
-            VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "DesktopSprite.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2021"
-            VALUE "OriginalFilename", "DesktopSprite.exe"
-            VALUE "ProductName", "DesktopSprite"
-            VALUE "ProductVersion", "1.0.0.1"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1200
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_TRANSPARENCY DIALOGEX 0, 0, 120, 60
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Transparency Config"
-FONT 8, "Microsoft YaHei UI", 400, 0, 0x86
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,7,39,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,63,39,50,14
-    LTEXT           "Transparency: ",IDC_STATIC,15,20,26,8
-    EDITTEXT        IDC_EDIT_TRANSPARENCY,40,18,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "%",IDC_STATIC,82,20,8,8
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_TRANSPARENCY, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 113
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 53
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// AFX_DIALOG_LAYOUT
-//
-
-IDD_TRANSPARENCY AFX_DIALOG_LAYOUT
-BEGIN
-    0
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE
-BEGIN
-    IDS_APPNAME             "DesktopSprite"
-    IDS_TIMEALARMTITLE      "Take a break~"
-    IDS_TIMEALARMINFO       "Current Time %02d: %02d"
-    IDS_SHOWWARNINGTITLE    "Warning"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_SHOWWARNINGMSG      "At least keep one display item!"
-END
-
-#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
