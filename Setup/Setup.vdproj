@@ -715,15 +715,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DesktopSprite"
-        "ProductCode" = "8:{AE32B116-6131-47E3-8541-2B3C9D71E0FB}"
-        "PackageCode" = "8:{056CC480-675C-416D-AA94-F8A4DF7E4C58}"
+        "ProductCode" = "8:{AED2D632-472A-4AB8-887D-FD7B85591245}"
+        "PackageCode" = "8:{32E31DD8-5BD8-4592-B13D-D128063EE415}"
         "UpgradeCode" = "8:{D42E3F16-6883-400A-84C0-221705B85235}"
         "AspNetVersion" = "8:"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:1.1.1"
         "Manufacturer" = "8:ww-rm's studio"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://github.com/ww-rm/DesktopSprite"
@@ -892,7 +892,7 @@
                     }
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_71BB9A95FD044F0AAE4BADEA56A0690B"
                     {
-                    "Sequence" = "3:100"
+                    "Sequence" = "3:110"
                     "DisplayName" = "8:欢迎使用"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
@@ -1253,7 +1253,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4ADF7EA8229645E69D9242AC728A573A"
             {
-            "SourcePath" = "8:..\\bin\\x64\\Debug\\DesktopSprite.exe"
+            "SourcePath" = "8:..\\bin\\x64\\Release\\DesktopSprite.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_46CD9A4D49F5436B9FF28A5B9E2F1D7E"
