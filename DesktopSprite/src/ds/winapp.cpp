@@ -2,12 +2,17 @@
 #include <ds/utils.h>
 
 #include <ds/mainwnd.h>
-#include <ds/winapp.h>
 #include <ds/spritewnd.h>
+#include <ds/winapp.h>
 
 WinApp::WinApp()
 {
+#ifdef _DEBUG
+    this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex_D");
+#else
     this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex");
+#endif // _DEBUG
+
     if (!this->hAppMutex)
     {
         ShowLastError(__FUNCTIONW__, __LINE__);

@@ -250,6 +250,7 @@ DWORD MainWindow::ApplyConfig()
     // 设置透明度
     SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(this->config.transparencyPercent), LWA_ALPHA);
 
+#ifndef _DEBUG
     // 开机启动
     if (this->config.bAutoRun)
     {
@@ -259,6 +260,7 @@ DWORD MainWindow::ApplyConfig()
     {
         UnsetAppAutoRun(this->app->GetAppName());
     }
+#endif // !_DEBUG
 
     // 是否整点报时
     if (this->config.bTimeAlarm)
@@ -935,9 +937,10 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
 #ifdef _DEBUG
         // DEBUG here
         // 加设置对话框
-        // 增加气泡修改后的气泡提示, 也就是立即显示一次效果
         // 加关于对话框
         //MessageBoxW(this->hWnd, L"Double Click on NotifyIcon!\n", L"Double Click on NotifyIcon!\n", MB_OK);
+        this->config.LoadFromFile(this->GetConfigPath());
+        this->ApplyConfig();
         this->TimeAlarm();
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
 #endif // !_DEBUG
