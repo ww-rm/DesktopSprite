@@ -24,7 +24,7 @@ public:
     // 设置图标 Tip 消息
     DWORD SetTip(PCWSTR szTip);
 
-    // 弹出气泡消息
+    // 弹出气泡消息, 当 hBalloonIcon 无效时, 系统使用和通知栏一样的图标作为气泡图标
     DWORD PopIconInfo(PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloonIcon, BOOL bSound);
 
     // NIM_SETFOCUS

@@ -10,14 +10,6 @@ HANDLE DefCreateThread(LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter
 // 默认参数创建文件
 HANDLE DefCreateFile(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwCreationDisposition);
 
-//// 从文件中读取图标文件(需要用DestroyIcon释放)
-//#define LoadIconFromFile(name) \
-//        ((HICON)LoadImageW(NULL, (name), IMAGE_ICON, 0, 0, LR_LOADFROMFILE))
-//
-// 读取原始大小图标资源(需要用DestroyIcon释放)
-#define LoadIconRawSize(hInst, name) \
-        ((HICON)LoadImageW((hInst), (name), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR))
-
 // 获取窗口 USERDATA
 LONG_PTR GetWndData(HWND hWnd);
 // 设置窗口 USERDATA

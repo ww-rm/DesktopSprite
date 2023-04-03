@@ -85,16 +85,6 @@ BOOL DrawSpeedStair(
     return TRUE;
 }
 
-Font* CreateFontFromFile(PCWSTR szFontFilePath, REAL emSize, INT style, Unit unit)
-{
-    PrivateFontCollection prvtFontColl;
-    prvtFontColl.AddFontFile(szFontFilePath);
-    FontFamily fontFamily;
-    INT found = 0;
-    prvtFontColl.GetFamilies(1, &fontFamily, &found);
-    Font* pFont = new Font(&fontFamily, emSize, style, unit);
-    return pFont;
-}
 
 ///////////////////////////////////////////////////////////////////
 
@@ -237,6 +227,10 @@ DWORD MainWindow::UpdateFloatPosByResolution(PSIZE newResolution)
 
 DWORD MainWindow::ApplyConfig()
 {
+    // 加载气泡图标资源
+    DestroyIcon(this->balloonIcon);
+    Bitmap(this->config.szBalloonIconPath).GetHICON(&this->balloonIcon);
+
     // 是否显示浮动窗口
     if (this->config.bFloatWnd)
     {
@@ -286,6 +280,13 @@ DWORD MainWindow::ApplyConfig()
 
 DWORD MainWindow::ApplyConfig(PCFGDATA pcfgdata)
 {
+    // 重设气泡图标
+    if (StrCmpW(pcfgdata->szBalloonIconPath, this->config.szBalloonIconPath))
+    {
+        DestroyIcon(this->balloonIcon);
+        Bitmap(this->config.szBalloonIconPath).GetHICON(&this->balloonIcon);
+    }
+
     // 设置浮动窗口
     if (pcfgdata->bFloatWnd != this->config.bFloatWnd)
     {
@@ -379,11 +380,7 @@ DWORD MainWindow::TimeAlarm()
     LoadStringW(hInstance, IDS_TIMEALARMINFO, szInfoFormat, MAX_NIDINFO);
     StringCchPrintfW(szInfo, MAX_NIDINFO, szInfoFormat, st.wHour, st.wMinute);
 
-    //HICON hIcon = LoadIconFromFile(szBalloonIconPath);
-    HICON hIcon = LoadIconRawSize(hInstance, MAKEINTRESOURCEW(IDI_TIMEALARM));
-    this->pNotifyIcon->PopIconInfo(szInfoTitle, szInfo, hIcon, this->config.bInfoSound);
-
-    DestroyIcon(hIcon);
+    this->pNotifyIcon->PopIconInfo(szInfoTitle, szInfo, this->balloonIcon, this->config.bInfoSound);
 
     return 0;
 }
@@ -493,6 +490,7 @@ LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
     this->SaveFloatPosDataToReg();
     this->config.SaveToFile(this->GetConfigPath());
     delete this->pNotifyIcon;
+    DestroyIcon(this->balloonIcon);
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
 }
@@ -949,10 +947,10 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
     {
         // DEBUG here
         //MessageBoxW(this->hWnd, L"Double Click on NotifyIcon!\n", L"Double Click on NotifyIcon!\n", MB_OK);
-        //TimeAlarm(this);
+        //this->TimeAlarm();
         //this->config.SaveToFile(L"C:\\Users\\ljh\\Desktop\\config.json");
         //this->config.LoadFromFile(L"C:\\Users\\ljh\\Desktop\\config.json");
-        OutputDebugStringW(L"Double Click on NotifyIcon!\n");
+        //OutputDebugStringW(L"Double Click on NotifyIcon!\n");
         break;
     }
     case WM_CONTEXTMENU:

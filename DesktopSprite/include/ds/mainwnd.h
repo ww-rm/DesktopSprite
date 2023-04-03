@@ -30,9 +30,6 @@ BOOL DrawSpeedStair(
     const INT& nMaxLevel = 6
 );
 
-// 从字体文件创建字体, 需要使用 delete 释放指针
-Font* CreateFontFromFile(PCWSTR szFontFilePath, REAL emSize = 9, INT style = 0, Unit unit = Unit::UnitPoint);
-
 class MainWindow :BaseWindow
 {
 private:
@@ -50,6 +47,7 @@ private:
     BOOL                                bClocked = FALSE;               // 保存整点内是否报过时
     POINT                               ptDragSrc = { 0 };              // 拖动窗口时的源点
     Gdiplus::PrivateFontCollection      fontColl;                       // 文本字体容器
+    HICON                               balloonIcon = NULL;             // 气泡消息的图标资源
 
     POINT                               lastFloatPos = { 0 };           // 最近一次浮动窗口位置
     SIZE                                lastResolution = { 0 };         // 最近运行时系统分辨率
