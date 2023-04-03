@@ -143,25 +143,6 @@ BEGIN
     0
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE
-BEGIN
-    IDS_APPNAME             "DesktopSprite"
-    IDS_TIMEALARMTITLE      "Take a break~"
-    IDS_TIMEALARMINFO       "北京时间 %02d: %02d"
-    IDS_SHOWWARNINGTITLE    "提示信息"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_SHOWWARNINGMSG      "至少保留一项显示内容！"
-END
-
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 

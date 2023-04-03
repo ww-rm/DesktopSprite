@@ -285,6 +285,7 @@ DWORD MainWindow::ApplyConfig(PCFGDATA pcfgdata)
     {
         DestroyIcon(this->balloonIcon);
         Bitmap(this->config.szBalloonIconPath).GetHICON(&this->balloonIcon);
+        this->pNotifyIcon->PopIconInfo(L"图标修改成功", L"来看看效果吧~", this->balloonIcon, TRUE);
     }
 
     // 设置浮动窗口
@@ -370,28 +371,16 @@ DWORD MainWindow::TimeAlarm()
     SYSTEMTIME st = { 0 };
     GetLocalTime(&st);
 
-    HINSTANCE hInstance = GetModuleHandleW(NULL);
-
-    WCHAR szInfoTitle[MAX_NIDINFOTITLE] = { 0 };
-    LoadStringW(hInstance, IDS_TIMEALARMTITLE, szInfoTitle, MAX_NIDINFOTITLE);
-
     WCHAR szInfo[MAX_NIDINFO] = { 0 };
-    WCHAR szInfoFormat[MAX_NIDINFO] = { 0 };
-    LoadStringW(hInstance, IDS_TIMEALARMINFO, szInfoFormat, MAX_NIDINFO);
-    StringCchPrintfW(szInfo, MAX_NIDINFO, szInfoFormat, st.wHour, st.wMinute);
+    StringCchPrintfW(szInfo, MAX_NIDINFO, L"北京时间 %02d: %02d", st.wHour, st.wMinute);
 
-    this->pNotifyIcon->PopIconInfo(szInfoTitle, szInfo, this->balloonIcon, this->config.bInfoSound);
-
+    this->pNotifyIcon->PopIconInfo(L"Take a break~", szInfo, this->balloonIcon, this->config.bInfoSound);
     return 0;
 }
 
 INT MainWindow::ShowNoConentWarningMsg()
 {
-    WCHAR szTitle[MAX_LOADSTRING];
-    WCHAR szMsg[MAX_LOADSTRING];
-    LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGTITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(GetModuleHandleW(NULL), IDS_SHOWWARNINGMSG, szMsg, MAX_LOADSTRING);
-    return MessageBoxW(this->hWnd, szMsg, szTitle, MB_OK | MB_ICONINFORMATION);
+    return MessageBoxW(this->hWnd, L"至少保留一项显示内容！", L"提示信息", MB_ICONINFORMATION);
 }
 
 ///////////////////////////// Message Process ////////////////////////////////
@@ -467,9 +456,7 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     );
 
     // 设置图标提示信息
-    WCHAR szTip[MAX_NIDTIP] = { 0 };
-    LoadStringW(GetModuleHandleW(NULL), IDS_APPNAME, szTip, MAX_NIDTIP);
-    this->pNotifyIcon->SetTip(szTip);
+    this->pNotifyIcon->SetTip(this->app->GetAppName());
 
     // 初始化配置参数相关
     if (PathFileExistsW(this->GetConfigPath()))
@@ -1091,8 +1078,6 @@ LRESULT MainWindow::OnTaskbarCreated(WPARAM wParam, LPARAM lParam)
     );
 
     // 设置图标提示信息
-    WCHAR szTip[MAX_NIDTIP] = { 0 };
-    LoadStringW(GetModuleHandleW(NULL), IDS_APPNAME, szTip, MAX_NIDTIP);
-    this->pNotifyIcon->SetTip(szTip);
+    this->pNotifyIcon->SetTip(this->app->GetAppName());
     return 0;
 }
