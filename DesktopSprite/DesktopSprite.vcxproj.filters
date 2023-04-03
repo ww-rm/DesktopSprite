@@ -40,16 +40,19 @@
     <Filter Include="源文件\json">
       <UniqueIdentifier>{82375dc6-b8f4-452e-b703-27998c69f940}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\资源">
+      <UniqueIdentifier>{2879658b-cbde-443a-b6f9-caa62dcac620}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\DesktopSprite.rc">
-      <Filter>资源文件</Filter>
+      <Filter>资源文件\资源</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="res\version.rc">
+      <Filter>资源文件\资源</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="res\resource.h">
-      <Filter>头文件\框架</Filter>
-    </ClInclude>
     <ClInclude Include="include\ds\framework.h">
       <Filter>头文件\框架</Filter>
     </ClInclude>
@@ -242,6 +245,12 @@
     <ClInclude Include="include\ds\version.h">
       <Filter>头文件\框架</Filter>
     </ClInclude>
+    <ClInclude Include="res\resource.h">
+      <Filter>资源文件\资源</Filter>
+    </ClInclude>
+    <ClInclude Include="res\resource1.h">
+      <Filter>资源文件\资源</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ds\config.cpp">
@@ -385,9 +394,6 @@
     <ClCompile Include="src\spine\VertexEffect.cpp">
       <Filter>源文件\spine</Filter>
     </ClCompile>
-    <ClCompile Include="basewindow.cpp">
-      <Filter>源文件\ds</Filter>
-    </ClCompile>
     <ClCompile Include="src\json\json_reader.cpp">
       <Filter>源文件\json</Filter>
     </ClCompile>
@@ -396,6 +402,9 @@
     </ClCompile>
     <ClCompile Include="src\json\json_writer.cpp">
       <Filter>源文件\json</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ds\basewindow.cpp">
+      <Filter>源文件\ds</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

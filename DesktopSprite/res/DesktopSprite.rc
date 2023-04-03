@@ -2,10 +2,6 @@
 //
 #include "resource.h"
 
-// Version.h
-//
-#include "version.h"
-
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -88,45 +84,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION FILE_VERSION_VAL
- PRODUCTVERSION PRODUCT_VERSION_VAL
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "080404b0"
-        BEGIN
-            VALUE "CompanyName", "ww-rm's studio"
-            VALUE "FileDescription", "DesktopSprite"
-            VALUE "FileVersion", FILE_VERSION_STR
-            VALUE "InternalName", "DesktopSprite.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2021"
-            VALUE "OriginalFilename", "DesktopSprite.exe"
-            VALUE "ProductName", "DesktopSprite"
-            VALUE "ProductVersion", PRODUCT_VERSION_STR
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x804, 1200
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Icon
 //
 
@@ -137,14 +94,6 @@ IDI_APPICON_DARK        ICON                    "image\\appicon_dark.ico"
 IDI_TIMEALARM           ICON                    "image\\timealarm.ico"
 
 IDI_APPICON_LIGHT       ICON                    "image\\appicon_light.ico"
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// TTF
-//
-
-IDR_TTF1                TTF                     "font\\AGENCYR.TTF"
 
 
 /////////////////////////////////////////////////////////////////////////////

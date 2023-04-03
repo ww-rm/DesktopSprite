@@ -8,21 +8,24 @@
 
 #include <ds/mainwnd.h>
 
-// 状态颜色
-Gdiplus::Color const STATUSCOLOR_LOW = 0xff00ff00;
-Gdiplus::Color const STATUSCOLOR_MIDDLE = 0xffff8000;
-Gdiplus::Color const STATUSCOLOR_HIGH = 0xffff0000;
-
-// 注册表键值
-PCWSTR const REGVAL_LASTFLOATPOS = L"LastFloatPos";
-PCWSTR const REGVAL_LASTRUNTIMERESOLUTION = L"LastRunTimeResolution";
-
 using namespace Gdiplus;
 
+// 状态颜色
+static Gdiplus::Color const STATUSCOLOR_LOW = 0xff00ff00;
+static Gdiplus::Color const STATUSCOLOR_MIDDLE = 0xffff8000;
+static Gdiplus::Color const STATUSCOLOR_HIGH = 0xffff0000;
+
+// 字体路径
+static PCWSTR const FONT_PATH = L"res\\font\\AGENCYR.TTF";
+
+// 注册表键值
+static PCWSTR const REGVAL_LASTFLOATPOS = L"LastFloatPos";
+static PCWSTR const REGVAL_LASTRUNTIMERESOLUTION = L"LastRunTimeResolution";
+
 // 常量定义
-static UINT     const   REFRESHINTERVAL = 1000;                     // 屏幕显示刷新间隔
+static UINT     const   REFRESHINTERVAL = 1000;                // 屏幕显示刷新间隔
 static UINT     const   ID_NIDMAIN = 1;                        // 图标 ID
-static UINT     const   BASE_WNDSIZE_PIXELS = 20;                       // 主窗口的基本单元格像素大小
+static UINT     const   BASE_WNDSIZE_PIXELS = 20;              // 主窗口的基本单元格像素大小
 
 BOOL DrawCircle(
     Graphics& graphics,
@@ -457,10 +460,8 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     this->UpdateFloatPosByResolution();
     this->SaveFloatPosDataToReg();
 
-    // 向字体容器添加私有字体
-    DWORD cbData = 0;
-    PBYTE pFontData = GetResPointer(IDR_TTF1, L"TTF", &cbData);
-    this->fontColl.AddMemoryFont((PVOID)pFontData, (INT)cbData);
+    // 初始化字体
+    this->fontColl.AddFontFile(FONT_PATH);
 
     // 添加图标
     this->pNotifyIcon = new NotifyIcon(

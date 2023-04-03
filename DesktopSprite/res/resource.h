@@ -12,7 +12,6 @@
 #define IDS_TIP_ALL                     107
 #define IDS_TIP_CPU                     108
 #define IDS_TIP_MEM                     109
-#define IDR_TTF1                        110
 #define IDS_SHOWWARNINGTITLE            110
 #define IDD_TRANSPARENCY                110
 #define IDS_TIP_UPLOAD                  111
@@ -37,7 +36,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        117
+#define _APS_NEXT_RESOURCE_VALUE        120
 #define _APS_NEXT_COMMAND_VALUE         40034
 #define _APS_NEXT_CONTROL_VALUE         1004
 #define _APS_NEXT_SYMED_VALUE           101
