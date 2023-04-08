@@ -15,23 +15,31 @@ private:
     UINT uID = 0;
 
 public:
-    NotifyIcon(HWND hWnd, UINT uID, UINT uCallbackMessage, HICON hIcon);
-    ~NotifyIcon();
+    NotifyIcon(HWND hWnd, UINT uID) : hWnd(hWnd), uID(uID) {}
+
+    // 添加图标, 重复添加返回 FALSE
+    BOOL Add(UINT uCallbackMessage = 0, HICON hIcon = NULL, PCWSTR szTip = NULL);
+
+    // 删除图标
+    BOOL Delete();
+
+    // 修改回调消息
+    BOOL ModifyCallbackMessage(UINT uCallbackMessage);
 
     // 修饰通知区域图标
-    DWORD SetIcon(HICON hIcon);
+    BOOL ModifyIcon(HICON hIcon);
 
     // 设置图标 Tip 消息
-    DWORD SetTip(PCWSTR szTip);
+    BOOL ModifyTip(PCWSTR szTip);
 
     // 弹出气泡消息, 当 hBalloonIcon 无效时, 系统使用和通知栏一样的图标作为气泡图标
-    DWORD PopIconInfo(PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloonIcon, BOOL bSound);
+    BOOL PopupIconInfo(PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloonIcon, BOOL bSound = TRUE);
 
     // NIM_SETFOCUS
-    DWORD SetFocus();
+    BOOL SetFocus();
 
     // 获得图标矩形范围
-    DWORD GetRect(PRECT pRect);
+    HRESULT GetRect(PRECT pRect);
 };
 
 #endif // !DS_NOTIFYICON_H

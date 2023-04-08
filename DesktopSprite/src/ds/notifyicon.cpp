@@ -1,35 +1,53 @@
 #include <ds/framework.h>
 #include <ds/notifyicon.h>
 
-NotifyIcon::NotifyIcon(HWND hWnd, UINT uID, UINT uCallbackMessage, HICON hIcon)
+BOOL NotifyIcon::Add(UINT uCallbackMessage, HICON hIcon, PCWSTR szTip)
 {
-    this->hWnd = hWnd;
-    this->uID = uID;
-
     NOTIFYICONDATAW nid = { 0 };
     nid.cbSize = sizeof(NOTIFYICONDATAW);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
     nid.uVersion = NOTIFYICON_VERSION_4;
-    nid.uFlags = NIF_MESSAGE | NIF_ICON;
-    nid.uCallbackMessage = uCallbackMessage;
-    nid.hIcon = hIcon;
-
-    Shell_NotifyIconW(NIM_ADD, &nid);
-    Shell_NotifyIconW(NIM_SETVERSION, &nid);
+    nid.uFlags = 0;
+    if (uCallbackMessage)
+    {
+        nid.uFlags = nid.uFlags | NIF_MESSAGE;
+        nid.uCallbackMessage = uCallbackMessage;
+    }
+    if (hIcon)
+    {
+        nid.uFlags = nid.uFlags | NIF_ICON;
+        nid.hIcon = hIcon;
+    }
+    if (szTip)
+    {
+        nid.uFlags = nid.uFlags | NIF_TIP;
+        StringCchCopyW(nid.szTip, MAX_NIDTIP, szTip);
+    }
+    return (BOOL)(Shell_NotifyIconW(NIM_ADD, &nid) && Shell_NotifyIconW(NIM_SETVERSION, &nid));
 }
 
-NotifyIcon::~NotifyIcon()
+BOOL NotifyIcon::Delete()
 {
     NOTIFYICONDATAW nid = { 0 };
     nid.cbSize = sizeof(NOTIFYICONDATAW);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
-
-    Shell_NotifyIconW(NIM_DELETE, &nid);
+    return Shell_NotifyIconW(NIM_DELETE, &nid);
 }
 
-DWORD NotifyIcon::SetIcon(HICON hIcon)
+BOOL NotifyIcon::ModifyCallbackMessage(UINT uCallbackMessage)
+{
+    NOTIFYICONDATAW nid = { 0 };
+    nid.cbSize = sizeof(NOTIFYICONDATAW);
+    nid.hWnd = this->hWnd;
+    nid.uID = this->uID;
+    nid.uFlags = NIF_MESSAGE;
+    nid.uCallbackMessage = uCallbackMessage;
+    return Shell_NotifyIconW(NIM_MODIFY, &nid);
+}
+
+BOOL NotifyIcon::ModifyIcon(HICON hIcon)
 {
     NOTIFYICONDATAW nid = { 0 };
     nid.cbSize = sizeof(NOTIFYICONDATAW);
@@ -37,12 +55,10 @@ DWORD NotifyIcon::SetIcon(HICON hIcon)
     nid.uID = this->uID;
     nid.uFlags = NIF_ICON;
     nid.hIcon = hIcon;
-
-    Shell_NotifyIconW(NIM_MODIFY, &nid);
-    return 0;
+    return Shell_NotifyIconW(NIM_MODIFY, &nid);
 }
 
-DWORD NotifyIcon::SetTip(PCWSTR szTip)
+BOOL NotifyIcon::ModifyTip(PCWSTR szTip)
 {
     NOTIFYICONDATAW nid = { 0 };
     nid.cbSize = sizeof(NOTIFYICONDATAW);
@@ -50,12 +66,10 @@ DWORD NotifyIcon::SetTip(PCWSTR szTip)
     nid.uID = this->uID;
     nid.uFlags = NIF_TIP;
     StringCchCopyW(nid.szTip, MAX_NIDTIP, szTip);
-    Shell_NotifyIconW(NIM_MODIFY, &nid);
-
-    return 0;
+    return Shell_NotifyIconW(NIM_MODIFY, &nid);
 }
 
-DWORD NotifyIcon::PopIconInfo(PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloonIcon, BOOL bSound)
+BOOL NotifyIcon::PopupIconInfo(PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloonIcon, BOOL bSound)
 {
     NOTIFYICONDATAW nid = { 0 };
     nid.cbSize = sizeof(NOTIFYICONDATAW);
@@ -66,28 +80,23 @@ DWORD NotifyIcon::PopIconInfo(PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloonI
     StringCchCopyW(nid.szInfoTitle, MAX_NIDINFOTITLE, szInfoTitle);
     StringCchCopyW(nid.szInfo, MAX_NIDINFO, szInfo);
     nid.hBalloonIcon = hBalloonIcon;
-
-    Shell_NotifyIconW(NIM_MODIFY, &nid);
-    return 0;
+    return Shell_NotifyIconW(NIM_MODIFY, &nid);
 }
 
-DWORD NotifyIcon::SetFocus()
+BOOL NotifyIcon::SetFocus()
 {
     NOTIFYICONDATAW nid = { 0 };
     nid.cbSize = sizeof(NOTIFYICONDATAW);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
-
-    Shell_NotifyIconW(NIM_SETFOCUS, &nid);
-    return 0;
+    return Shell_NotifyIconW(NIM_SETFOCUS, &nid);
 }
 
-DWORD NotifyIcon::GetRect(PRECT pRect)
+HRESULT NotifyIcon::GetRect(PRECT pRect)
 {
     NOTIFYICONIDENTIFIER niid = { 0 };
     niid.cbSize = sizeof(NOTIFYICONIDENTIFIER);
     niid.hWnd = this->hWnd;
     niid.uID = this->uID;
-    Shell_NotifyIconGetRect(&niid, pRect);
-    return 0;
+    return Shell_NotifyIconGetRect(&niid, pRect);
 }
