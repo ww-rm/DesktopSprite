@@ -64,7 +64,7 @@ public:
     DWORD UpdateFloatPosByResolution(PSIZE newResolution = NULL);
 
     DWORD ApplyConfig();
-    DWORD ApplyConfig(PCFGDATA pcfgdata); // 应用更改, 只修改发生变化的设置项
+    DWORD ApplyConfig(const CFGDATA* pcfgdata); // 应用更改, 只修改发生变化的设置项
 
     DWORD GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent);
     DWORD TimeAlarm();

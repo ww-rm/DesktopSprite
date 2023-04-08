@@ -123,14 +123,13 @@ MainWindow::MainWindow(const WinApp* app)
     ATOM tmp = RegisterClassExW(&wcex);
 
     // 创建窗口
-    HINSTANCE hInst = GetModuleHandleW(NULL);
     this->hWnd = CreateWindowExW(
         WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED, 
         this->GetClassName_(), 
         NULL, WS_POPUP, 
         CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, 
         NULL, NULL, 
-        hInst, (LPVOID)this
+        GetModuleHandleW(NULL), (LPVOID)this
     );
 
     if (!this->hWnd)
@@ -280,7 +279,7 @@ DWORD MainWindow::ApplyConfig()
     return 0;
 }
 
-DWORD MainWindow::ApplyConfig(PCFGDATA pcfgdata)
+DWORD MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
 {
     // 重设气泡图标
     if (StrCmpW(pcfgdata->szBalloonIconPath, this->config.szBalloonIconPath))
@@ -541,7 +540,6 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
     this->fontColl.GetFamilies(1, &fontFamily, &found);
     Font textFont(&fontFamily, sizeUnit * 2 / 3, FontStyleRegular, UnitPixel);             // 字体大小用像素值衡量
 
-
     StringFormat strformat(StringFormatFlagsNoClip);                            // 文字居于矩形中心
     strformat.SetAlignment(StringAlignmentCenter);
     strformat.SetLineAlignment(StringAlignmentCenter);
@@ -729,7 +727,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     // HIWORD(wParam) Menu: FALSE, Accelerator: TRUE
     // LOWORD(wParam) identifier
     // lParam: 0
-    PCFGDATA pcfgdata = new CFGDATA;
+    CFGDATA* pcfgdata = new CFGDATA;
     this->config.Get(pcfgdata);
 
     switch (LOWORD(wParam))

@@ -15,7 +15,7 @@ protected:
 
 public:
     static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-    HWND WindowHandle() const;
+    HWND GetWindowHandle() const;
 };
 
 

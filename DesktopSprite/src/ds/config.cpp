@@ -13,7 +13,7 @@ static PCWSTR const CFGKEY_DARKTHEME                = L"IsDarkTheme";
 static PCWSTR const CFGKEY_TRANSPARENCY             = L"Transparency";
 static PCWSTR const CFGKEY_SHOWCONTENT              = L"ShowContent";
 
-void AppConfig::Get(PCFGDATA pcfgdata) const
+void AppConfig::Get(CFGDATA* pcfgdata) const
 {
     pcfgdata->bFloatWnd = this->bFloatWnd;
     pcfgdata->bAutoRun = this->bAutoRun;
@@ -25,7 +25,7 @@ void AppConfig::Get(PCFGDATA pcfgdata) const
     pcfgdata->byShowContent = this->byShowContent;
 }
 
-void AppConfig::Set(const PCFGDATA pcfgdata)
+void AppConfig::Set(const CFGDATA* pcfgdata)
 {
     this->bFloatWnd = pcfgdata->bFloatWnd;
     this->bAutoRun = pcfgdata->bAutoRun;

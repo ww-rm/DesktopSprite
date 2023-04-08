@@ -18,7 +18,7 @@ typedef struct _CFGDATA
     BOOL        bDarkTheme;                     // 是否使用深色主题
     DOUBLE      transparencyPercent;            // 透明度
     BYTE        byShowContent;                  // 要显示的内容
-}*PCFGDATA, CFGDATA;
+}CFGDATA;
 
 class AppConfig
 {
@@ -33,8 +33,8 @@ public:
     BYTE    byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;  // 要显示的内容
 
 public:
-    void Get(PCFGDATA pcfgdata) const;
-    void Set(const PCFGDATA pcfgdata);
+    void Get(CFGDATA* pcfgdata) const;;
+    void Set(const CFGDATA* pcfgdata);
 
     DWORD LoadFromFile(PCWSTR path);
     DWORD SaveToFile(PCWSTR path);
