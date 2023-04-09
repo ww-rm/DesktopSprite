@@ -92,11 +92,11 @@ BOOL NotifyIcon::SetFocus()
     return Shell_NotifyIconW(NIM_SETFOCUS, &nid);
 }
 
-HRESULT NotifyIcon::GetRect(PRECT pRect)
+BOOL NotifyIcon::GetRect(PRECT pRect)
 {
     NOTIFYICONIDENTIFIER niid = { 0 };
     niid.cbSize = sizeof(NOTIFYICONIDENTIFIER);
     niid.hWnd = this->hWnd;
     niid.uID = this->uID;
-    return Shell_NotifyIconGetRect(&niid, pRect);
+    return SUCCEEDED(Shell_NotifyIconGetRect(&niid, pRect));
 }

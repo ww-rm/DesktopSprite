@@ -39,7 +39,7 @@ public:
     BOOL SetFocus();
 
     // 获得图标矩形范围
-    HRESULT GetRect(PRECT pRect);
+    BOOL GetRect(PRECT pRect);
 };
 
 #endif // !DS_NOTIFYICON_H
