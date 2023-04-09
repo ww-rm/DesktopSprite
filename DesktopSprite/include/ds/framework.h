@@ -28,17 +28,5 @@
 
 #include "resource.h"
 
-#define SZMSG_TASKBARCREATED            L"TaskbarCreated"
-
-#define MAX_LOADSTRING                      256                     // 字符串缓冲区的最大长度
-
-// 窗口消息相关宏定义
-
-#define IDT_REFRESHRECT                 1
-#define IDT_TIMEALARM                   2
-
-#define WM_NOTIFYICON                   (WM_USER + 1)           // 通知区域消息
-#define WM_TIMEALARM                    (WM_USER + 2)           // 报时消息
-
 
 #endif // !DS_FRAMEWORK_H
