@@ -68,51 +68,42 @@ BYTE PercentToAlpha(DOUBLE percent)
     return (BYTE)(percent / 100.0 * 255.0);
 }
 
-DWORD SetAppAutoRun(PCWSTR appname)
+BOOL SetAppAutoRun(PCWSTR appname)
 {
-    DWORD dwErrorCode = ERROR_SUCCESS;
     HKEY hkRun = NULL;
 
     // 打开启动项  
-    dwErrorCode = RegOpenRunKey(&hkRun);
-    if (dwErrorCode == ERROR_SUCCESS)
+    if (RegOpenRunKey(&hkRun))
     {
-        // 得到本程序自身的全路径
-        WCHAR szExeFullPath[MAX_PATH];
-        GetModuleFileNameW(NULL, szExeFullPath, MAX_PATH);
-        PathQuoteSpacesW(szExeFullPath); // 补上双引号
-
-        // 得到要写入的数据大小
-        size_t cchPath = 0;
-        StringCchLengthW(szExeFullPath, MAX_PATH, &cchPath);
-        dwErrorCode = RegSetValueExW(hkRun, appname, 0, REG_SZ, (LPBYTE)szExeFullPath, (DWORD)(sizeof(WCHAR) * (cchPath + 1)));
+        return FALSE;
     }
 
-    if (hkRun != NULL)
+    // 得到本程序自身的全路径
+    WCHAR szExeFullPath[MAX_PATH];
+    GetModuleFileNameW(NULL, szExeFullPath, MAX_PATH);
+    PathQuoteSpacesW(szExeFullPath); // 补上双引号
+
+    // 得到要写入的数据大小
+    size_t cchPath = 0;
+    if (FAILED(StringCchLengthW(szExeFullPath, MAX_PATH, &cchPath)) ||
+        RegSetValueExW(hkRun, appname, 0, REG_SZ, (LPBYTE)szExeFullPath, (DWORD)(sizeof(WCHAR) * (cchPath + 1))))
     {
-        RegCloseKey(hkRun);
+        ShowLastError(__FUNCTIONW__, __LINE__);
     }
-    return dwErrorCode;
+
+    RegCloseKey(hkRun);
+    return TRUE;
 }
 
-DWORD UnsetAppAutoRun(PCWSTR appname)
+BOOL UnsetAppAutoRun(PCWSTR appname)
 {
-    DWORD dwErrorCode = ERROR_SUCCESS;
     HKEY hkRun = NULL;
 
-    // 打开启动项  
-    dwErrorCode = RegOpenRunKey(&hkRun);
-    if (dwErrorCode == ERROR_SUCCESS)
-    {
-        dwErrorCode = RegDeleteValueW(hkRun, appname);
-
-    }
-
-    if (hkRun != NULL)
-    {
-        RegCloseKey(hkRun);
-    }
-    return dwErrorCode;
+    // 打开启动项
+    RegOpenRunKey(&hkRun);
+    RegDeleteValueW(hkRun, appname);
+    RegCloseKey(hkRun);
+    return TRUE;
 }
 
 INT ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest)
@@ -158,14 +149,13 @@ BOOL IsOnTheHour()
     return (st.wMinute == 0);
 }
 
-DWORD SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState)
+BOOL SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState)
 {
     MENUITEMINFOW mii = { 0 };
     mii.cbSize = sizeof(MENUITEMINFOW);
     mii.fMask = MIIM_STATE;
     mii.fState = uState;
-    SetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
-    return 0;
+    return SetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
 }
 
 UINT GetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition)
@@ -177,14 +167,13 @@ UINT GetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition)
     return mii.fState;
 }
 
-DWORD SetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uType)
+BOOL SetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uType)
 {
     MENUITEMINFOW mii = { 0 };
     mii.cbSize = sizeof(MENUITEMINFOW);
     mii.fMask = MIIM_FTYPE;
     mii.fType = uType;
-    SetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
-    return 0;
+    return SetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
 }
 
 UINT GetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition)
@@ -196,18 +185,17 @@ UINT GetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition)
     return mii.fType;
 }
 
-DWORD GetSystemCapitalFont(PLOGFONTW pLogFont)
+BOOL GetSystemCapitalFont(PLOGFONTW pLogFont)
 {
     NONCLIENTMETRICSW ncMetrics = { 0 };
     ncMetrics.cbSize = sizeof(NONCLIENTMETRICSW);
 
     // 获取当前系统标题栏的字体
-    SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, 0, &ncMetrics, 0);
-    CopyMemory(pLogFont, &ncMetrics.lfCaptionFont, sizeof(LOGFONTW));
-    return 0;
+    return (BOOL)(SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, 0, &ncMetrics, 0) &&
+        CopyMemory(pLogFont, &ncMetrics.lfCaptionFont, sizeof(LOGFONTW)));
 }
 
-DWORD GetScreenResolution(PSIZE psizeResolution) 
+BOOL GetScreenResolution(PSIZE psizeResolution) 
 {
     INT cx = GetSystemMetrics(SM_CXSCREEN);
     INT cy = GetSystemMetrics(SM_CYSCREEN);
@@ -215,12 +203,10 @@ DWORD GetScreenResolution(PSIZE psizeResolution)
     {
         psizeResolution->cx = cx;
         psizeResolution->cy = cy;
-        return 0;
+        return TRUE;
     }
-    else
-    {
-        return -1;
-    }
+
+    return FALSE;
 }
 
 BOOL IsSystemDarkTheme()
@@ -236,7 +222,7 @@ BOOL IsSystemDarkTheme()
     }
     else
     {
-        // TODO: 错误处理
+        ShowLastError(__FUNCTIONW__, __LINE__);
     }
 
     if (hkPersonalize != NULL)
@@ -258,78 +244,23 @@ UINT GetShellTrayDirection()
     return uDirection;
 }
 
-DWORD ExtractRes(UINT uResID, PCWSTR szResType, PCWSTR szFilePath)
-{
-    DWORD dwErrorCode = ERROR_SUCCESS;
-
-    // 获取 TTF 资源
-    HINSTANCE hInstance = GetModuleHandleW(NULL);
-    HRSRC hrsrc = FindResourceW(hInstance, MAKEINTRESOURCEW(uResID), szResType);
-
-    if (hrsrc != NULL)
-    {
-        HGLOBAL hglobal = LoadResource(hInstance, hrsrc);
-        PBYTE pData = (PBYTE)LockResource(hglobal);
-        DWORD cbData = SizeofResource(hInstance, hrsrc);
-
-        // 写入临时文件
-        HANDLE hFile = DefCreateFile(szFilePath, GENERIC_WRITE, CREATE_ALWAYS);
-        dwErrorCode = GetLastError();
-        if (dwErrorCode == ERROR_SUCCESS || dwErrorCode == ERROR_ALREADY_EXISTS)
-        {
-            DWORD dwWrittenNum = 0;
-            WriteFile(hFile, pData, cbData, &dwWrittenNum, NULL);
-        }
-
-        if (hFile != NULL)
-        {
-            CloseHandle(hFile);
-        }
-    }
-    else
-    {
-        dwErrorCode = GetLastError();
-    }
-
-    return dwErrorCode;
-}
-
-PBYTE GetResPointer(UINT uResID, PCWSTR szResType, DWORD* cbData)
-{
-    // 获取 TTF 资源
-    HINSTANCE hInstance = GetModuleHandleW(NULL);
-    HRSRC hrsrc = FindResourceW(hInstance, MAKEINTRESOURCEW(uResID), szResType);
-
-    if (hrsrc != NULL)
-    {
-        HGLOBAL hglobal = LoadResource(hInstance, hrsrc);
-        *cbData = SizeofResource(hInstance, hrsrc);
-        return (PBYTE)LockResource(hglobal);
-    }
-
-    *cbData = 0;
-    return NULL;
-}
-
-DWORD ConvertPointForResolution(const PSIZE sizeOld, const PPOINT ptOld, const PSIZE sizeNew, PPOINT ptNew)
+BOOL ConvertPointForResolution(const PSIZE sizeOld, const PPOINT ptOld, const PSIZE sizeNew, PPOINT ptNew)
 {
     ptNew->x = ptOld->x * sizeNew->cx / sizeOld->cx;
     ptNew->y = ptOld->y * sizeNew->cy / sizeOld->cy;
-    return 0;
+    return TRUE;
 }
 
-DWORD CopyPoint(PPOINT ptSrc, PPOINT ptDst)
+void CopyPoint(const POINT* ptSrc, PPOINT ptDst)
 {
     ptDst->x = ptSrc->x;
     ptDst->y = ptSrc->y;
-    return 0;
 }
 
-DWORD CopySize(PSIZE sizeSrc, PSIZE sizeDst)
+void CopySize(const SIZE* sizeSrc, PSIZE sizeDst)
 {
     sizeDst->cx = sizeSrc->cx;
     sizeDst->cy = sizeSrc->cy;
-    return 0;
 }
 
 INT StrAtoW(PCSTR aStr, PWSTR wStr, INT wStrLen)
@@ -340,6 +271,25 @@ INT StrAtoW(PCSTR aStr, PWSTR wStr, INT wStrLen)
 INT StrWtoA(PCWSTR wStr, PSTR aStr, INT aStrLen)
 {
     return WideCharToMultiByte(CP_UTF8, 0, wStr, -1, aStr, aStrLen, NULL, NULL);
+}
+
+INT CompareRect(const RECT* rc1, const RECT* rc2)
+{
+    if (rc1->left >= rc2->left &&
+        rc1->top >= rc2->top &&
+        rc1->right <= rc2->right &&
+        rc1->bottom <= rc2->bottom)
+    {
+        return -1;
+    }
+    else if (rc1->left <= rc2->left &&
+        rc1->top <= rc2->top &&
+        rc1->right >= rc2->right &&
+        rc1->bottom >= rc2->bottom)
+    {
+        return 1;
+    }
+    return 0;
 }
 
 // Show error Line and GetLastError

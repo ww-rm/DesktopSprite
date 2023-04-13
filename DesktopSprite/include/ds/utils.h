@@ -43,10 +43,10 @@ DOUBLE AlphaToPercent(BYTE alpha);
 BYTE PercentToAlpha(DOUBLE percent);
 
 // 设置应用开机自启
-DWORD SetAppAutoRun(PCWSTR appname);
+BOOL SetAppAutoRun(PCWSTR appname);
 
 // 取消应用开机自启
-DWORD UnsetAppAutoRun(PCWSTR appname);
+BOOL UnsetAppAutoRun(PCWSTR appname);
 
 // 换算字节速度成带单位的字符串
 INT ConvertSpeed(DOUBLE fSpeed, PWSTR szFormatted, SIZE_T cchDest);
@@ -61,49 +61,46 @@ UINT GetMillisecondsToNextHour();
 BOOL IsOnTheHour();
 
 // 设置菜单项状态
-DWORD SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState);
+BOOL SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState);
 
 // 获得菜单项状态
 UINT GetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition);
 
 // 设置菜单项类型
-DWORD SetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uType);
+BOOL SetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uType);
 
 // 获得菜单项类型
 UINT GetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition);
 
 // 获取当前系统标题字体信息
-DWORD GetSystemCapitalFont(PLOGFONTW pLogFont);
+BOOL GetSystemCapitalFont(PLOGFONTW pLogFont);
 
 // 判断系统是否是深色主题
 BOOL IsSystemDarkTheme();
 
 // 获取系统当前分辨率
-DWORD GetScreenResolution(PSIZE psizeResolution);
+BOOL GetScreenResolution(PSIZE psizeResolution);
 
 // 获取任务栏方向, ABE_XXXXX
 UINT GetShellTrayDirection();
 
-//// 往 FilePath 解压资源
-DWORD ExtractRes(UINT uResID, PCWSTR szResType, PCWSTR szFilePath);
-
-// 获取 TTF 资源内存
-PBYTE GetResPointer(UINT uResID, PCWSTR szResType, DWORD* cbData);
-
 // 在不同分辨率之间折算坐标相对位置, ptOld 和 ptNew 可以是同一个指针
-DWORD ConvertPointForResolution(const PSIZE sizeOld, const PPOINT ptOld, const PSIZE sizeNew, PPOINT ptNew);
+BOOL ConvertPointForResolution(const PSIZE sizeOld, const PPOINT ptOld, const PSIZE sizeNew, PPOINT ptNew);
 
 // Copy POINT
-DWORD CopyPoint(PPOINT ptSrc, PPOINT ptDst);
+void CopyPoint(const POINT* ptSrc, PPOINT ptDst);
 
 // Copy SIZE
-DWORD CopySize(PSIZE sizeSrc, PSIZE sizeDst);
+void CopySize(const SIZE* sizeSrc, PSIZE sizeDst);
 
 // 窄字符转宽字符
 INT StrAtoW(PCSTR aStr, PWSTR wStr, INT wStrLen);
 
 // 宽字符转窄字符
 INT StrWtoA(PCWSTR wStr, PSTR aStr, INT aStrLen);
+
+// 比较两个矩形的范围, rc1 包含于 rc2 返回负数, rc1 包含 rc2 返回正数, 其余返回 0
+INT CompareRect(const RECT* rc1, const RECT* rc2);
 
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line = -1);
