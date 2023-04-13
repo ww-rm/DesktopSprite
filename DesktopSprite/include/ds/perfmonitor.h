@@ -11,7 +11,7 @@ typedef struct _PERFDATA
     DOUBLE  memPercent;                         // 内存使用百分比
     DOUBLE  uploadSpeed;                        // 上传速度字节
     DOUBLE  downloadSpeed;                      // 下载速度字节
-}PERFDATA, * PPERFDATA;
+}PERFDATA;
 
 class PerfMonitor
 {
@@ -32,17 +32,30 @@ public:
     PerfMonitor(DWORD queryInterval = 1000);
     ~PerfMonitor();
 
+    // 启动监视器
+    BOOL Start();
+
+    // 停止监视器
+    BOOL Stop();
+
     // 获得性能数据
-    DWORD GetPerfData(PPERFDATA pPerfData);
+    BOOL GetPerfData(PERFDATA* pPerfData);
 
 private:
     // 线程函数
     static DWORD CALLBACK QueryThreadProc(_In_ LPVOID lpParameter);
 
-public:
+    // 打开查询
+    BOOL OpenQuery();
+
+    // 添加计数器
+    BOOL AddCounter();
+
+    // 开启线程
+    BOOL StartThread();
+
     // 自动更新函数, 使用子线程调用
-    PDH_STATUS QueryPerfData();
-    BOOL IsThreadRun() const;
+    BOOL QueryPerfData();
 };
 
 #endif // !DS_PERFMONITOR_H
