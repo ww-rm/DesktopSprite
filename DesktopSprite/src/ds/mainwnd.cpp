@@ -165,7 +165,7 @@ BOOL MainWindow::IsIntersectDesktop()
     GetWindowRect(GetDesktopWindow(), &desktop);
     RECT wnd = { 0 };
     GetWindowRect(this->hWnd, &wnd);
-    return CompareRect(&wnd, &desktop) == 0;
+    return CheckRectContainment(&wnd, &desktop) == 0;
 }
 
 BOOL MainWindow::LoadLastPosFromReg(POINT* pt)
@@ -976,8 +976,7 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
 
             POINT ptWnd = { 0 };
             this->GetPopupWindowPos(&ptWnd); // 根据任务栏位置计算窗口的位置
-            SetWindowPos(this->hWnd, HWND_TOPMOST, ptWnd.x, ptWnd.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
-            ShowWindow(this->hWnd, SW_SHOWNA);
+            SetWindowPos(this->hWnd, HWND_TOPMOST, ptWnd.x, ptWnd.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_SHOWWINDOW);
             InvalidateRect(this->hWnd, NULL, TRUE); // 需要立即重绘窗口
         }
         break;
@@ -985,10 +984,8 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         // 不是浮动且没有固定则隐藏弹窗
         if (!this->config.bFloatWnd && !this->bWndFixed)
         {
-            ShowWindow(this->hWnd, SW_HIDE);
-
-            // 恢复原本的位置
-            SetWindowPos(this->hWnd, HWND_TOPMOST, this->currentFloatPos.x, this->currentFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
+            // 恢复原本的位置并隐藏
+            SetWindowPos(this->hWnd, HWND_TOPMOST, this->currentFloatPos.x, this->currentFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_HIDEWINDOW);
             break;
         }
     default:
