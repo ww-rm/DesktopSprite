@@ -88,58 +88,64 @@ BOOL DrawSpeedStair(
 
 ///////////////////////////////////////////////////////////////////
 
-
-PCWSTR MainWindow::GetClassName_() const
+BOOL MainWindow::ShowContextMenu(INT x, INT y)
 {
-    return L"DesktopSpriteMainWndClass";
+    // 加载ContextMenu
+    HMENU hContextMenuBar = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDR_CONTEXTMENU));
+    HMENU hContextMenu = GetSubMenu(hContextMenuBar, 0);
+
+    // 解决在菜单外单击左键菜单不消失的问题
+    SetForegroundWindow(this->hWnd);
+
+    // 显示菜单
+    TrackPopupMenuEx(hContextMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON, x, y, this->hWnd, NULL);
+
+    DestroyMenu(hContextMenuBar);
+
+    return TRUE;;
 }
 
-PCWSTR MainWindow::GetConfigPath() const
+BOOL MainWindow::GetPopupWindowPos(POINT* pt)
 {
-    return L"config.json";
-}
+    UINT uDirection = GetShellTrayDirection();
 
-MainWindow::MainWindow(const WinApp* app)
-{
-    this->app = app;
+    // 通知区域图标位置大小
+    RECT rcNotifyIcon = { 0 };
+    this->pNotifyIcon->GetRect(&rcNotifyIcon);
+    SIZE sizeNotifyIcon = { rcNotifyIcon.right - rcNotifyIcon.left, rcNotifyIcon.bottom - rcNotifyIcon.top };
 
-    // 注册任务栏重建消息
-    this->uMsgTaskbarCreated = RegisterWindowMessageW(SZMSG_TASKBARCREATED);
+    // 窗体位置大小
+    RECT rcWnd = { 0 };
+    GetWindowRect(this->hWnd, &rcWnd);
+    SIZE sizeWnd = { rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top };
 
-    // 注册窗体
-    WNDCLASSEXW wcex = { 0 };
-    wcex.cbSize = sizeof(WNDCLASSEXW);
-    wcex.lpszClassName = this->GetClassName_();
-    wcex.lpfnWndProc = MainWindow::WindowProc;
-    wcex.hInstance = GetModuleHandleW(NULL);
-    wcex.style = CS_DBLCLKS | CS_DROPSHADOW | CS_HREDRAW | CS_VREDRAW;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
-    wcex.hIcon = NULL;
-    wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
-    wcex.hbrBackground = NULL;
-    wcex.lpszMenuName = NULL;
-    wcex.hIconSm = NULL;
-    ATOM tmp = RegisterClassExW(&wcex);
-
-    // 创建窗口
-    this->hWnd = CreateWindowExW(
-        WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED, 
-        this->GetClassName_(), 
-        NULL, WS_POPUP, 
-        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, 
-        NULL, NULL, 
-        GetModuleHandleW(NULL), (LPVOID)this
-    );
-
-    if (!this->hWnd)
+    // 根据任务栏位置计算窗口的位置
+    LONG delta_cx = (sizeWnd.cx - sizeNotifyIcon.cx) / 2;
+    LONG delta_cy = (sizeWnd.cy - sizeNotifyIcon.cy) / 2;
+    switch (uDirection)
     {
-        ShowLastError(__FUNCTIONW__, __LINE__);
-        exit(EXIT_FAILURE);
+    case ABE_LEFT:
+        pt->x = rcNotifyIcon.right;
+        pt->y = rcNotifyIcon.top - delta_cy;
+        break;
+    case ABE_TOP:
+        pt->x = rcNotifyIcon.left - delta_cx;
+        pt->y = rcNotifyIcon.bottom;
+        break;
+    case ABE_RIGHT:
+        pt->x = rcNotifyIcon.left - sizeWnd.cx;
+        pt->y = rcNotifyIcon.top - delta_cy;
+        break;
+    default:
+        pt->x = rcNotifyIcon.left - delta_cx;
+        pt->y = rcNotifyIcon.top - sizeWnd.cy;
+        break;
     }
+
+    return TRUE;
 }
 
-DWORD MainWindow::LoadFloatPosDataFromReg()
+DWORD MainWindow::LoadPosDataFromReg()
 {
     // 默认主窗口位置是屏幕的 1/6 处
     GetScreenResolution(&this->lastResolution);
@@ -177,7 +183,7 @@ DWORD MainWindow::LoadFloatPosDataFromReg()
     return dwErrorCode;
 }
 
-DWORD MainWindow::SaveFloatPosDataToReg()
+DWORD MainWindow::SavePosDataToReg()
 {
     DWORD dwErrorCode = ERROR_SUCCESS;
 
@@ -286,7 +292,7 @@ DWORD MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
     {
         DestroyIcon(this->balloonIcon);
         Bitmap(this->config.szBalloonIconPath).GetHICON(&this->balloonIcon);
-        this->pNotifyIcon->PopIconInfo(L"图标修改成功", L"来看看效果吧~", this->balloonIcon, TRUE);
+        this->pNotifyIcon->PopupIconInfo(L"图标修改成功", L"来看看效果吧~", this->balloonIcon, TRUE);
     }
 
     // 设置浮动窗口
@@ -375,7 +381,7 @@ DWORD MainWindow::TimeAlarm()
     WCHAR szInfo[MAX_NIDINFO] = { 0 };
     StringCchPrintfW(szInfo, MAX_NIDINFO, L"北京时间 %02d: %02d", st.wHour, st.wMinute);
 
-    this->pNotifyIcon->PopIconInfo(L"Take a break~", szInfo, this->balloonIcon, this->config.bInfoSound);
+    this->pNotifyIcon->PopupIconInfo(L"Take a break~", szInfo, this->balloonIcon, this->config.bInfoSound);
     return 0;
 }
 
@@ -439,25 +445,27 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 {
+    // 启动监视器
+    this->perfMonitor.Start();
+
     // DPI 相关
     this->wndSizeUnit = BASE_WNDSIZE_PIXELS * GetDpiForWindow(this->hWnd) / 96;
 
     // 按新分辨率更新浮动窗口位置
-    this->LoadFloatPosDataFromReg();
+    this->LoadPosDataFromReg();
     this->UpdateFloatPosByResolution();
-    this->SaveFloatPosDataToReg();
+    this->SavePosDataToReg();
 
     // 初始化字体
     this->fontColl.AddFontFile(FONT_PATH);
 
     // 添加图标
-    this->pNotifyIcon = new NotifyIcon(
-        this->hWnd, ID_NIDMAIN, WM_NOTIFYICON,
-        LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK))
+    this->pNotifyIcon = new NotifyIcon(this->hWnd, ID_NIDMAIN);
+    this->pNotifyIcon->Add(
+        WM_NOTIFYICON, 
+        LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)),
+        this->app->GetAppName()
     );
-
-    // 设置图标提示信息
-    this->pNotifyIcon->SetTip(this->app->GetAppName());
 
     // 初始化配置参数相关
     if (PathFileExistsW(this->GetConfigPath()))
@@ -475,10 +483,14 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
-    this->SaveFloatPosDataToReg();
+    this->SavePosDataToReg();
     this->config.SaveToFile(this->GetConfigPath());
+
     delete this->pNotifyIcon;
     DestroyIcon(this->balloonIcon);
+
+    this->perfMonitor.Stop();
+
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
 }
@@ -686,23 +698,13 @@ LRESULT MainWindow::OnSettingChange(WPARAM wParam, LPARAM lParam)
 {
     // 自动调节图标颜色
     HICON hIcon = LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK));
-    this->pNotifyIcon->SetIcon(hIcon);
+    this->pNotifyIcon->ModifyIcon(hIcon);
     return 0;
 }
 
 LRESULT MainWindow::OnContextMenu(WPARAM wParam, LPARAM lParam)
 {
-    // 加载ContextMenu
-    HMENU hContextMenuBar = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDR_CONTEXTMENU));
-    HMENU hContextMenu = GetSubMenu(hContextMenuBar, 0);
-
-    // 解决在菜单外单击左键菜单不消失的问题
-    SetForegroundWindow(this->hWnd);
-
-    // 显示菜单
-    TrackPopupMenuEx(hContextMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), this->hWnd, NULL);
-
-    DestroyMenu(hContextMenuBar);
+    this->ShowContextMenu(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
     return 0;
 }
 
@@ -889,6 +891,8 @@ LRESULT MainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 {
+    SetCapture(this->hWnd); // 防止鼠标跟丢
+
     // 保存点击位置
     this->ptDragSrc.x = GET_X_LPARAM(lParam);
     this->ptDragSrc.y = GET_Y_LPARAM(lParam);
@@ -897,6 +901,8 @@ LRESULT MainWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
+    ReleaseCapture();
+
     // 保存一次现在的窗口位置和对应的分辨率
     if (this->config.bFloatWnd)
     {
@@ -904,7 +910,7 @@ LRESULT MainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
         RECT newPos = { 0 };
         GetWindowRect(this->hWnd, &newPos);
         CopyPoint((PPOINT)&newPos, &this->lastFloatPos);
-        this->SaveFloatPosDataToReg();
+        this->SavePosDataToReg();
     }
     return 0;
 }
@@ -931,118 +937,46 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
     switch (LOWORD(lParam))
     {
     case WM_LBUTTONDBLCLK:
-    {
 #ifdef _DEBUG
         // DEBUG here
         // 加设置对话框
         // 加关于对话框
         //MessageBoxW(this->hWnd, L"Double Click on NotifyIcon!\n", L"Double Click on NotifyIcon!\n", MB_OK);
-        this->config.LoadFromFile(this->GetConfigPath());
-        this->ApplyConfig();
-        this->TimeAlarm();
+        //this->config.LoadFromFile(this->GetConfigPath());
+        //this->ApplyConfig();
+        //this->TimeAlarm();
+        UnsetAppAutoRun(L"asdf");
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
 #endif // !_DEBUG
         break;
-    }
     case WM_CONTEXTMENU:
-    {
-        // 加载ContextMenu
-        HMENU hContextMenuBar = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDR_CONTEXTMENU));
-        HMENU hContextMenu = GetSubMenu(hContextMenuBar, 0);
-
-        // 解决在菜单外单击左键菜单不消失的问题
-        SetForegroundWindow(this->hWnd);
-
-        // 显示菜单
-        TrackPopupMenuEx(hContextMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON, GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam), this->hWnd, NULL);
-
-        DestroyMenu(hContextMenuBar);
+        this->ShowContextMenu(GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam));
         break;
-    }
     case NIN_SELECT:
-        //{
-        //    // DEBUG
-        //    WCHAR debugstr[128] = { 0 };
-        //    int x = GET_X_LPARAM(wParam);
-        //    int y = GET_Y_LPARAM(wParam);
-        //    int dpi = GetDpiForWindow(this->hWnd);
-        //    int dpi2 = GetDpiForSystem();
-        //    swprintf_s(debugstr, 128, L"X:%d Y:%d DPI:%d SDPI:%d\n", x, y, dpi, dpi2);
-        //    OutputDebugStringW(debugstr);
-        //    RECT rcScreen = { 0 };
-        //    GetWindowRect(GetDesktopWindow(), &rcScreen);
-        //    swprintf_s(debugstr, 128, L"X:%d Y:%d\n", rcScreen.right, rcScreen.bottom);
-        //    OutputDebugStringW(debugstr);
-        //    break;
-        //}
     case NIN_KEYSELECT:
-    {
         if (!this->config.bFloatWnd)
         {
-            // 不是浮动的情况下固定住窗口显示
-            this->bWndFixed = TRUE;
+            this->bWndFixed = TRUE; // 不是浮动的情况下固定住窗口显示
         }
-
-        // 只有点击了图标才需要设置前景窗口
-        SetForegroundWindow(this->hWnd);
-    }
+        SetForegroundWindow(this->hWnd); // 只有点击了图标才需要设置前景窗口
     case NIN_POPUPOPEN:
-    {
         // 不是浮动的情况下显示显示弹窗
         if (!this->config.bFloatWnd)
         {
-            UINT uDirection = GetShellTrayDirection();
-
-            // 通知区域图标位置大小
-            RECT rcNotifyIcon = { 0 };
-            this->pNotifyIcon->GetRect(&rcNotifyIcon);
-            SIZE sizeNotifyIcon = { rcNotifyIcon.right - rcNotifyIcon.left, rcNotifyIcon.bottom - rcNotifyIcon.top };
-
-            // 窗体位置大小
-            RECT rcWnd = { 0 };
-            GetWindowRect(this->hWnd, &rcWnd);
-            SIZE sizeWnd = { rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top };
-
-            // 根据任务栏位置计算窗口的位置
             POINT ptWnd = { 0 };
-            LONG delta_cx = (sizeWnd.cx - sizeNotifyIcon.cx) / 2;
-            LONG delta_cy = (sizeWnd.cy - sizeNotifyIcon.cy) / 2;
-            switch (uDirection)
-            {
-            case ABE_LEFT:
-                ptWnd.x = rcNotifyIcon.right;
-                ptWnd.y = rcNotifyIcon.top - delta_cy;
-                break;
-            case ABE_TOP:
-                ptWnd.x = rcNotifyIcon.left - delta_cx;
-                ptWnd.y = rcNotifyIcon.bottom;
-                break;
-            case ABE_RIGHT:
-                ptWnd.x = rcNotifyIcon.left - sizeWnd.cx;
-                ptWnd.y = rcNotifyIcon.top - delta_cy;
-                break;
-            default:
-                ptWnd.x = rcNotifyIcon.left - delta_cx;
-                ptWnd.y = rcNotifyIcon.top - sizeWnd.cy;
-                break;
-            }
+            this->GetPopupWindowPos(&ptWnd); // 根据任务栏位置计算窗口的位置
             SetWindowPos(this->hWnd, HWND_TOPMOST, ptWnd.x, ptWnd.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
             ShowWindow(this->hWnd, SW_SHOWNA);
-
-            // 需要立即重绘窗口
-            InvalidateRect(this->hWnd, NULL, TRUE);
+            InvalidateRect(this->hWnd, NULL, TRUE); // 需要立即重绘窗口
         }
         break;
-    }
     case NIN_POPUPCLOSE:
-    {
         // 不是浮动且没有固定则隐藏弹窗
         if (!this->config.bFloatWnd && !this->bWndFixed)
         {
             ShowWindow(this->hWnd, SW_HIDE);
             break;
         }
-    }
     default:
         return DefWindowProcW(this->hWnd, WM_NOTIFYICON, wParam, lParam);
     }
@@ -1071,14 +1005,11 @@ LRESULT MainWindow::OnTimeAlarm(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnTaskbarCreated(WPARAM wParam, LPARAM lParam)
 {
-    delete this->pNotifyIcon;
     // 添加图标
-    this->pNotifyIcon = new NotifyIcon(
-        this->hWnd, ID_NIDMAIN, WM_NOTIFYICON,
-        LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK))
+    this->pNotifyIcon->Add(
+        WM_NOTIFYICON,
+        LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)),
+        this->app->GetAppName()
     );
-
-    // 设置图标提示信息
-    this->pNotifyIcon->SetTip(this->app->GetAppName());
     return 0;
 }

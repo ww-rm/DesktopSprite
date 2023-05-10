@@ -19,7 +19,52 @@ LRESULT CALLBACK BaseWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
-HWND BaseWindow::WindowHandle() const
+BOOL BaseWindow::CreateWindow_(HINSTANCE hInst)
 {
-    return this->hWnd;
+    if (this->hWnd)
+    {
+        return TRUE;
+    }
+
+    // 注册窗口类
+    WNDCLASSEXW wcex = { 0 };
+    wcex.cbSize = sizeof(WNDCLASSEXW);
+    wcex.lpszClassName = this->GetClassName_();
+    wcex.lpfnWndProc = BaseWindow::WindowProc;
+    wcex.hInstance = GetModuleHandleW(NULL);
+    wcex.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hIcon = NULL;
+    wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
+    wcex.hbrBackground = NULL;
+    wcex.lpszMenuName = NULL;
+    wcex.hIconSm = NULL;
+    if (!RegisterClassExW(&wcex))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
+
+    // 默认窗口置顶, 无任务栏按钮, 可以半透明绘制
+    // POPUP 窗口位置和大小参数忽略 CW_USEDEFAULT, 所以直接设置全 0, 然后窗口创建过程自己处理位置和大小.
+    if (!CreateWindowExW(
+        WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED,
+        this->GetClassName_(),
+        NULL, WS_POPUP,
+        0, 0, 0, 0,
+        NULL, NULL,
+        hInst ? hInst : GetModuleHandleW(NULL),
+        (LPVOID)this
+    ))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
+
+    // 注册任务栏重建消息
+    this->uMsgTaskbarCreated = RegisterWindowMessageW(L"TaskbarCreated");
+
+    return TRUE;
 }
+

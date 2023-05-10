@@ -9,6 +9,12 @@
 #include <ds/basewindow.h>
 #include <ds/winapp.h>
 
+
+// 窗口消息相关宏定义
+
+#define IDT_REFRESHRECT                 1
+#define IDT_TIMEALARM                   2
+
 using namespace Gdiplus;
 
 // 辅助函数画圆
@@ -30,7 +36,7 @@ BOOL DrawSpeedStair(
     const INT& nMaxLevel = 6
 );
 
-class MainWindow :BaseWindow
+class MainWindow :public BaseWindow
 {
 private:
     UINT                uMsgTaskbarCreated = 0;
@@ -49,18 +55,25 @@ private:
     Gdiplus::PrivateFontCollection      fontColl;                       // 文本字体容器
     HICON                               balloonIcon = NULL;             // 气泡消息的图标资源
 
+    POINT                               currentFloatPos = { 0 };        // 临时存储, 保存当前浮动窗口位置
     POINT                               lastFloatPos = { 0 };           // 最近一次浮动窗口位置
     SIZE                                lastResolution = { 0 };         // 最近运行时系统分辨率
 
 public:
-    PCWSTR GetClassName_() const;
-    PCWSTR GetConfigPath() const;
+    PCWSTR GetClassName_() const { return L"DesktopSpriteMainWndClass"; }
+    PCWSTR GetConfigPath() const { return L"config.json"; }
 
 public:
-    MainWindow(const WinApp* app);
+    MainWindow(WinApp* app) : app(app) {}
 
-    DWORD LoadFloatPosDataFromReg();
-    DWORD SaveFloatPosDataToReg();
+private:
+    // 显示右键菜单
+    BOOL ShowContextMenu(INT x, INT y);
+
+    // 根据任务栏位置计算窗口的位置
+    BOOL GetPopupWindowPos(POINT* pt);
+    DWORD LoadPosDataFromReg();
+    DWORD SavePosDataToReg();
     DWORD UpdateFloatPosByResolution(PSIZE newResolution = NULL);
 
     DWORD ApplyConfig();
@@ -70,7 +83,7 @@ public:
     DWORD TimeAlarm();
     INT ShowNoConentWarningMsg();
 
-public:
+private:
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnCreate(WPARAM wParam, LPARAM lParam);
     LRESULT OnDestroy(WPARAM wParam, LPARAM lParam);
