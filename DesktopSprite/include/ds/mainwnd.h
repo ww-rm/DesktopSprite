@@ -56,8 +56,6 @@ private:
     HICON                               balloonIcon = NULL;             // 气泡消息的图标资源
 
     POINT                               currentFloatPos = { 0 };        // 临时存储, 保存当前浮动窗口位置
-    POINT                               lastFloatPos = { 0 };           // 最近一次浮动窗口位置
-    SIZE                                lastResolution = { 0 };         // 最近运行时系统分辨率
 
 public:
     PCWSTR GetClassName_() const { return L"DesktopSpriteMainWndClass"; }
@@ -70,11 +68,18 @@ private:
     // 显示右键菜单
     BOOL ShowContextMenu(INT x, INT y);
 
+    // 获取在屏幕上的默认位置
+    BOOL GetDefaultWindowPos(POINT* pt);
+
     // 根据任务栏位置计算窗口的位置
     BOOL GetPopupWindowPos(POINT* pt);
-    DWORD LoadPosDataFromReg();
-    DWORD SavePosDataToReg();
-    DWORD UpdateFloatPosByResolution(PSIZE newResolution = NULL);
+
+    // 是否窗口矩形区与桌面边缘相交
+    BOOL IsIntersectDesktop();
+
+    // 一对用来存储窗口位置到注册表的方法
+    BOOL LoadLastPosFromReg(POINT* pt);
+    BOOL SaveCurrentPosToReg();
 
     DWORD ApplyConfig();
     DWORD ApplyConfig(const CFGDATA* pcfgdata); // 应用更改, 只修改发生变化的设置项

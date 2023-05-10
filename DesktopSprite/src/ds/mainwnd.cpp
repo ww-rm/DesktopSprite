@@ -20,7 +20,6 @@ static PCWSTR const FONT_PATH = L"res\\font\\AGENCYR.TTF";
 
 // 注册表键值
 static PCWSTR const REGVAL_LASTFLOATPOS = L"LastFloatPos";
-static PCWSTR const REGVAL_LASTRUNTIMERESOLUTION = L"LastRunTimeResolution";
 
 // 常量定义
 static UINT     const   REFRESHINTERVAL = 1000;                // 屏幕显示刷新间隔
@@ -105,6 +104,21 @@ BOOL MainWindow::ShowContextMenu(INT x, INT y)
     return TRUE;;
 }
 
+BOOL MainWindow::GetDefaultWindowPos(POINT* pt)
+{
+    // 默认主窗口位置是屏幕的 1/6 处
+    SIZE screenSize = { 0 };
+    if (GetScreenResolution(&screenSize))
+    {
+        pt->x = screenSize.cx * 5 / 6;
+        pt->y = screenSize.cy * 1 / 6;
+        return TRUE;
+    }
+    pt->x = 0;
+    pt->y = 0;
+    return FALSE;
+}
+
 BOOL MainWindow::GetPopupWindowPos(POINT* pt)
 {
     UINT uDirection = GetShellTrayDirection();
@@ -145,14 +159,55 @@ BOOL MainWindow::GetPopupWindowPos(POINT* pt)
     return TRUE;
 }
 
-DWORD MainWindow::LoadPosDataFromReg()
+BOOL MainWindow::IsIntersectDesktop()
+{
+    RECT desktop = { 0 };
+    GetWindowRect(GetDesktopWindow(), &desktop);
+    RECT wnd = { 0 };
+    GetWindowRect(this->hWnd, &wnd);
+    return CompareRect(&wnd, &desktop) == 0;
+}
+
+BOOL MainWindow::LoadLastPosFromReg(POINT* pt)
 {
     // 默认主窗口位置是屏幕的 1/6 处
-    GetScreenResolution(&this->lastResolution);
-    this->lastFloatPos.x = this->lastResolution.cx * 5 / 6;
-    this->lastFloatPos.y = this->lastResolution.cy * 1 / 6;
+    if (!this->GetDefaultWindowPos(pt))
+    {
+        return FALSE;
+    }
 
-    DWORD dwErrorCode = ERROR_SUCCESS;
+
+    // 打开注册表项
+    HKEY hkApp = NULL;
+    DWORD dwDisposition = 0;
+    DWORD cbData = 0;
+
+    WCHAR subkey[128] = { 0 };
+    if (FAILED(StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", this->app->GetAppName())))
+    {
+        return FALSE;
+    }
+
+    if (RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
+
+    cbData = sizeof(POINT);
+    RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)pt, &cbData);
+    RegCloseKey(hkApp);
+
+    return TRUE;
+}
+
+BOOL MainWindow::SaveCurrentPosToReg()
+{
+    RECT currentWndRc = { 0 };
+    if (!GetWindowRect(this->hWnd, &currentWndRc))
+    {
+        return FALSE;
+    }
 
     // 打开注册表项
     HKEY hkApp = NULL;
@@ -162,72 +217,15 @@ DWORD MainWindow::LoadPosDataFromReg()
     WCHAR subkey[128] = { 0 };
     StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", this->app->GetAppName());
 
-    dwErrorCode = RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition);
-    if (dwErrorCode == ERROR_SUCCESS)
-    {
-        cbData = sizeof(POINT);
-        RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)&this->lastFloatPos, &cbData);
-        cbData = sizeof(SIZE);
-        RegQueryAnyValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, (PBYTE)&this->lastResolution, &cbData);
-    }
-    else
+    if (RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition))
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
     }
 
-    // 关闭注册表
-    if (hkApp != NULL)
-    {
-        RegCloseKey(hkApp);
-    }
-    return dwErrorCode;
-}
-
-DWORD MainWindow::SavePosDataToReg()
-{
-    DWORD dwErrorCode = ERROR_SUCCESS;
-
-    // 打开注册表项
-    HKEY hkApp = NULL;
-    DWORD dwDisposition = 0;
-    DWORD cbData = 0;
-
-    WCHAR subkey[128] = { 0 };
-    StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", this->app->GetAppName());
-
-    dwErrorCode = RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition);
-    if (dwErrorCode == ERROR_SUCCESS && dwDisposition == REG_OPENED_EXISTING_KEY)
-    {
-        RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)&this->lastFloatPos, sizeof(POINT));
-        RegSetBinValue(hkApp, REGVAL_LASTRUNTIMERESOLUTION, (PBYTE)&this->lastResolution, sizeof(SIZE));
-    }
-    else
-    {
-        ShowLastError(__FUNCTIONW__, __LINE__);
-    }
-
-    // 关闭注册表
-    if (hkApp != NULL)
-    {
-        RegCloseKey(hkApp);
-    }
-    return dwErrorCode;
-
-}
-
-DWORD MainWindow::UpdateFloatPosByResolution(PSIZE newResolution)
-{
-    SIZE currentResolution = { 0 };
-    if (!newResolution)
-    {
-        GetScreenResolution(&currentResolution);
-        newResolution = &currentResolution;
-    }
-
-    ConvertPointForResolution(&this->lastResolution, &this->lastFloatPos, newResolution, &this->lastFloatPos);
-    CopySize(newResolution, &this->lastResolution);
-
-    return 0;
+    RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)&currentWndRc, sizeof(POINT));
+    RegCloseKey(hkApp);
+    return TRUE;
 }
 
 DWORD MainWindow::ApplyConfig()
@@ -239,7 +237,6 @@ DWORD MainWindow::ApplyConfig()
     // 是否显示浮动窗口
     if (this->config.bFloatWnd)
     {
-        SetWindowPos(this->hWnd, HWND_TOPMOST, this->lastFloatPos.x, this->lastFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
         ShowWindow(this->hWnd, SW_SHOWNA);
     }
     else
@@ -300,7 +297,6 @@ DWORD MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
     {
         if (pcfgdata->bFloatWnd)
         {
-            SetWindowPos(this->hWnd, HWND_TOPMOST, this->lastFloatPos.x, this->lastFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
             ShowWindow(this->hWnd, SW_SHOWNA);
         }
         else
@@ -451,11 +447,6 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     // DPI 相关
     this->wndSizeUnit = BASE_WNDSIZE_PIXELS * GetDpiForWindow(this->hWnd) / 96;
 
-    // 按新分辨率更新浮动窗口位置
-    this->LoadPosDataFromReg();
-    this->UpdateFloatPosByResolution();
-    this->SavePosDataToReg();
-
     // 初始化字体
     this->fontColl.AddFontFile(FONT_PATH);
 
@@ -467,13 +458,27 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
         this->app->GetAppName()
     );
 
+    // 初始化窗口位置
+    POINT wndPos = { 0 };
+    this->LoadLastPosFromReg(&wndPos);
+    SetWindowPos(this->hWnd, HWND_TOPMOST, wndPos.x, wndPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
+
     // 初始化配置参数相关
     if (PathFileExistsW(this->GetConfigPath()))
     {
         this->config.LoadFromFile(this->GetConfigPath());
     }
+
     // 应用配置项
     this->ApplyConfig();
+
+    // 如果由于某些未知因素导致保存的位置出了桌面, 则重置位置
+    if (this->IsIntersectDesktop())
+    {
+        this->GetDefaultWindowPos(&wndPos);
+        SetWindowPos(this->hWnd, HWND_TOPMOST, wndPos.x, wndPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
+        this->SaveCurrentPosToReg();
+    }
 
     // 每 1s 刷新一次显示
     SetTimer(this->hWnd, IDT_REFRESHRECT, REFRESHINTERVAL, (TIMERPROC)NULL);
@@ -483,7 +488,7 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
-    this->SavePosDataToReg();
+    this->SaveCurrentPosToReg();
     this->config.SaveToFile(this->GetConfigPath());
 
     delete this->pNotifyIcon;
@@ -501,7 +506,10 @@ LRESULT MainWindow::OnActivate(WPARAM wParam, LPARAM lParam)
     if (!this->config.bFloatWnd && !wParam)
     {
         this->bWndFixed = FALSE;
-        ShowWindow(this->hWnd, SW_HIDE);
+        // ShowWindow(this->hWnd, SW_HIDE); // 不能在 WM_ACTIVATE 里用这个, 有 bug, 会丢失鼠标按下的消息, 见 http://www.cnblogs.com/cswuyg/archive/2012/08/20/2647445.html
+
+        // 恢复原本的位置
+        SetWindowPos(this->hWnd, HWND_TOPMOST, this->currentFloatPos.x, this->currentFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_HIDEWINDOW);
     }
     return 0;
 }
@@ -710,15 +718,17 @@ LRESULT MainWindow::OnContextMenu(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnDisplayChange(WPARAM wParam, LPARAM lParam)
 {
-    SIZE newResolution = { 0 };
-    newResolution.cx = LOWORD(lParam);
-    newResolution.cy = HIWORD(lParam);
-    this->UpdateFloatPosByResolution(&newResolution);
+    //SIZE newResolution = { 0 };
+    //newResolution.cx = LOWORD(lParam);
+    //newResolution.cy = HIWORD(lParam);
 
-    // 如果当前浮动显示则修正位置
-    if (this->config.bFloatWnd)
+    // 如果分辨率变了之后出桌面就重置到默认位置
+    if (this->IsIntersectDesktop())
     {
-        SetWindowPos(this->hWnd, HWND_TOPMOST, this->lastFloatPos.x, this->lastFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
+        POINT wndPos = { 0 };
+        this->GetDefaultWindowPos(&wndPos);
+        SetWindowPos(this->hWnd, HWND_TOPMOST, wndPos.x, wndPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
+        this->SaveCurrentPosToReg();
     }
 
     return 0;
@@ -903,14 +913,10 @@ LRESULT MainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
     ReleaseCapture();
 
-    // 保存一次现在的窗口位置和对应的分辨率
     if (this->config.bFloatWnd)
     {
-        // 获得当前坐标
-        RECT newPos = { 0 };
-        GetWindowRect(this->hWnd, &newPos);
-        CopyPoint((PPOINT)&newPos, &this->lastFloatPos);
-        this->SavePosDataToReg();
+        // 保存一次现在的窗口位置
+        this->SaveCurrentPosToReg();
     }
     return 0;
 }
@@ -960,9 +966,14 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         }
         SetForegroundWindow(this->hWnd); // 只有点击了图标才需要设置前景窗口
     case NIN_POPUPOPEN:
-        // 不是浮动的情况下显示显示弹窗
+        // 不是浮动的情况下显示弹窗
         if (!this->config.bFloatWnd)
         {
+            // 保存原本的位置
+            RECT wndRc = { 0 };
+            GetWindowRect(this->hWnd, &wndRc);
+            CopyPoint((POINT*)&wndRc, &this->currentFloatPos);
+
             POINT ptWnd = { 0 };
             this->GetPopupWindowPos(&ptWnd); // 根据任务栏位置计算窗口的位置
             SetWindowPos(this->hWnd, HWND_TOPMOST, ptWnd.x, ptWnd.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
@@ -975,6 +986,9 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         if (!this->config.bFloatWnd && !this->bWndFixed)
         {
             ShowWindow(this->hWnd, SW_HIDE);
+
+            // 恢复原本的位置
+            SetWindowPos(this->hWnd, HWND_TOPMOST, this->currentFloatPos.x, this->currentFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
             break;
         }
     default:
