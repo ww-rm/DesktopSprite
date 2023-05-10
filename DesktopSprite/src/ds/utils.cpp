@@ -273,7 +273,7 @@ INT StrWtoA(PCWSTR wStr, PSTR aStr, INT aStrLen)
     return WideCharToMultiByte(CP_UTF8, 0, wStr, -1, aStr, aStrLen, NULL, NULL);
 }
 
-INT CompareRect(const RECT* rc1, const RECT* rc2)
+INT CheckRectContainment(const RECT* rc1, const RECT* rc2)
 {
     if (rc1->left >= rc2->left &&
         rc1->top >= rc2->top &&

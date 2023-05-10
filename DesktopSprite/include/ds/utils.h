@@ -100,7 +100,7 @@ INT StrAtoW(PCSTR aStr, PWSTR wStr, INT wStrLen);
 INT StrWtoA(PCWSTR wStr, PSTR aStr, INT aStrLen);
 
 // 比较两个矩形的范围, rc1 包含于 rc2 返回负数, rc1 包含 rc2 返回正数, 其余返回 0
-INT CompareRect(const RECT* rc1, const RECT* rc2);
+INT CheckRectContainment(const RECT* rc1, const RECT* rc2);
 
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line = -1);
