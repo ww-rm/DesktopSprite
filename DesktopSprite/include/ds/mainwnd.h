@@ -52,10 +52,9 @@ private:
     BOOL                                bWndFixed = FALSE;              // 窗口是否通过图标点击长期显示
     BOOL                                bClocked = FALSE;               // 保存整点内是否报过时
     POINT                               ptDragSrc = { 0 };              // 拖动窗口时的源点
+    POINT                               currentFloatPos = { 0 };        // 在显示弹出窗口时临时保存当前浮动窗口位置
     Gdiplus::PrivateFontCollection      fontColl;                       // 文本字体容器
     HICON                               balloonIcon = NULL;             // 气泡消息的图标资源
-
-    POINT                               currentFloatPos = { 0 };        // 临时存储, 保存当前浮动窗口位置
 
 public:
     PCWSTR GetClassName_() const { return L"DesktopSpriteMainWndClass"; }
@@ -81,11 +80,11 @@ private:
     BOOL LoadLastPosFromReg(POINT* pt);
     BOOL SaveCurrentPosToReg();
 
-    DWORD ApplyConfig();
-    DWORD ApplyConfig(const CFGDATA* pcfgdata); // 应用更改, 只修改发生变化的设置项
+    BOOL ApplyConfig();
+    BOOL ApplyConfig(const CFGDATA* pcfgdata); // 应用更改, 只修改发生变化的设置项
 
-    DWORD GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent);
-    DWORD TimeAlarm();
+    void GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent);
+    BOOL TimeAlarm();
     INT ShowNoConentWarningMsg();
 
 private:

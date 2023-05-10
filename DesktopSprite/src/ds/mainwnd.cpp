@@ -228,7 +228,7 @@ BOOL MainWindow::SaveCurrentPosToReg()
     return TRUE;
 }
 
-DWORD MainWindow::ApplyConfig()
+BOOL MainWindow::ApplyConfig()
 {
     // 加载气泡图标资源
     DestroyIcon(this->balloonIcon);
@@ -279,10 +279,10 @@ DWORD MainWindow::ApplyConfig()
 
     this->config.SaveToFile(this->GetConfigPath());
 
-    return 0;
+    return TRUE;
 }
 
-DWORD MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
+BOOL MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
 {
     // 重设气泡图标
     if (StrCmpW(pcfgdata->szBalloonIconPath, this->config.szBalloonIconPath))
@@ -351,10 +351,10 @@ DWORD MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
     this->config.Set(pcfgdata);
     this->config.SaveToFile(this->GetConfigPath());
 
-    return 0;
+    return TRUE;
 }
 
-DWORD MainWindow::GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent)
+void MainWindow::GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent)
 {
     psizeWnd->cx = this->wndSizeUnit * 6;
     psizeWnd->cy = 0;
@@ -366,10 +366,9 @@ DWORD MainWindow::GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent)
     {
         psizeWnd->cy += this->wndSizeUnit * 2;
     }
-    return 0;
 }
 
-DWORD MainWindow::TimeAlarm()
+BOOL MainWindow::TimeAlarm()
 {
     SYSTEMTIME st = { 0 };
     GetLocalTime(&st);
@@ -377,8 +376,7 @@ DWORD MainWindow::TimeAlarm()
     WCHAR szInfo[MAX_NIDINFO] = { 0 };
     StringCchPrintfW(szInfo, MAX_NIDINFO, L"北京时间 %02d: %02d", st.wHour, st.wMinute);
 
-    this->pNotifyIcon->PopupIconInfo(L"Take a break~", szInfo, this->balloonIcon, this->config.bInfoSound);
-    return 0;
+    return this->pNotifyIcon->PopupIconInfo(L"Take a break~", szInfo, this->balloonIcon, this->config.bInfoSound);
 }
 
 INT MainWindow::ShowNoConentWarningMsg()
