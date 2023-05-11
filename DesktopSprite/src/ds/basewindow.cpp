@@ -52,7 +52,7 @@ BOOL BaseWindow::CreateWindow_(HINSTANCE hInst)
         WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED,
         this->GetClassName_(),
         NULL, WS_POPUP,
-        0, 0, 0, 0,
+        0, 0, 1, 1, // 这里要留有一点点窗口大小, 否则有些系统效果在刚创建窗口时不会生效, 比如 CS_DROPSHADOW
         NULL, NULL,
         hInst ? hInst : GetModuleHandleW(NULL),
         (LPVOID)this
