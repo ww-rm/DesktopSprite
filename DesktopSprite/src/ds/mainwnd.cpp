@@ -439,6 +439,9 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 {
+    // 设置窗口类样式, 增加阴影边框
+    SetClassLongPtrW(this->hWnd, GCL_STYLE, GetClassLongPtrW(this->hWnd, GCL_STYLE) | CS_DROPSHADOW);
+
     // 启动监视器
     this->perfMonitor.Start();
 
