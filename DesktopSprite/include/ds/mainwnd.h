@@ -39,7 +39,6 @@ BOOL DrawSpeedStair(
 class MainWindow :public BaseWindow
 {
 private:
-    UINT                uMsgTaskbarCreated = 0;
     const WinApp*       app = NULL;
     AppConfig           config;
     PerfMonitor         perfMonitor;
