@@ -2,23 +2,38 @@
 
 #include <ds/framework.h>
 
+#include <ds/basewindow.h>
+
 using namespace Gdiplus;
 
-#define SPRITEWNDCLASSNAME                L"SpriteWndClass"
 
-
-typedef struct _SPRITEWNDDATA 
+class SpineChar
 {
-    //PMAINWNDDATA pAppData;                  // 应用数据
 
+};
 
-    HWND hWnd;                              // 窗体句柄
+class SpriteWindow : public BaseWindow
+{
+private:
+    POINT                               ptDragSrc = { 0 };              // 拖动窗口时的源点
 
-    POINT ptDragSrc;
-} SPRITEWNDDATA, *PSPRITEWNDDATA;
+public:
+    PCWSTR GetClassName_() const { return L"DesktopSpriteSpriteWndClass"; }
 
-// 注册 Sprite 窗口
-ATOM RegisterSpriteWnd(HINSTANCE hInstance);
+public:
+    SpriteWindow() {}
 
-// Sprite 窗口创建函数
-HWND CreateSpriteWnd(HINSTANCE hInstance, LPVOID pAppData);
+private:
+    LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    LRESULT OnCreate(WPARAM wParam, LPARAM lParam);
+    LRESULT OnDestroy(WPARAM wParam, LPARAM lParam);
+    LRESULT OnClose(WPARAM wParam, LPARAM lParam);
+    LRESULT OnPaint(WPARAM wParam, LPARAM lParam);
+    LRESULT OnContextMenu(WPARAM wParam, LPARAM lParam);
+    LRESULT OnCommand(WPARAM wParam, LPARAM lParam);
+    LRESULT OnTimer(WPARAM wParam, LPARAM lParam);
+    LRESULT OnInitMenuPopup(WPARAM wParam, LPARAM lParam);
+    LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
+    LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
+    LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
+};
