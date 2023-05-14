@@ -2,6 +2,9 @@
 #ifndef DS_VERSION_H
 #define DS_VERSION_H
 
+// project link to github repo
+#define PROJECT_LINK            L"https://github.com/ww-rm/DesktopSprite"
+
 #define __STR(v) #v
 #define _STR(v)  __STR(v)
 
