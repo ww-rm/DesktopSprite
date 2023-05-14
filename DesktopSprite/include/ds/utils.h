@@ -10,15 +10,15 @@ HANDLE DefCreateThread(LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter
 // 默认参数创建文件
 HANDLE DefCreateFile(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwCreationDisposition);
 
-// 获取窗口 USERDATA
+// 获取窗口 GWLP_USERDATA
 LONG_PTR GetWndData(HWND hWnd);
-// 设置窗口 USERDATA
+// 设置窗口 GWLP_USERDATA
 LONG_PTR SetWndData(HWND hWnd, LONG_PTR dwNewData);
 
-// 获取对话框 USER
+// 获取对话框 DWLP_USER
 LONG_PTR GetDlgData(HWND hDlg);
 
-// 设置对话框 USER
+// 设置对话框 DWLP_USER
 LONG_PTR SetDlgData(HWND hDlg, LONG_PTR dwNewData);
 
 // 向注册表子键写入二进制数据
