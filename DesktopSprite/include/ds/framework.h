@@ -27,6 +27,6 @@
 #include <fstream>
 
 #include "resource.h"
-
+#include "resource1.h"
 
 #endif // !DS_FRAMEWORK_H
