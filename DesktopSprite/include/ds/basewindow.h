@@ -24,4 +24,24 @@ public:
 };
 
 
+class BaseDialog
+{
+protected:
+    HWND hDlg = NULL;
+
+protected:
+    static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    virtual PCWSTR GetTemplateName() const = 0;
+
+protected:
+    virtual INT_PTR HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    virtual INT_PTR OnInitDialog(WPARAM wParam, LPARAM lParam) { return FALSE; }
+    virtual INT_PTR OnNotify(WPARAM wParam, LPARAM lParam) { return FALSE; }
+    virtual INT_PTR OnCommand(WPARAM wParam, LPARAM lParam) { return FALSE; }
+
+public:
+    HWND GetDialogHandle() const { return this->hDlg; }
+    INT_PTR ShowDialogBox(HINSTANCE hInst, HWND hWndParent = NULL);
+};
+
 #endif // !DS_BASEWINDOW_H
