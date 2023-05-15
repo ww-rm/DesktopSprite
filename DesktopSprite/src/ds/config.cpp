@@ -13,28 +13,22 @@ static PCWSTR const CFGKEY_DARKTHEME                = L"IsDarkTheme";
 static PCWSTR const CFGKEY_TRANSPARENCY             = L"Transparency";
 static PCWSTR const CFGKEY_SHOWCONTENT              = L"ShowContent";
 
-void AppConfig::Get(CFGDATA* pcfgdata) const
+AppConfig::AppConfig(const AppConfig& other)
 {
-    pcfgdata->bFloatWnd = this->bFloatWnd;
-    pcfgdata->bAutoRun = this->bAutoRun;
-    pcfgdata->bTimeAlarm = this->bTimeAlarm;
-    StringCchCopyW(pcfgdata->szBalloonIconPath, MAX_PATH, this->szBalloonIconPath);
-    pcfgdata->bInfoSound = this->bInfoSound;
-    pcfgdata->bDarkTheme = this->bDarkTheme;
-    pcfgdata->transparencyPercent = this->transparencyPercent;
-    pcfgdata->byShowContent = this->byShowContent;
+    this->bFloatWnd = other.bFloatWnd;
+    this->bAutoRun = other.bAutoRun;
+    this->bTimeAlarm = other.bTimeAlarm;
+    StringCchCopyW(this->szBalloonIconPath, MAX_PATH, other.szBalloonIconPath);
+    this->bInfoSound = other.bInfoSound;
+    this->bDarkTheme = other.bDarkTheme;
+    this->transparencyPercent = other.transparencyPercent;
+    this->byShowContent = other.byShowContent;
 }
 
-void AppConfig::Set(const CFGDATA* pcfgdata)
+AppConfig& AppConfig::operator= (const AppConfig& other)
 {
-    this->bFloatWnd = pcfgdata->bFloatWnd;
-    this->bAutoRun = pcfgdata->bAutoRun;
-    this->bTimeAlarm = pcfgdata->bTimeAlarm;
-    StringCchCopyW(this->szBalloonIconPath, MAX_PATH, pcfgdata->szBalloonIconPath);
-    this->bInfoSound = pcfgdata->bInfoSound;
-    this->bDarkTheme = pcfgdata->bDarkTheme;
-    this->transparencyPercent = pcfgdata->transparencyPercent;
-    this->byShowContent = pcfgdata->byShowContent;
+    this->AppConfig::AppConfig(other);
+    return *this;
 }
 
 DWORD AppConfig::LoadFromFile(PCWSTR path)
