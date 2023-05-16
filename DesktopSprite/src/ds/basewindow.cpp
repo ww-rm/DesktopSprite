@@ -85,21 +85,6 @@ INT_PTR CALLBACK BaseDialog::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
     return FALSE;
 }
 
-INT_PTR BaseDialog::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch (uMsg)
-    {
-    case WM_INITDIALOG:
-        return this->OnInitDialog(wParam, lParam);
-    case WM_NOTIFY:
-        return this->OnNotify(wParam, lParam);
-    case WM_COMMAND:
-        return this->OnCommand(wParam, lParam);
-    default:
-        return FALSE;
-    }
-}
-
 INT_PTR BaseDialog::ShowDialogBox(HINSTANCE hInst, HWND hWndParent)
 {
     return DialogBoxParamW(hInst, this->GetTemplateName(), hWndParent, this->DialogProc, (LPARAM)this);

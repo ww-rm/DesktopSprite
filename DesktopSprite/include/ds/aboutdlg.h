@@ -11,6 +11,7 @@ public:
     PCWSTR GetTemplateName() const { return MAKEINTRESOURCEW(IDD_ABOUT); }
 
 private:
+    INT_PTR HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
     INT_PTR OnInitDialog(WPARAM wParam, LPARAM lParam);
     INT_PTR OnNotify(WPARAM wParam, LPARAM lParam);
     INT_PTR OnCommand(WPARAM wParam, LPARAM lParam);

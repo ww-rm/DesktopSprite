@@ -4,6 +4,21 @@
 
 #include <ds/aboutdlg.h>
 
+INT_PTR AboutDlg::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+    case WM_INITDIALOG:
+        return this->OnInitDialog(wParam, lParam);
+    case WM_NOTIFY:
+        return this->OnNotify(wParam, lParam);
+    case WM_COMMAND:
+        return this->OnCommand(wParam, lParam);
+    default:
+        return FALSE;
+    }
+}
+
 INT_PTR AboutDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
 {
     SetDlgItemTextA(this->hDlg, IDC_LABELVER, VERSION_STR);
