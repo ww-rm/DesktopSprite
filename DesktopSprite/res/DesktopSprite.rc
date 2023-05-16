@@ -54,29 +54,16 @@ IDR_CONTEXTMENU MENU
 BEGIN
     POPUP ""
     BEGIN
-        MENUITEM "浮动窗口(&F)",                    IDM_FLOATWND
+        MENUITEM "显示浮窗",                        IDM_FLOATWND
         MENUITEM SEPARATOR
-        POPUP "显示(&S)"
-        BEGIN
-            MENUITEM "显示占用(&U)",                    IDM_SHOWCPUMEM
-            MENUITEM "显示网速(&S)",                    IDM_SHOWNETSPEED
-            MENUITEM SEPARATOR
-            MENUITEM "深色主题(&D)",                    IDM_DARKTHEME
-            POPUP "透明度(&T)"
-            BEGIN
-                MENUITEM "100%",                        IDM_TRANS_100
-                MENUITEM "75%",                         IDM_TRANS_75
-                MENUITEM "50%",                         IDM_TRANS_50
-                MENUITEM "25%",                         IDM_TRANS_25
-                MENUITEM "自定义(&C)...",                  IDM_TRANSPARENCY
-            END
-        END
-        POPUP "设置(&C)"
-        BEGIN
-            MENUITEM "开机自启(&A)",                    IDM_AUTORUN
-            MENUITEM "整点报时(&I)",                    IDM_TIMEALARM
-            MENUITEM "提示声音(&S)",                    IDM_INFOSOUND
-        END
+        MENUITEM "显示占用",                        IDM_SHOWCPUMEM
+        MENUITEM "显示网速",                        IDM_SHOWNETSPEED
+        MENUITEM SEPARATOR
+        MENUITEM "整点报时",                        IDM_TIMEALARM
+        MENUITEM "提示声音",                        IDM_INFOSOUND
+        MENUITEM SEPARATOR
+        MENUITEM "设置(&C)",                      IDM_CONFIG
+        MENUITEM "关于(&A)",                      IDM_ABOUT
         MENUITEM "退出(&E)",                      IDM_EXIT
     END
 END
@@ -113,6 +100,28 @@ BEGIN
     LTEXT           "%",IDC_STATIC,82,20,8,8
 END
 
+IDD_ABOUT DIALOGEX 0, 0, 178, 57
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "关于"
+FONT 9, "Microsoft YaHei UI", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,62,35,50,14
+    LTEXT           "版本：",IDC_STATIC,7,7,20,8
+    LTEXT           "v99.99.99",IDC_LABELVER,27,7,31,8
+    LTEXT           "源码：",IDC_STATIC,7,17,21,8
+    CONTROL         "<a href=""https://github.com/ww-rm/DesktopSprite"">https://github.com/ww-rm/DesktopSprite</a>",IDC_PROJECTLINK,
+                    "SysLink",WS_TABSTOP,27,17,138,8
+END
+
+IDD_CONFIG DIALOGEX 0, 0, 310, 176
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "设置"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,199,155,50,14
+    PUSHBUTTON      "取消",IDCANCEL,253,155,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -129,6 +138,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 53
     END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 171
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 49
+    END
+
+    IDD_CONFIG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 303
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -139,6 +164,16 @@ END
 //
 
 IDD_TRANSPARENCY AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ABOUT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CONFIG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
