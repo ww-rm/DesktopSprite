@@ -437,11 +437,7 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
     // 添加图标
     this->pNotifyIcon = new NotifyIcon(this->hWnd, ID_NIDMAIN);
-    this->pNotifyIcon->Add(
-        WM_NOTIFYICON, 
-        LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)),
-        this->app->GetAppName()
-    );
+    this->pNotifyIcon->Add(WM_NOTIFYICON, this->LoadNotifyIconBySysTheme(), this->app->GetAppName());
 
     // 初始化窗口位置
     POINT wndPos = { 0 };
@@ -471,8 +467,8 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     // 创建 sprite 窗口
     this->spritewnd = new SpriteWindow;
     this->spritewnd->CreateWindow_();
-    ShowWindow(this->spritewnd->GetWindowHandle(), SW_SHOW);
-    InvalidateRect(this->spritewnd->GetWindowHandle(), NULL, TRUE);
+    //ShowWindow(this->spritewnd->GetWindowHandle(), SW_SHOW);
+    //InvalidateRect(this->spritewnd->GetWindowHandle(), NULL, TRUE);
 
     return 0;
 }
@@ -696,8 +692,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnSettingChange(WPARAM wParam, LPARAM lParam)
 {
     // 自动调节图标颜色
-    HICON hIcon = LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK));
-    this->pNotifyIcon->ModifyIcon(hIcon);
+    this->pNotifyIcon->ModifyIcon(this->LoadNotifyIconBySysTheme());
     return 0;
 }
 
@@ -982,10 +977,6 @@ LRESULT MainWindow::OnTimeAlarm(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnTaskbarCreated(WPARAM wParam, LPARAM lParam)
 {
     // 添加图标
-    this->pNotifyIcon->Add(
-        WM_NOTIFYICON,
-        LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)),
-        this->app->GetAppName()
-    );
+    this->pNotifyIcon->Add(WM_NOTIFYICON, LoadNotifyIconBySysTheme(), this->app->GetAppName());
     return 0;
 }

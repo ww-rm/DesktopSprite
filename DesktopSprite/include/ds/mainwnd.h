@@ -70,6 +70,9 @@ public:
     BOOL LoadLastPosFromReg(POINT* pt);
     BOOL SaveCurrentPosToReg();
 
+    // 根据电脑颜色主题加载通知区域图标
+    HICON LoadNotifyIconBySysTheme() { return LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)); }
+
     void GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent);
     BOOL TimeAlarm();
     INT ShowNoConentWarningMsg();
