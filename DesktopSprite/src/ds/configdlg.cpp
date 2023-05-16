@@ -131,20 +131,20 @@ INT_PTR ConfigDlg::OnCommand(WPARAM wParam, LPARAM lParam)
     {
     case IDC_BTN_BALLOONICONPATH:
     {
-        // // !IMPORTANT: GetOpenFileName 有 bug 所以禁用
-        // OPENFILENAMEW ofn = { 0 };
-        // ofn.lStructSize = sizeof(OPENFILENAMEW);
-        // ofn.hwndOwner = this->hDlg;
-        // ofn.lpstrFile = ballooniconPath;
-        // ofn.nMaxFile = MAX_PATH;
-        // ofn.lpstrFilter = L"图像文件 (*.jpg;*.jpeg;*.png;*.bmp;*.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0ALL\0*.*\0";
-        // ofn.lpstrTitle = L"选择气泡图标文件";
-        // ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
-        // ofn.lpstrFileTitle = NULL;
-        // ofn.nMaxFileTitle = 0;
-        // ofn.lpstrInitialDir = L"D:\\";
-
-
+        //// !IMPORTANT: GetOpenFileName 有 bug 所以禁用
+        //WCHAR ballooniconPath[MAX_PATH] = { 0 };
+        //GetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, ballooniconPath, MAX_PATH);
+        //OPENFILENAMEW ofn = { 0 };
+        //ofn.lStructSize = sizeof(OPENFILENAMEW);
+        //ofn.hwndOwner = this->hDlg;
+        //ofn.lpstrFile = ballooniconPath;
+        //ofn.nMaxFile = MAX_PATH;
+        //ofn.lpstrFilter = L"图像文件 (*.jpg;*.jpeg;*.png;*.bmp;*.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0ALL\0*.*\0";
+        //ofn.lpstrTitle = L"选择气泡图标文件";
+        //ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+        //ofn.lpstrFileTitle = NULL;
+        //ofn.nMaxFileTitle = 0;
+        //ofn.lpstrInitialDir = L"D:\\";
         //if (GetOpenFileNameW(&ofn))
         //{
         //    SetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, ballooniconPath);
