@@ -26,12 +26,17 @@ BOOL BaseWindow::CreateWindow_(HINSTANCE hInst)
         return TRUE;
     }
 
+    if (!hInst)
+    {
+        hInst = GetModuleHandleW(NULL);
+    }
+
     // 注册窗口类
     WNDCLASSEXW wcex = { 0 };
     wcex.cbSize = sizeof(WNDCLASSEXW);
     wcex.lpszClassName = this->GetClassName_();
     wcex.lpfnWndProc = BaseWindow::WindowProc;
-    wcex.hInstance = GetModuleHandleW(NULL);
+    wcex.hInstance = hInst;
     wcex.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
@@ -54,7 +59,7 @@ BOOL BaseWindow::CreateWindow_(HINSTANCE hInst)
         NULL, WS_POPUP,
         0, 0, 1, 1, // 这里要留有一点点窗口大小, 否则有些系统效果在刚创建窗口时不会生效, 比如 CS_DROPSHADOW
         NULL, NULL,
-        hInst ? hInst : GetModuleHandleW(NULL),
+        hInst,
         (LPVOID)this
     ))
     {
