@@ -26,7 +26,8 @@ WinApp::WinApp()
     }
 
     // 初始化
-    if (FAILED(CoInitializeEx(NULL, COINIT::COINIT_MULTITHREADED)))
+    // 这里不用 CoInitializeEx, 用其他通用对话框会死锁 (不知道啥原因)
+    if (FAILED(CoInitialize(NULL)))
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
         exit(EXIT_FAILURE);
