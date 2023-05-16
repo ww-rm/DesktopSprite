@@ -3,7 +3,8 @@
 #include <ds/config.h>
 #include <ds/notifyicon.h>
 #include <ds/perfmonitor.h>
-#include <ds/transdlg.h>
+#include <ds/aboutdlg.h>
+#include <ds/configdlg.h>
 #include <ds/winapp.h>
 
 #include <ds/mainwnd.h>
@@ -26,27 +27,15 @@ static UINT     const   REFRESHINTERVAL = 1000;                // 屏幕显示刷新间
 static UINT     const   ID_NIDMAIN = 1;                        // 图标 ID
 static UINT     const   BASE_WNDSIZE_PIXELS = 20;              // 主窗口的基本单元格像素大小
 
-BOOL DrawCircle(
-    Graphics& graphics,
-    Pen& pen,
-    const PointF& ptCenter,
-    const REAL& nOuterRadius,
-    const REAL& sweepPercent
-)
+
+BOOL DrawCircle(Graphics& graphics, Pen& pen, PointF& ptCenter, REAL nOuterRadius, REAL sweepPercent)
 {
     REAL nr = nOuterRadius - pen.GetWidth() / 2;
     graphics.DrawArc(&pen, ptCenter.X - nr, ptCenter.Y - nr, 2 * nr, 2 * nr, 270, -360 * sweepPercent);
     return TRUE;
 }
 
-BOOL DrawSpeedStair(
-    Graphics& graphics,
-    const Color& color,
-    const RectF& rect,
-    const BOOL& bUp,
-    const INT& nLevel,
-    const INT& nMaxLevel
-)
+BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT nLevel, INT nMaxLevel)
 {
     REAL whiteGap = 1;
     REAL height = rect.Height / nMaxLevel;
@@ -282,20 +271,20 @@ BOOL MainWindow::ApplyConfig()
     return TRUE;
 }
 
-BOOL MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
+BOOL MainWindow::ApplyConfig(const AppConfig* newConfig)
 {
     // 重设气泡图标
-    if (StrCmpW(pcfgdata->szBalloonIconPath, this->config.szBalloonIconPath))
+    if (StrCmpW(newConfig->szBalloonIconPath, this->config.szBalloonIconPath))
     {
         DestroyIcon(this->balloonIcon);
-        Bitmap(this->config.szBalloonIconPath).GetHICON(&this->balloonIcon);
+        Bitmap(newConfig->szBalloonIconPath).GetHICON(&this->balloonIcon);
         this->pNotifyIcon->PopupIconInfo(L"图标修改成功", L"来看看效果吧~", this->balloonIcon, TRUE);
     }
 
     // 设置浮动窗口
-    if (pcfgdata->bFloatWnd != this->config.bFloatWnd)
+    if (newConfig->bFloatWnd != this->config.bFloatWnd)
     {
-        if (pcfgdata->bFloatWnd)
+        if (newConfig->bFloatWnd)
         {
             ShowWindow(this->hWnd, SW_SHOWNA);
         }
@@ -306,23 +295,23 @@ BOOL MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
     }
 
     // 调整显示内容
-    if (pcfgdata->byShowContent != this->config.byShowContent)
+    if (newConfig->byShowContent != this->config.byShowContent)
     {
         SIZE sizeWnd = { 0 };
-        GetWndSizeByShowContent(&sizeWnd, pcfgdata->byShowContent);
+        GetWndSizeByShowContent(&sizeWnd, newConfig->byShowContent);
         SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, sizeWnd.cx, sizeWnd.cy, SWP_NOACTIVATE | SWP_NOMOVE);
     }
 
     // 设置透明度
-    if (pcfgdata->transparencyPercent != this->config.transparencyPercent)
+    if (newConfig->transparencyPercent != this->config.transparencyPercent)
     {
-        SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(pcfgdata->transparencyPercent), LWA_ALPHA);
+        SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(newConfig->transparencyPercent), LWA_ALPHA);
     }
 
     // 设置开机自启
-    if (pcfgdata->bAutoRun != this->config.bAutoRun)
+    if (newConfig->bAutoRun != this->config.bAutoRun)
     {
-        if (pcfgdata->bAutoRun)
+        if (newConfig->bAutoRun)
         {
             SetAppAutoRun(this->app->GetAppName());
         }
@@ -333,9 +322,9 @@ BOOL MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
     }
 
     // 整点报时
-    if (pcfgdata->bTimeAlarm != this->config.bTimeAlarm)
+    if (newConfig->bTimeAlarm != this->config.bTimeAlarm)
     {
-        if (pcfgdata->bTimeAlarm)
+        if (newConfig->bTimeAlarm)
         {
             SetTimer(this->hWnd, IDT_TIMEALARM, 100, (TIMERPROC)NULL);
         }
@@ -348,7 +337,7 @@ BOOL MainWindow::ApplyConfig(const CFGDATA* pcfgdata)
     // 重绘一次
     InvalidateRect(this->hWnd, NULL, TRUE);
 
-    this->config.Set(pcfgdata);
+    this->config = *newConfig;
     this->config.SaveToFile(this->GetConfigPath());
 
     return TRUE;
@@ -418,17 +407,12 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return this->OnLButtonDown(wParam, lParam);
     case WM_LBUTTONUP:
         return this->OnLButtonUp(wParam, lParam);
-        //case WM_POWERBROADCAST: // XXX: 收不到这个消息
-        //    return this->OnPowerBroadcast(wParam, lParam);
     case WM_DPICHANGED:
         return this->OnDpiChanged(wParam, lParam);
     case WM_NOTIFYICON:
         return this->OnNotifyIcon(wParam, lParam);
     case WM_TIMEALARM:
         return this->OnTimeAlarm(wParam, lParam);
-        //case WM_MEASUREITEM:
-        //case WM_DRAWITEM:
-        //    return 0;
     default:
         if (uMsg == this->uMsgTaskbarCreated)
             return this->OnTaskbarCreated(wParam, lParam);
@@ -484,14 +468,23 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     // 每 1s 刷新一次显示
     SetTimer(this->hWnd, IDT_REFRESHRECT, REFRESHINTERVAL, (TIMERPROC)NULL);
 
+    // 创建 sprite 窗口
+    this->spritewnd = new SpriteWindow;
+    this->spritewnd->CreateWindow_();
+    ShowWindow(this->spritewnd->GetWindowHandle(), SW_SHOW);
+    InvalidateRect(this->spritewnd->GetWindowHandle(), NULL, TRUE);
+
     return 0;
 }
 
 LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
+    DestroyWindow(this->spritewnd->GetWindowHandle());
+
     this->SaveCurrentPosToReg();
     this->config.SaveToFile(this->GetConfigPath());
 
+    this->pNotifyIcon->Delete();
     delete this->pNotifyIcon;
     DestroyIcon(this->balloonIcon);
 
@@ -569,6 +562,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
     graphicsMem.FillRectangle(&bgbrush, 0., 0., sizeClient.Width, sizeClient.Height);
 
     // 绘制CPU与MEM
+    PointF circleCenter;
     if (this->config.byShowContent & SHOWCONTENT_CPUMEM)
     {
         drawSize.Width = sizeUnit * 3;
@@ -595,9 +589,10 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
             &strformat, &textbrush
         );
 
+        circleCenter = { drawSize.Width / 2, drawSize.Height / 2 };
         DrawCircle(
             graphicsMem, pen,
-            PointF(drawSize.Width / 2, drawSize.Height / 2),
+            circleCenter,
             drawSize.Height / 2 - sizeUnit * 0.3f,
             REAL(perfData.cpuPercent / 100)
         );
@@ -621,15 +616,18 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
             RectF(PointF(sizeUnit * 3, 0), drawSize),
             &strformat, &textbrush
         );
+
+        circleCenter = { drawSize.Width / 2 + sizeUnit * 3, drawSize.Height / 2 };
         DrawCircle(
             graphicsMem, pen,
-            PointF(drawSize.Width / 2 + sizeUnit * 3, drawSize.Height / 2),
+            circleCenter,
             drawSize.Height / 2 - sizeUnit * 0.3f,
             REAL(perfData.memPercent / 100)
         );
     }
 
     // 绘制网速
+    RectF rectSpeed;
     if (this->config.byShowContent & SHOWCONTENT_NETSPEED)
     {
         drawSize.Width = sizeUnit * 3;
@@ -660,11 +658,9 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
             RectF(PointF(0, sizeUnit), drawSize),
             &strformat, &textbrush
         );
-        DrawSpeedStair(
-            graphicsMem, statusColor,
-            RectF(sizeUnit * 0.4f, sizeUnit * 0.08f, drawSize.Width - sizeUnit * 0.8f, drawSize.Height - sizeUnit * 0.16f),
-            TRUE, nLevel
-        );
+
+        rectSpeed = { sizeUnit * 0.4f, sizeUnit * 0.08f, drawSize.Width - sizeUnit * 0.8f, drawSize.Height - sizeUnit * 0.16f };
+        DrawSpeedStair(graphicsMem, statusColor, rectSpeed, TRUE, nLevel);
 
         // 绘制下载
         nLevel = ConvertSpeed(perfData.downloadSpeed, szDataBuffer, 16);
@@ -680,26 +676,20 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         {
             statusColor = STATUSCOLOR_LOW;
         }
-        graphicsMem.DrawString(
-            szDataBuffer, -1, &textFont,
-            RectF(PointF(sizeUnit * 3, sizeUnit), drawSize),
-            &strformat, &textbrush
-        );
-        DrawSpeedStair(
-            graphicsMem, statusColor,
-            RectF(sizeUnit * 3.4f, sizeUnit * 0.08f, drawSize.Width - sizeUnit * 0.8f, drawSize.Height - sizeUnit * 0.16f),
-            FALSE, nLevel
-        );
+        graphicsMem.DrawString(szDataBuffer, -1, &textFont, RectF(PointF(sizeUnit * 3, sizeUnit), drawSize), &strformat, &textbrush);
+
+        rectSpeed = { sizeUnit * 3.4f, sizeUnit * 0.08f, drawSize.Width - sizeUnit * 0.8f, drawSize.Height - sizeUnit * 0.16f };
+        DrawSpeedStair(graphicsMem, statusColor, rectSpeed, FALSE, nLevel);
     }
 
     // 拷贝缓存图, 结束绘图
     Graphics graphics(hdc);
     CachedBitmap* pCachedBmp = new CachedBitmap(pBmpMem, &graphics);
     graphics.DrawCachedBitmap(pCachedBmp, 0, 0);
-    EndPaint(this->hWnd, &ps);
-
     delete pCachedBmp;
     delete pBmpMem;
+
+    EndPaint(this->hWnd, &ps);
     return 0;
 }
 
@@ -740,16 +730,18 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     // HIWORD(wParam) Menu: FALSE, Accelerator: TRUE
     // LOWORD(wParam) identifier
     // lParam: 0
-    CFGDATA* pcfgdata = new CFGDATA;
-    this->config.Get(pcfgdata);
+    BOOL configChanged = FALSE;
+
+    AppConfig* pcfgdata = new AppConfig(this->config);
 
     switch (LOWORD(wParam))
     {
-        // 浮动窗口
+    // 浮动窗口
     case IDM_FLOATWND:
         pcfgdata->bFloatWnd = (BOOL)!pcfgdata->bFloatWnd;
+        configChanged = TRUE;
         break;
-        // 显示子菜单
+    // 显示子菜单
     case IDM_SHOWCPUMEM:
         if (pcfgdata->byShowContent == SHOWCONTENT_CPUMEM)
         {
@@ -759,6 +751,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             pcfgdata->byShowContent ^= SHOWCONTENT_CPUMEM;
         }
+        configChanged = TRUE;
         break;
     case IDM_SHOWNETSPEED:
         if (pcfgdata->byShowContent == SHOWCONTENT_NETSPEED)
@@ -769,46 +762,34 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             pcfgdata->byShowContent ^= SHOWCONTENT_NETSPEED;
         }
-        break;
-    case IDM_DARKTHEME:
-        pcfgdata->bDarkTheme = (BOOL)!pcfgdata->bDarkTheme;
-        break;
-    case IDM_TRANS_100:
-        pcfgdata->transparencyPercent = 100.0;
-        break;
-    case IDM_TRANS_75:
-        pcfgdata->transparencyPercent = 75.0;
-        break;
-    case IDM_TRANS_50:
-        pcfgdata->transparencyPercent = 50.0;
-        break;
-    case IDM_TRANS_25:
-        pcfgdata->transparencyPercent = 25.0;
-        break;
-    case IDM_TRANSPARENCY:
-        if (IsWindowEnabled(this->hWnd))
-        {
-            PTRANSDLGFORM pInitForm = new TRANSDLGFORM;
-            // 填充表单初始值
-            pInitForm->transparencyPercent = pcfgdata->transparencyPercent;
-
-            // 显示对话框
-            DialogBoxTrans(GetModuleHandleW(NULL), this->hWnd, pInitForm);
-
-            // 获取返回表单值, 修改设置项
-            pcfgdata->transparencyPercent = pInitForm->transparencyPercent;
-            delete pInitForm;
-        }
-        break;
-    case IDM_AUTORUN:
-        pcfgdata->bAutoRun = (BOOL)!pcfgdata->bAutoRun;
+        configChanged = TRUE;
         break;
     case IDM_TIMEALARM:
         pcfgdata->bTimeAlarm = (BOOL)!pcfgdata->bTimeAlarm;
+        configChanged = TRUE;
         break;
     case IDM_INFOSOUND:
         pcfgdata->bInfoSound = (BOOL)!pcfgdata->bInfoSound;
+        configChanged = TRUE;
         break;
+    case IDM_CONFIG:
+    {
+        ConfigDlg* dlg = new ConfigDlg(this);
+        dlg->SetFormData(&this->config);
+        if (dlg->ShowDialogBox(GetModuleHandleW(NULL)))
+        {
+            dlg->GetFormData(pcfgdata);
+            configChanged = TRUE;
+        }
+        delete dlg;
+        break;
+    }
+    case IDM_ABOUT:
+    {
+        AboutDlg dlg;
+        dlg.ShowDialogBox(GetModuleHandleW(NULL));
+        break;
+    }
     case IDM_EXIT:
         DestroyWindow(this->hWnd);
         break;
@@ -818,7 +799,11 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     }
 
     // 应用更改
-    this->ApplyConfig(pcfgdata);
+    if (configChanged)
+    {
+        this->ApplyConfig(pcfgdata);
+    }
+
     delete pcfgdata;
     return 0;
 }
@@ -848,33 +833,12 @@ LRESULT MainWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
     SetMenuItemState(hMenu, IDM_FLOATWND, FALSE, this->config.bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED);
 
     // 子菜单
-    SetMenuItemState(hMenu, IDM_AUTORUN, FALSE, this->config.bAutoRun ? MFS_CHECKED : MFS_UNCHECKED);
     SetMenuItemState(hMenu, IDM_TIMEALARM, FALSE, this->config.bTimeAlarm ? MFS_CHECKED : MFS_UNCHECKED);
     SetMenuItemState(hMenu, IDM_INFOSOUND, FALSE, this->config.bInfoSound ? MFS_CHECKED : MFS_UNCHECKED);
 
     // 子菜单
     SetMenuItemState(hMenu, IDM_SHOWCPUMEM, FALSE, (this->config.byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED);
     SetMenuItemState(hMenu, IDM_SHOWNETSPEED, FALSE, (this->config.byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED);
-    SetMenuItemState(hMenu, IDM_DARKTHEME, FALSE, this->config.bDarkTheme ? MFS_CHECKED : MFS_UNCHECKED);
-    
-    switch ((UINT)this->config.transparencyPercent)
-    {
-    case 100:
-        SetMenuItemState(hMenu, IDM_TRANS_100, FALSE, MFS_CHECKED);
-        break;
-    case 75:
-        SetMenuItemState(hMenu, IDM_TRANS_75, FALSE, MFS_CHECKED);
-        break;
-    case 50:
-        SetMenuItemState(hMenu, IDM_TRANS_50, FALSE, MFS_CHECKED);
-        break;
-    case 25:
-        SetMenuItemState(hMenu, IDM_TRANS_25, FALSE, MFS_CHECKED);
-        break;
-    default:
-        SetMenuItemState(hMenu, IDM_TRANSPARENCY, FALSE, MFS_CHECKED);
-        break;
-    }
 
     return 0;
 }

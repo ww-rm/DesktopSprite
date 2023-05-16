@@ -8,6 +8,7 @@
 #include <ds/config.h>
 #include <ds/basewindow.h>
 #include <ds/winapp.h>
+#include <ds/spritewnd.h>
 
 
 // 窗口消息相关宏定义
@@ -18,23 +19,10 @@
 using namespace Gdiplus;
 
 // 辅助函数画圆
-BOOL DrawCircle(
-    Graphics& graphics, 
-    Pen& pen, 
-    const PointF& ptCenter, 
-    const REAL& nOuterRadius, 
-    const REAL& sweepPercent
-);
+BOOL DrawCircle(Graphics& graphics, Pen& pen, PointF& ptCenter, REAL nOuterRadius, REAL sweepPercent);
 
 // 辅助函数画网速图
-BOOL DrawSpeedStair(
-    Graphics& graphics,
-    const Color& color,
-    const RectF& rect,
-    const BOOL& bUp,
-    const INT& nLevel,
-    const INT& nMaxLevel = 6
-);
+BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT nLevel, INT nMaxLevel = 6);
 
 class MainWindow :public BaseWindow
 {
@@ -43,6 +31,7 @@ private:
     AppConfig           config;
     PerfMonitor         perfMonitor;
     NotifyIcon*         pNotifyIcon = NULL;
+    SpriteWindow*       spritewnd = NULL;
 
 // 运行时数据
 private:
@@ -62,7 +51,9 @@ public:
 public:
     MainWindow(WinApp* app) : app(app) {}
 
-private:
+    BOOL ApplyConfig();
+    BOOL ApplyConfig(const AppConfig* newConfig); // 应用更改, 只修改发生变化的设置项
+
     // 显示右键菜单
     BOOL ShowContextMenu(INT x, INT y);
 
@@ -78,9 +69,6 @@ private:
     // 一对用来存储窗口位置到注册表的方法
     BOOL LoadLastPosFromReg(POINT* pt);
     BOOL SaveCurrentPosToReg();
-
-    BOOL ApplyConfig();
-    BOOL ApplyConfig(const CFGDATA* pcfgdata); // 应用更改, 只修改发生变化的设置项
 
     void GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent);
     BOOL TimeAlarm();
