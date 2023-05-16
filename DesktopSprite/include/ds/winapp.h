@@ -18,9 +18,9 @@ public:
     INT Mainloop();
 
 public:
-    PCWSTR GetAppName() const;
-    PCWSTR GetAppPath() const;
-    PCWSTR GetAppDir() const;
+    PCWSTR GetAppName() const { return L"DesktopSprite"; };
+    PCWSTR GetAppPath() const { return this->szExeFullPath; }
+    PCWSTR GetAppDir() const { return this->szExeFullDir; }
 };
 
 #endif // !DS_WINAPP_H
