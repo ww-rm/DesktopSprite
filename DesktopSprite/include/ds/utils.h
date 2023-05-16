@@ -37,10 +37,10 @@ LSTATUS RegOpenPersonalizeKey(PHKEY phkResult);
 DOUBLE ClampNum(DOUBLE numVal, DOUBLE minVal, DOUBLE maxVal);
 
 // Alpha 和百分比转换
-DOUBLE AlphaToPercent(BYTE alpha);
+UINT AlphaToPercent(BYTE alpha);
 
 // 百分比和 Alpha 转换, percent 是乘了 100 的值
-BYTE PercentToAlpha(DOUBLE percent);
+BYTE PercentToAlpha(UINT percent);
 
 // 设置应用开机自启
 BOOL SetAppAutoRun(PCWSTR appname);

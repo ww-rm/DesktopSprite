@@ -58,14 +58,14 @@ DOUBLE ClampNum(DOUBLE numVal, DOUBLE minVal, DOUBLE maxVal)
     return numVal;
 }
 
-DOUBLE AlphaToPercent(BYTE alpha)
+UINT AlphaToPercent(BYTE alpha)
 {
-    return (DOUBLE)((DOUBLE)alpha / 255.0 * 100.0);
+    return (UINT)((DOUBLE)alpha / 255.0 * 100.0);
 }
 
-BYTE PercentToAlpha(DOUBLE percent)
+BYTE PercentToAlpha(UINT percent)
 {
-    return (BYTE)(percent / 100.0 * 255.0);
+    return (BYTE)((DOUBLE)percent / 100.0 * 255.0);
 }
 
 BOOL SetAppAutoRun(PCWSTR appname)
