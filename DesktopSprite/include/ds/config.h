@@ -17,7 +17,7 @@ public:
     WCHAR   szBalloonIconPath[MAX_PATH] = L"res\\image\\timealarm.ico"; // 气泡图标路径
     BOOL    bInfoSound = TRUE;                                          // 气泡消息声音
     BOOL    bDarkTheme = TRUE;                                          // 是否使用深色主题
-    DOUBLE  transparencyPercent = 75.0;                                 // 透明度
+    UINT    transparencyPercent = 75;                                 // 透明度
     BYTE    byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;  // 要显示的内容
 
 public:
@@ -25,8 +25,8 @@ public:
     AppConfig(const AppConfig& other);
     AppConfig& operator= (const AppConfig& other);
 
-    DWORD LoadFromFile(PCWSTR path);
-    DWORD SaveToFile(PCWSTR path);
+    BOOL LoadFromFile(PCWSTR path);
+    BOOL SaveToFile(PCWSTR path);
 };
 
 #endif // !DS_CONFIG_H

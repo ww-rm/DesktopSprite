@@ -31,7 +31,7 @@ AppConfig& AppConfig::operator= (const AppConfig& other)
     return *this;
 }
 
-DWORD AppConfig::LoadFromFile(PCWSTR path)
+BOOL AppConfig::LoadFromFile(PCWSTR path)
 {
     Json::Value root;
 
@@ -45,13 +45,13 @@ DWORD AppConfig::LoadFromFile(PCWSTR path)
     StrAtoW(root.get(CFGKEY_BALLOONICONPATH, this->szBalloonIconPath).asCString(), this->szBalloonIconPath, MAX_PATH);
     this->bInfoSound = (BOOL)root.get(CFGKEY_INFOSOUND, (bool)this->bInfoSound).asBool();
     this->bDarkTheme = (BOOL)root.get(CFGKEY_DARKTHEME, (bool)this->bDarkTheme).asBool();
-    this->transparencyPercent = (DOUBLE)root.get(CFGKEY_TRANSPARENCY, (double)this->transparencyPercent).asDouble();
+    this->transparencyPercent = (UINT)root.get(CFGKEY_TRANSPARENCY, (UINT)this->transparencyPercent).asUInt();
     this->byShowContent = (BYTE)root.get(CFGKEY_SHOWCONTENT, (UINT)this->byShowContent).asUInt();
 
-    return 0;
+    return TRUE;
 }
 
-DWORD AppConfig::SaveToFile(PCWSTR path)
+BOOL AppConfig::SaveToFile(PCWSTR path)
 {
     Json::Value root;
 
@@ -61,11 +61,12 @@ DWORD AppConfig::SaveToFile(PCWSTR path)
     root[CFGKEY_BALLOONICONPATH] = this->szBalloonIconPath;
     root[CFGKEY_INFOSOUND] = (bool)this->bInfoSound;
     root[CFGKEY_DARKTHEME] = (bool)this->bDarkTheme;
-    root[CFGKEY_TRANSPARENCY] = (double)this->transparencyPercent;
+    root[CFGKEY_TRANSPARENCY] = (UINT)this->transparencyPercent;
     root[CFGKEY_SHOWCONTENT] = (UINT)this->byShowContent;
 
     std::ofstream file(path);
     file << root;
     file.close();
-    return 0;
+
+    return TRUE;
 }
