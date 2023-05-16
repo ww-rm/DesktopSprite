@@ -476,12 +476,14 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
     DestroyWindow(this->spritewnd->GetWindowHandle());
+    delete this->spritewnd;
 
     this->SaveCurrentPosToReg();
     this->config.SaveToFile(this->GetConfigPath());
 
     this->pNotifyIcon->Delete();
     delete this->pNotifyIcon;
+
     DestroyIcon(this->balloonIcon);
 
     this->perfMonitor.Stop();
@@ -904,15 +906,26 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
     {
     case WM_LBUTTONDBLCLK:
 #ifdef _DEBUG
-        // DEBUG here
-        // 加设置对话框
-        // 加关于对话框
-        //MessageBoxW(this->hWnd, L"Double Click on NotifyIcon!\n", L"Double Click on NotifyIcon!\n", MB_OK);
-        //this->config.LoadFromFile(this->GetConfigPath());
-        //this->ApplyConfig();
-        //this->TimeAlarm();
-        UnsetAppAutoRun(L"asdf");
+    {
+        WCHAR ballooniconPath[MAX_PATH] = { 0 };
+
+        // !IMPORTANT: GetOpenFileName 有 bug 所以禁用
+        OPENFILENAMEW ofn = { 0 };
+        ofn.lStructSize = sizeof(OPENFILENAMEW);
+        ofn.hwndOwner = this->hWnd;
+        ofn.lpstrFile = ballooniconPath;
+        ofn.nMaxFile = MAX_PATH;
+        ofn.lpstrFilter = L"图像文件 (*.jpg;*.jpeg;*.png;*.bmp;*.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0ALL\0*.*\0";
+        ofn.lpstrTitle = L"选择气泡图标文件";
+        ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+        ofn.lpstrFileTitle = NULL;
+        ofn.nMaxFileTitle = 0;
+        ofn.lpstrInitialDir = L"D:\\";
+
+
+        GetOpenFileNameW(&ofn);
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
+    }
 #endif // !_DEBUG
         break;
     case WM_CONTEXTMENU:
