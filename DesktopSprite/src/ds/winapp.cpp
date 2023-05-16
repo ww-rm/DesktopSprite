@@ -24,9 +24,16 @@ WinApp::WinApp()
         MessageBoxW(NULL, L"程序已在运行, 请勿重复启动", L"提示消息", MB_OK | MB_ICONINFORMATION);
         exit(EXIT_SUCCESS);
     }
+    INITCOMMONCONTROLSEX cce = { sizeof(cce), 0xffff };
 
-    // 初始化
-    // 这里不用 CoInitializeEx, 用其他通用对话框会死锁 (不知道啥原因)
+    // 初始化 CommonControls
+    if (!InitCommonControlsEx(&cce))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+    
+    // 初始化, 这里不用 CoInitializeEx, 其他通用对话框会死锁 (不知道啥原因)
     if (FAILED(CoInitialize(NULL)))
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
