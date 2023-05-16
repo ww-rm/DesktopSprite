@@ -25,10 +25,16 @@ WinApp::WinApp()
         exit(EXIT_SUCCESS);
     }
 
+    // 初始化
+    if (FAILED(CoInitializeEx(NULL, COINIT::COINIT_MULTITHREADED)))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+
     // 初始化 GDI+.
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-    Gdiplus::Status status = Gdiplus::GdiplusStartup(&this->gdiplusToken, &gdiplusStartupInput, NULL);
-    if (status != Gdiplus::Status::Ok)
+    if (Gdiplus::Status::Ok != Gdiplus::GdiplusStartup(&this->gdiplusToken, &gdiplusStartupInput, NULL))
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
         exit(EXIT_FAILURE);
@@ -51,6 +57,7 @@ WinApp::WinApp()
 WinApp::~WinApp()
 {
     GdiplusShutdown(this->gdiplusToken);
+    CoUninitialize();
     CloseHandle(this->hAppMutex);
 }
 
@@ -59,8 +66,7 @@ INT WinApp::Mainloop()
     INT errCode = EXIT_SUCCESS;
 
     MainWindow* mainWindow = new MainWindow(this);
-    HWND h = CreateSpriteWnd(GetModuleHandleW(NULL), NULL);
-    ShowWindow(h, SW_SHOWNA);
+    mainWindow->CreateWindow_();
 
     BOOL bRet;
     MSG msg;
