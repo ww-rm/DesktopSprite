@@ -46,43 +46,27 @@ BOOL ConfigDlg::CheckValidFormData()
 
 BOOL ConfigDlg::ShowBalloonIconPathSelectDlg()
 {
-    BOOL bRet = FALSE;
+    // 获得当前显示路径
+    WCHAR ballooniconPath[MAX_PATH] = { 0 };
+    GetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, ballooniconPath, MAX_PATH);
 
-    COMDLG_FILTERSPEC c_rgSaveTypes[2] = {
-        {L"图像文件 (*.png; *.jpg; *.jpeg; *.bmp; *.ico)", L"*.png;*.jpg;*.jpeg;*.bmp;*.ico"},
-        {L"All (*.*)", L"*.*"}
-    };
+    OPENFILENAMEW ofn = { 0 };
+    ofn.lStructSize = sizeof(OPENFILENAMEW);
+    ofn.hwndOwner = this->hDlg;
+    ofn.lpstrFile = ballooniconPath;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = L"图像文件 (*.jpg;*.jpeg;*.png;*.bmp;*.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0所有文件 (*.*)\0*.*\0";
+    ofn.lpstrTitle = L"选择气泡图标文件";
 
-    IShellItem* pDesktopItem = NULL;
-    IFileOpenDialog* pfd = NULL;
-    IShellItem* psiResult = NULL;
-    PWSTR pszFilePath = NULL;
+    // OFN_NOCHANGEDIR: 文档里说对 GetOpenFileName 无效, 但其实有效
+    ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_NOREADONLYRETURN;
 
-    if (SUCCEEDED(SHCreateItemInKnownFolder(FOLDERID_Desktop, 0, NULL, IID_PPV_ARGS(&pDesktopItem))) &&
-        SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd))))
+    if (GetOpenFileNameW(&ofn))
     {
-        pfd->SetOptions(FOS_FORCEFILESYSTEM | FOS_PATHMUSTEXIST | FOS_FILEMUSTEXIST | FOS_DONTADDTORECENT);
-        pfd->SetFileTypes(2, c_rgSaveTypes);
-        pfd->SetTitle(L"选择气泡图标文件");
-        pfd->SetDefaultFolder(pDesktopItem);
-
-        if (SUCCEEDED(pfd->Show(this->hDlg)))
-        {
-            pfd->GetResult(&psiResult);
-            if (SUCCEEDED(psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath)))
-            {
-                SetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, pszFilePath);
-                bRet = TRUE;
-            }
-        }
+        SetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, ballooniconPath);
     }
 
-    if (pszFilePath) CoTaskMemFree(pszFilePath);
-    if (psiResult) psiResult->Release();
-    if (pfd) pfd->Release();
-    if (pDesktopItem) pDesktopItem->Release();
-
-    return bRet;
+    return TRUE;
 }
 
 INT_PTR ConfigDlg::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -130,30 +114,8 @@ INT_PTR ConfigDlg::OnCommand(WPARAM wParam, LPARAM lParam)
     switch (LOWORD(wParam))
     {
     case IDC_BTN_BALLOONICONPATH:
-    {
-        //// !IMPORTANT: GetOpenFileName 有 bug 所以禁用
-        //WCHAR ballooniconPath[MAX_PATH] = { 0 };
-        //GetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, ballooniconPath, MAX_PATH);
-        //OPENFILENAMEW ofn = { 0 };
-        //ofn.lStructSize = sizeof(OPENFILENAMEW);
-        //ofn.hwndOwner = this->hDlg;
-        //ofn.lpstrFile = ballooniconPath;
-        //ofn.nMaxFile = MAX_PATH;
-        //ofn.lpstrFilter = L"图像文件 (*.jpg;*.jpeg;*.png;*.bmp;*.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0ALL\0*.*\0";
-        //ofn.lpstrTitle = L"选择气泡图标文件";
-        //ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
-        //ofn.lpstrFileTitle = NULL;
-        //ofn.nMaxFileTitle = 0;
-        //ofn.lpstrInitialDir = L"D:\\";
-        //if (GetOpenFileNameW(&ofn))
-        //{
-        //    SetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, ballooniconPath);
-        //}
-
         this->ShowBalloonIconPathSelectDlg();
-
         return TRUE;
-    }
     case IDOK:
         if (this->CheckValidFormData())
         {
