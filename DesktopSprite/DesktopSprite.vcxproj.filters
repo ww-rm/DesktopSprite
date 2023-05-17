@@ -71,9 +71,6 @@
     <ClInclude Include="include\ds\spritewnd.h">
       <Filter>头文件\ds</Filter>
     </ClInclude>
-    <ClInclude Include="include\ds\transdlg.h">
-      <Filter>头文件\ds</Filter>
-    </ClInclude>
     <ClInclude Include="include\ds\utils.h">
       <Filter>头文件\ds</Filter>
     </ClInclude>
@@ -251,6 +248,12 @@
     <ClInclude Include="res\resource1.h">
       <Filter>资源文件\资源</Filter>
     </ClInclude>
+    <ClInclude Include="include\ds\configdlg.h">
+      <Filter>头文件\ds</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ds\aboutdlg.h">
+      <Filter>头文件\ds</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ds\config.cpp">
@@ -266,9 +269,6 @@
       <Filter>源文件\ds</Filter>
     </ClCompile>
     <ClCompile Include="src\ds\spritewnd.cpp">
-      <Filter>源文件\ds</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ds\transdlg.cpp">
       <Filter>源文件\ds</Filter>
     </ClCompile>
     <ClCompile Include="src\ds\utils.cpp">
@@ -404,6 +404,12 @@
       <Filter>源文件\json</Filter>
     </ClCompile>
     <ClCompile Include="src\ds\basewindow.cpp">
+      <Filter>源文件\ds</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ds\configdlg.cpp">
+      <Filter>源文件\ds</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ds\aboutdlg.cpp">
       <Filter>源文件\ds</Filter>
     </ClCompile>
   </ItemGroup>

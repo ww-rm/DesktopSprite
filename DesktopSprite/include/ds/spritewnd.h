@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ds/framework.h>
+#include <spine/spine.h>
 
 #include <ds/basewindow.h>
 
@@ -9,7 +10,18 @@ using namespace Gdiplus;
 
 class SpineChar
 {
+private:
+    HANDLE dataMutex        = NULL;
 
+public:
+    BOOL Lock();
+    BOOL UnLock();
+};
+
+class SpineRenderer
+{
+public:
+    SpineRenderer(SpineChar* spineChar, HWND hWnd);
 };
 
 class SpriteWindow : public BaseWindow

@@ -19,8 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\ds\aboutdlg.h" />
     <ClInclude Include="include\ds\basewindow.h" />
     <ClInclude Include="include\ds\config.h" />
+    <ClInclude Include="include\ds\configdlg.h" />
     <ClInclude Include="include\ds\framework.h" />
     <ClInclude Include="include\ds\mainwnd.h" />
     <ClInclude Include="include\ds\notifyicon.h" />
@@ -78,7 +80,6 @@
     <ClInclude Include="include\spine\VertexEffect.h" />
     <ClInclude Include="res\resource.h" />
     <ClInclude Include="include\ds\spritewnd.h" />
-    <ClInclude Include="include\ds\transdlg.h" />
     <ClInclude Include="include\ds\utils.h" />
     <ClInclude Include="include\ds\winapp.h" />
     <ClInclude Include="res\resource1.h" />
@@ -109,13 +110,14 @@
     <Image Include="res\image\timealarm.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ds\aboutdlg.cpp" />
     <ClCompile Include="src\ds\basewindow.cpp" />
     <ClCompile Include="src\ds\config.cpp" />
+    <ClCompile Include="src\ds\configdlg.cpp" />
     <ClCompile Include="src\ds\mainwnd.cpp" />
     <ClCompile Include="src\ds\notifyicon.cpp" />
     <ClCompile Include="src\ds\perfmonitor.cpp" />
     <ClCompile Include="src\ds\spritewnd.cpp" />
-    <ClCompile Include="src\ds\transdlg.cpp" />
     <ClCompile Include="src\ds\utils.cpp" />
     <ClCompile Include="src\ds\winapp.cpp" />
     <ClCompile Include="src\json\json_reader.cpp" />
@@ -231,6 +233,7 @@
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>tmp\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
+    <EmbedManifest>true</EmbedManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -275,6 +278,10 @@
       <ConformanceMode>true</ConformanceMode>
       <DisableSpecificWarnings>26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>$(ProjectDir)res;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ControlFlowGuard>
+      </ControlFlowGuard>
+      <FloatingPointExceptions>
+      </FloatingPointExceptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -287,6 +294,8 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
       <AssemblyIdentity>
       </AssemblyIdentity>
+      <AdditionalManifestFiles>
+      </AdditionalManifestFiles>
     </Manifest>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)include</AdditionalIncludeDirectories>
