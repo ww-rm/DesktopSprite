@@ -785,7 +785,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     case IDM_ABOUT:
     {
         AboutDlg dlg;
-        dlg.ShowDialogBox(GetModuleHandleW(NULL));
+        dlg.ShowDialogBox(GetModuleHandleW(NULL), this->hWnd);
         break;
     }
     case IDM_EXIT:
