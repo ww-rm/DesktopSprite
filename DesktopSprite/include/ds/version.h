@@ -17,7 +17,7 @@
 // version num
 #define MAJOR_VER               1
 #define MINOR_VER               2
-#define PATCH_VER               0
+#define PATCH_VER               1
 #define BUILD_VER               0
 
 // version string vX.Y.Z
