@@ -244,7 +244,6 @@ BOOL MainWindow::ApplyConfig()
     // 设置透明度
     SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(this->config.transparencyPercent), LWA_ALPHA);
 
-#ifndef _DEBUG
     // 开机启动
     if (this->config.bAutoRun)
     {
@@ -254,7 +253,6 @@ BOOL MainWindow::ApplyConfig()
     {
         UnsetAppAutoRun(this->app->GetAppName());
     }
-#endif // !_DEBUG
 
     // 是否整点报时
     if (this->config.bTimeAlarm)
@@ -776,7 +774,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         ConfigDlg* dlg = new ConfigDlg(this);
         dlg->SetFormData(&this->config);
-        if (dlg->ShowDialogBox(GetModuleHandleW(NULL)))
+        if (dlg->ShowDialogBox(GetModuleHandleW(NULL), this->hWnd))
         {
             dlg->GetFormData(pcfgdata);
             configChanged = TRUE;
