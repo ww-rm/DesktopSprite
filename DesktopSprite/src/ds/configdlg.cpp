@@ -59,7 +59,7 @@ BOOL ConfigDlg::ShowBalloonIconPathSelectDlg()
     ofn.lpstrTitle = L"选择气泡图标文件";
 
     // OFN_NOCHANGEDIR: 文档里说对 GetOpenFileName 无效, 但其实有效
-    ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_NOREADONLYRETURN;
+    ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
 
     if (GetOpenFileNameW(&ofn))
     {
