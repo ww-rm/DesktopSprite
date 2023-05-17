@@ -16,9 +16,6 @@ static Gdiplus::Color const STATUSCOLOR_LOW = 0xff00ff00;
 static Gdiplus::Color const STATUSCOLOR_MIDDLE = 0xffff8000;
 static Gdiplus::Color const STATUSCOLOR_HIGH = 0xffff0000;
 
-// 字体路径
-static PCWSTR const FONT_PATH = L"res\\font\\AGENCYR.TTF";
-
 // 注册表键值
 static PCWSTR const REGVAL_LASTFLOATPOS = L"LastFloatPos";
 
@@ -75,6 +72,12 @@ BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT
 
 
 ///////////////////////////////////////////////////////////////////
+
+MainWindow::MainWindow(WinApp* app) : app(app) 
+{
+    PathCchCombine(this->configPath, MAX_PATH, this->app->GetAppDir(), L"config.json");
+    PathCchCombine(this->fontPath, MAX_PATH, this->app->GetAppDir(), L"res\\font\\AGENCYR.TTF");
+}
 
 BOOL MainWindow::ShowContextMenu(INT x, INT y)
 {
@@ -433,7 +436,7 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     this->wndSizeUnit = BASE_WNDSIZE_PIXELS * GetDpiForWindow(this->hWnd) / 96;
 
     // 初始化字体
-    this->fontColl.AddFontFile(FONT_PATH);
+    this->fontColl.AddFontFile(this->GetFontPath());
 
     // 添加图标
     this->pNotifyIcon = new NotifyIcon(this->hWnd, ID_NIDMAIN);
@@ -907,23 +910,6 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDBLCLK:
 #ifdef _DEBUG
     {
-        WCHAR ballooniconPath[MAX_PATH] = { 0 };
-
-        // !IMPORTANT: GetOpenFileName 有 bug 所以禁用
-        OPENFILENAMEW ofn = { 0 };
-        ofn.lStructSize = sizeof(OPENFILENAMEW);
-        ofn.hwndOwner = this->hWnd;
-        ofn.lpstrFile = ballooniconPath;
-        ofn.nMaxFile = MAX_PATH;
-        ofn.lpstrFilter = L"图像文件 (*.jpg;*.jpeg;*.png;*.bmp;*.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0ALL\0*.*\0";
-        ofn.lpstrTitle = L"选择气泡图标文件";
-        ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
-        ofn.lpstrFileTitle = NULL;
-        ofn.nMaxFileTitle = 0;
-        ofn.lpstrInitialDir = L"D:\\";
-
-
-        GetOpenFileNameW(&ofn);
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
     }
 #endif // !_DEBUG

@@ -13,6 +13,16 @@ static PCWSTR const CFGKEY_DARKTHEME                = L"IsDarkTheme";
 static PCWSTR const CFGKEY_TRANSPARENCY             = L"Transparency";
 static PCWSTR const CFGKEY_SHOWCONTENT              = L"ShowContent";
 
+AppConfig::AppConfig()
+{
+    // 获得程序路径
+    GetModuleFileNameW(NULL, this->rootDir, MAX_PATH);
+    PathCchRemoveFileSpec(this->rootDir, MAX_PATH);
+
+    // 路径默认值
+    PathCchCombine(this->szBalloonIconPath, MAX_PATH, this->GetRootDir(), L"res\\image\\timealarm.ico");
+}
+
 AppConfig::AppConfig(const AppConfig& other)
 {
     this->bFloatWnd = other.bFloatWnd;

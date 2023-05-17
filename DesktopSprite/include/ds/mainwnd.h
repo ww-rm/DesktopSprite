@@ -33,9 +33,7 @@ private:
     NotifyIcon*         pNotifyIcon = NULL;
     SpriteWindow*       spritewnd = NULL;
 
-// 运行时数据
 private:
-    // 主窗口运行时
     INT                                 wndSizeUnit = 0;                // 窗口单元格大小, 在运行时随 DPI 进行缩放
     BOOL                                bWndFixed = FALSE;              // 窗口是否通过图标点击长期显示
     BOOL                                bClocked = FALSE;               // 保存整点内是否报过时
@@ -44,12 +42,17 @@ private:
     Gdiplus::PrivateFontCollection      fontColl;                       // 文本字体容器
     HICON                               balloonIcon = NULL;             // 气泡消息的图标资源
 
-public:
-    PCWSTR GetClassName_() const { return L"DesktopSpriteMainWndClass"; }
-    PCWSTR GetConfigPath() const { return L"config.json"; }
+private:
+    WCHAR                               configPath[MAX_PATH] = { 0 };   // 配置文件路径
+    WCHAR                               fontPath[MAX_PATH] = { 0 };     // 字体路径
 
 public:
-    MainWindow(WinApp* app) : app(app) {}
+    PCWSTR GetClassName_() const { return L"DesktopSpriteMainWndClass"; }
+    PCWSTR GetConfigPath() const { return this->configPath; }
+    PCWSTR GetFontPath() const { return this->fontPath; }
+
+public:
+    MainWindow(WinApp* app);
 
     BOOL ApplyConfig();
     BOOL ApplyConfig(const AppConfig* newConfig); // 应用更改, 只修改发生变化的设置项
