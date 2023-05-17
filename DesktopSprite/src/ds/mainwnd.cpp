@@ -151,6 +151,30 @@ BOOL MainWindow::GetPopupWindowPos(POINT* pt)
     return TRUE;
 }
 
+BOOL MainWindow::PopupOpen()
+{
+    // 保存原本的位置
+    RECT wndRc = { 0 };
+    POINT ptWnd = { 0 };
+
+    GetWindowRect(this->hWnd, &wndRc);
+    CopyPoint((POINT*)&wndRc, &this->currentFloatPos);
+
+    if (this->GetPopupWindowPos(&ptWnd) &&
+        SetWindowPos(this->hWnd, HWND_TOPMOST, ptWnd.x, ptWnd.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_SHOWWINDOW) &&
+        InvalidateRect(this->hWnd, NULL, TRUE))
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL MainWindow::PopupClose()
+{
+    // 恢复原本的位置并隐藏
+    return SetWindowPos(this->hWnd, HWND_TOPMOST, this->currentFloatPos.x, this->currentFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_HIDEWINDOW);
+}
+
 BOOL MainWindow::IsIntersectDesktop()
 {
     RECT desktop = { 0 };
@@ -495,14 +519,13 @@ LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnActivate(WPARAM wParam, LPARAM lParam)
 {
-    // 不是浮动且失去激活
-    if (!this->config.bFloatWnd && !wParam)
+    // 不是浮动且处于固定并失去激活
+    if (!this->config.bFloatWnd && this->bWndFixed && !wParam)
     {
         this->bWndFixed = FALSE;
         // ShowWindow(this->hWnd, SW_HIDE); // 不能在 WM_ACTIVATE 里用这个, 有 bug, 会丢失鼠标按下的消息, 见 http://www.cnblogs.com/cswuyg/archive/2012/08/20/2647445.html
 
-        // 恢复原本的位置
-        SetWindowPos(this->hWnd, HWND_TOPMOST, this->currentFloatPos.x, this->currentFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_HIDEWINDOW);
+        this->PopupClose();
     }
     return 0;
 }
@@ -701,7 +724,11 @@ LRESULT MainWindow::OnSettingChange(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnContextMenu(WPARAM wParam, LPARAM lParam)
 {
-    this->ShowContextMenu(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+    // 只在显示浮窗的时候才弹出右键菜单
+    if (this->config.bFloatWnd)
+    {
+        this->ShowContextMenu(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+    }
     return 0;
 }
 
@@ -828,15 +855,16 @@ LRESULT MainWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
     HMENU hMenu = (HMENU)wParam;
 
     // 设置菜单状态
-    SetMenuItemState(hMenu, IDM_FLOATWND, FALSE, this->config.bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_FLOATWND, FALSE, (this->config.bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
+
+    // 子菜单
+    SetMenuItemState(hMenu, IDM_SHOWCPUMEM, FALSE, ((this->config.byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
+    SetMenuItemState(hMenu, IDM_SHOWNETSPEED, FALSE, ((this->config.byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
 
     // 子菜单
     SetMenuItemState(hMenu, IDM_TIMEALARM, FALSE, this->config.bTimeAlarm ? MFS_CHECKED : MFS_UNCHECKED);
     SetMenuItemState(hMenu, IDM_INFOSOUND, FALSE, this->config.bInfoSound ? MFS_CHECKED : MFS_UNCHECKED);
 
-    // 子菜单
-    SetMenuItemState(hMenu, IDM_SHOWCPUMEM, FALSE, (this->config.byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED);
-    SetMenuItemState(hMenu, IDM_SHOWNETSPEED, FALSE, (this->config.byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED);
 
     return 0;
 }
@@ -913,38 +941,31 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
 #endif // !_DEBUG
         break;
     case WM_CONTEXTMENU:
-        this->ShowContextMenu(GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam));
+        this->ShowContextMenu(GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam)); // 右键通知区域图标始终弹出右键菜单
         break;
     case NIN_SELECT:
     case NIN_KEYSELECT:
-        if (!this->config.bFloatWnd)
+        if (!this->config.bFloatWnd && !this->bWndFixed)
         {
-            this->bWndFixed = TRUE; // 不是浮动的情况下固定住窗口显示
+            this->bWndFixed = TRUE; // 固定住窗口显示
+            this->PopupOpen();
+            SetForegroundWindow(this->hWnd); // 只有点击了图标才需要设置前景窗口
         }
-        SetForegroundWindow(this->hWnd); // 只有点击了图标才需要设置前景窗口
+        break;
     case NIN_POPUPOPEN:
-        // 不是浮动的情况下显示弹窗
-        if (!this->config.bFloatWnd)
+        // 不是浮动且没有固定则显示弹窗
+        if (!this->config.bFloatWnd && !this->bWndFixed)
         {
-            // 保存原本的位置
-            RECT wndRc = { 0 };
-            GetWindowRect(this->hWnd, &wndRc);
-            CopyPoint((POINT*)&wndRc, &this->currentFloatPos);
-
-            POINT ptWnd = { 0 };
-            this->GetPopupWindowPos(&ptWnd); // 根据任务栏位置计算窗口的位置
-            SetWindowPos(this->hWnd, HWND_TOPMOST, ptWnd.x, ptWnd.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_SHOWWINDOW);
-            InvalidateRect(this->hWnd, NULL, TRUE); // 需要立即重绘窗口
+            this->PopupOpen();
         }
         break;
     case NIN_POPUPCLOSE:
         // 不是浮动且没有固定则隐藏弹窗
         if (!this->config.bFloatWnd && !this->bWndFixed)
         {
-            // 恢复原本的位置并隐藏
-            SetWindowPos(this->hWnd, HWND_TOPMOST, this->currentFloatPos.x, this->currentFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_HIDEWINDOW);
-            break;
+            this->PopupClose();
         }
+        break;
     default:
         return DefWindowProcW(this->hWnd, WM_NOTIFYICON, wParam, lParam);
     }

@@ -35,7 +35,7 @@ private:
 
 private:
     INT                                 wndSizeUnit = 0;                // 窗口单元格大小, 在运行时随 DPI 进行缩放
-    BOOL                                bWndFixed = FALSE;              // 窗口是否通过图标点击长期显示
+    BOOL                                bWndFixed = FALSE;              // 窗口是否通过图标点击长期显示, 用来屏蔽 NIN_POPUP 消息
     BOOL                                bClocked = FALSE;               // 保存整点内是否报过时
     POINT                               ptDragSrc = { 0 };              // 拖动窗口时的源点
     POINT                               currentFloatPos = { 0 };        // 在显示弹出窗口时临时保存当前浮动窗口位置
@@ -65,6 +65,10 @@ public:
 
     // 根据任务栏位置计算窗口的位置
     BOOL GetPopupWindowPos(POINT* pt);
+    
+    // 显示/隐藏弹出窗口
+    BOOL PopupOpen();
+    BOOL PopupClose();
 
     // 是否窗口矩形区与桌面边缘相交
     BOOL IsIntersectDesktop();
