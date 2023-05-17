@@ -20,20 +20,20 @@ The program uses a `config.json` as its config file, the default config contents
 
 ```json
 {
-  "BalloonIconPath" : "res\\image\\timealarm.ico",
+  "BalloonIconPath" : "C:\\Program Files\\DesktopSprite\\res\\image\\timealarm.ico",
   "IsAutoRun" : false,
   "IsDarkTheme" : true,
   "IsFloatWnd" : true,
   "IsInfoSound" : true,
   "IsTimeAlarm" : true,
   "ShowContent" : 3,
-  "Transparency" : 75.0
+  "Transparency" : 75
 }
 ```
 
 Most config options can be set within program, some need to edit this config file.
 
-To make `config.json` take effect, you need to put it under the **program install directory**, and all paths in this config file are relative to the program install directory.
+To make `config.json` take effect, you need to put it under the **program install directory**, and all paths in this config file are absolute path.
 
 ## FAQ
 
