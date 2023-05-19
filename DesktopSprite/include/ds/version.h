@@ -23,6 +23,12 @@
 // version string vX.Y.Z
 #define VERSION_STR             _SEMANTIC_VERSTR(MAJOR_VER, MINOR_VER, PATCH_VER)
 
+// debug version string vX.Y.Z-debug
+#ifdef _DEBUG
+#undef VERSION_STR
+#define VERSION_STR             _SEMANTIC_VERSTR(MAJOR_VER, MINOR_VER, PATCH_VER)##"-debug"
+#endif // _DEBUG
+
 // file version
 #define FILE_MAJOR_VER          MAJOR_VER
 #define FILE_MINOR_VER          MINOR_VER
