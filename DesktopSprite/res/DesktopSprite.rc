@@ -95,7 +95,7 @@ FONT 9, "Microsoft YaHei UI", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "确定",IDOK,69,35,40,14
     LTEXT           "版本：",IDC_STATIC,7,7,20,8
-    LTEXT           "v99.99.99",IDC_LABELVER,27,7,31,8
+    LTEXT           "v99.99.99",IDC_LABELVER,27,7,137,8
     LTEXT           "源码：",IDC_STATIC,7,17,21,8
     CONTROL         "<a href=""https://github.com/ww-rm/DesktopSprite"">https://github.com/ww-rm/DesktopSprite</a>",IDC_PROJECTLINK,
                     "SysLink",WS_TABSTOP,27,17,138,8
