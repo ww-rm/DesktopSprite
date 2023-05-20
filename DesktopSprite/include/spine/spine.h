@@ -60,4 +60,6 @@
 #include <spine/EventData.h>
 #include <spine/VertexEffect.h>
 
+#include <spine/extension.h>
+
 #endif /* SPINE_SPINE_H_ */
