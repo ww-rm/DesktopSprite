@@ -154,7 +154,7 @@ void _spAtlasPage_createTexture(spAtlasPage* self, const char* path) {
 void _spAtlasPage_disposeTexture(spAtlasPage* self) {
 	if (self->rendererObject)
 	{
-		delete self->rendererObject;
+		delete (Gdiplus::Bitmap*)self->rendererObject;
 	}
 }
 
