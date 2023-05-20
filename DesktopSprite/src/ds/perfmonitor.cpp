@@ -6,7 +6,8 @@ PerfMonitor::PerfMonitor(DWORD queryInterval): queryInterval(queryInterval)
 {
     // 创建数据访问互斥锁
     this->hDataMutex = CreateMutexW(NULL, FALSE, NULL);
-    if (!this->hDataMutex)
+    this->hQueryEvent = CreateEventW(NULL, TRUE, TRUE, NULL);
+    if (!this->hDataMutex || !this->hQueryEvent)
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
         exit(EXIT_FAILURE);
@@ -15,7 +16,7 @@ PerfMonitor::PerfMonitor(DWORD queryInterval): queryInterval(queryInterval)
 
 PerfMonitor::~PerfMonitor()
 {
-    if (!CloseHandle(hDataMutex))
+    if (!CloseHandle(this->hDataMutex) || !CloseHandle(this->hQueryEvent))
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
     }
@@ -28,7 +29,7 @@ BOOL PerfMonitor::Start()
 
 BOOL PerfMonitor::Stop()
 {
-    this->isThreadRun = FALSE;
+    SetEvent(this->hQueryEvent);
     if (WaitForSingleObject(this->hQueryThread, INFINITE) ||
         !CloseHandle(this->hQueryThread) ||
         PdhCloseQuery(hPdhQuery))
@@ -177,11 +178,10 @@ RETURN_FALSE:
 BOOL PerfMonitor::StartThread()
 {
     // 打开子线程自动获取数据
-    this->isThreadRun = TRUE;
-    this->hQueryThread = CreateThread(NULL, 0, PerfMonitor::QueryThreadProc, (LPVOID)this, 0, NULL);
+    ResetEvent(this->hQueryEvent);
+    this->hQueryThread = DefCreateThread(PerfMonitor::QueryThreadProc, (LPVOID)this);
     if (!this->hQueryThread)
     {
-        this->isThreadRun = FALSE;
         ShowLastError(__FUNCTIONW__, __LINE__);
         return FALSE;
     }
@@ -191,7 +191,7 @@ BOOL PerfMonitor::StartThread()
 DWORD CALLBACK PerfMonitor::QueryThreadProc(_In_ LPVOID lpParameter)
 {
     PerfMonitor* this_ = (PerfMonitor*)lpParameter;
-    while (this_->isThreadRun)
+    while (WaitForSingleObject(this_->hQueryEvent, 0))
     {
         this_->QueryPerfData();
         Sleep(1);

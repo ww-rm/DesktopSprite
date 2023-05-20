@@ -17,8 +17,8 @@ class PerfMonitor
 {
 private:
     DWORD                   queryInterval = 1000;                  // 查询时间间隔
+    HANDLE                  hQueryEvent = NULL;                    // 控制线程的运行
     HANDLE                  hQueryThread = NULL;                   // 自动查询线程句柄
-    BOOL                    isThreadRun = FALSE;                   // 控制线程的运行
     PERFDATA                perfData = { 0 };                      // 性能数据
     HANDLE                  hDataMutex = NULL;                     // 用于访问数据的互斥锁
 
