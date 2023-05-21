@@ -281,7 +281,7 @@ BOOL MainWindow::ApplyConfig()
     // 是否整点报时
     if (this->config.bTimeAlarm)
     {
-        SetTimer(this->hWnd, IDT_TIMEALARM, 100, (TIMERPROC)NULL);
+        SetTimer(this->hWnd, IDT_TIMEALARM, 500, (TIMERPROC)NULL);
     }
     else
     {
@@ -351,7 +351,7 @@ BOOL MainWindow::ApplyConfig(const AppConfig* newConfig)
     {
         if (newConfig->bTimeAlarm)
         {
-            SetTimer(this->hWnd, IDT_TIMEALARM, 100, (TIMERPROC)NULL);
+            SetTimer(this->hWnd, IDT_TIMEALARM, 500, (TIMERPROC)NULL);
         }
         else
         {
