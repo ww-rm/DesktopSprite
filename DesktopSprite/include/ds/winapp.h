@@ -18,7 +18,11 @@ public:
     INT Mainloop();
 
 public:
+#ifdef _DEBUG
+    PCWSTR GetAppName() const { return L"DesktopSprite_d"; };
+#else
     PCWSTR GetAppName() const { return L"DesktopSprite"; };
+#endif // _DEBUG
     PCWSTR GetAppPath() const { return this->szExeFullPath; }
     PCWSTR GetAppDir() const { return this->szExeFullDir; }
 };

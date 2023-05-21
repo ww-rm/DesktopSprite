@@ -8,7 +8,7 @@
 WinApp::WinApp()
 {
 #ifdef _DEBUG
-    this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex_D");
+    this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex_d");
 #else
     this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex");
 #endif // _DEBUG
