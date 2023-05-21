@@ -27,6 +27,7 @@
     <ClInclude Include="include\ds\mainwnd.h" />
     <ClInclude Include="include\ds\notifyicon.h" />
     <ClInclude Include="include\ds\perfmonitor.h" />
+    <ClInclude Include="include\ds\spinechar.h" />
     <ClInclude Include="include\ds\version.h" />
     <ClInclude Include="include\json\allocator.h" />
     <ClInclude Include="include\json\assertions.h" />
@@ -117,6 +118,7 @@
     <ClCompile Include="src\ds\mainwnd.cpp" />
     <ClCompile Include="src\ds\notifyicon.cpp" />
     <ClCompile Include="src\ds\perfmonitor.cpp" />
+    <ClCompile Include="src\ds\spinechar.cpp" />
     <ClCompile Include="src\ds\spritewnd.cpp" />
     <ClCompile Include="src\ds\utils.cpp" />
     <ClCompile Include="src\ds\winapp.cpp" />

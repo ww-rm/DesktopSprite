@@ -492,8 +492,6 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     // ´´½¨ sprite ´°¿Ú
     this->spritewnd = new SpriteWindow;
     this->spritewnd->CreateWindow_();
-    //ShowWindow(this->spritewnd->GetWindowHandle(), SW_SHOW);
-    //InvalidateRect(this->spritewnd->GetWindowHandle(), NULL, TRUE);
 
     return 0;
 }
@@ -936,6 +934,8 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDBLCLK:
 #ifdef _DEBUG
     {
+        ShowWindow(this->spritewnd->GetWindowHandle(), SW_SHOW);
+        InvalidateRect(this->spritewnd->GetWindowHandle(), NULL, TRUE);
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
     }
 #endif // !_DEBUG

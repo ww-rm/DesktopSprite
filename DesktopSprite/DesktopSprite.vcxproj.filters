@@ -254,6 +254,9 @@
     <ClInclude Include="include\ds\aboutdlg.h">
       <Filter>头文件\ds</Filter>
     </ClInclude>
+    <ClInclude Include="include\ds\spinechar.h">
+      <Filter>头文件\ds</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ds\config.cpp">
@@ -410,6 +413,9 @@
       <Filter>源文件\ds</Filter>
     </ClCompile>
     <ClCompile Include="src\ds\aboutdlg.cpp">
+      <Filter>源文件\ds</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ds\spinechar.cpp">
       <Filter>源文件\ds</Filter>
     </ClCompile>
   </ItemGroup>
