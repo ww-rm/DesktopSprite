@@ -1,6 +1,5 @@
 #include <ds/framework.h>
 #include <ds/utils.h>
-#include <ds/version.h>
 
 #include <ds/configdlg.h>
 
