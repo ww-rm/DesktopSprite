@@ -12,9 +12,9 @@
 using namespace Gdiplus;
 
 // ×´Ì¬ÑÕÉ«
-static Gdiplus::Color const STATUSCOLOR_LOW = 0xff00ff00;
-static Gdiplus::Color const STATUSCOLOR_MIDDLE = 0xffff8000;
-static Gdiplus::Color const STATUSCOLOR_HIGH = 0xffff0000;
+static Gdiplus::Color const STATUSCOLOR_GOOD = 0xff00ff00;
+static Gdiplus::Color const STATUSCOLOR_NORMAL = 0xffff8000;
+static Gdiplus::Color const STATUSCOLOR_BAD = 0xffff0000;
 
 // ×¢²á±í¼üÖµ
 static PCWSTR const REGVAL_LASTFLOATPOS = L"LastFloatPos";
@@ -595,15 +595,15 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         StringCchPrintfW(szDataBuffer, 16, L"C:%.0f%%", perfData.cpuPercent);
         if (perfData.cpuPercent < 50)
         {
-            pen.SetColor(STATUSCOLOR_LOW);
+            pen.SetColor(STATUSCOLOR_GOOD);
         }
         else if (perfData.cpuPercent < 75)
         {
-            pen.SetColor(STATUSCOLOR_MIDDLE);
+            pen.SetColor(STATUSCOLOR_NORMAL);
         }
         else
         {
-            pen.SetColor(STATUSCOLOR_HIGH);
+            pen.SetColor(STATUSCOLOR_BAD);
         }
         graphicsMem.DrawString(
             szDataBuffer, -1, &textFont,
@@ -623,15 +623,15 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         StringCchPrintfW(szDataBuffer, 16, L"M:%.0f%%", perfData.memPercent);
         if (perfData.memPercent < 75)
         {
-            pen.SetColor(STATUSCOLOR_LOW);
+            pen.SetColor(STATUSCOLOR_GOOD);
         }
         else if (perfData.memPercent < 90)
         {
-            pen.SetColor(STATUSCOLOR_MIDDLE);
+            pen.SetColor(STATUSCOLOR_NORMAL);
         }
         else
         {
-            pen.SetColor(STATUSCOLOR_HIGH);
+            pen.SetColor(STATUSCOLOR_BAD);
         }
         graphicsMem.DrawString(
             szDataBuffer, -1, &textFont,
@@ -665,15 +665,15 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         nLevel = ConvertSpeed(perfData.uploadSpeed, szDataBuffer, 16);
         if (nLevel < 3)
         {
-            statusColor = STATUSCOLOR_HIGH;
+            statusColor = STATUSCOLOR_BAD;
         }
         else if (nLevel < 5)
         {
-            statusColor = STATUSCOLOR_MIDDLE;
+            statusColor = STATUSCOLOR_NORMAL;
         }
         else
         {
-            statusColor = STATUSCOLOR_LOW;
+            statusColor = STATUSCOLOR_GOOD;
         }
         graphicsMem.DrawString(
             szDataBuffer, -1, &textFont,
@@ -688,15 +688,15 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         nLevel = ConvertSpeed(perfData.downloadSpeed, szDataBuffer, 16);
         if (nLevel < 3)
         {
-            statusColor = STATUSCOLOR_HIGH;
+            statusColor = STATUSCOLOR_BAD;
         }
         else if (nLevel < 5)
         {
-            statusColor = STATUSCOLOR_MIDDLE;
+            statusColor = STATUSCOLOR_NORMAL;
         }
         else
         {
-            statusColor = STATUSCOLOR_LOW;
+            statusColor = STATUSCOLOR_GOOD;
         }
         graphicsMem.DrawString(szDataBuffer, -1, &textFont, RectF(PointF(sizeUnit * 3, sizeUnit), drawSize), &strformat, &textbrush);
 
