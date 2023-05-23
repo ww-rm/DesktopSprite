@@ -29,7 +29,7 @@ BOOL Spine::CreateResources(PCSTR atlasPath, PCSTR skelPath)
     if (!(this->skeletonData =       spSkeletonBinary_readSkeletonDataFile(this->skeletonBinary, skelPath))) return FALSE;
     if (!(this->animationStateData = spAnimationStateData_create(this->skeletonData)))                       return FALSE;
     if (!(this->skeleton =           spSkeleton_create(this->skeletonData)))                                 return FALSE;
-    if (!(this->animationState =     spAnimationState_create(animationStateData)))                           return FALSE;
+    if (!(this->animationState =     spAnimationState_create(this->animationStateData)))                     return FALSE;
 
     animationStateData->defaultMix = 0.25f;
 
