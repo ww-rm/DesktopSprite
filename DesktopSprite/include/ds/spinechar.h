@@ -65,14 +65,18 @@ public:
     BOOL CreateResources(PCSTR atlasPath, PCSTR skelPath);
     void DisposeResources();
 
+    // 设置精灵不同动画要使用的 spine 动画
     void SetAnimeName(SpineAnime anime, PCSTR name) { this->animeToName[anime] = name; }
     PCSTR GetAnimeName(SpineAnime anime) { return this->animeToName[anime].c_str(); }
 
+    // 获取所有存在的动画名字
     INT GetValidAnimeNamesCount() const { return this->skeletonData->animationsCount; }
     INT GetValidAnimeNames(PCSTR* names, INT length);
 
+    // 发送一个动作
     BOOL SendAction(SpineAction action);
 
+    // 更新状态
     BOOL Update(FLOAT elapseTime);
 };
 
