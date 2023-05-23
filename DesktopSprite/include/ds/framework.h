@@ -17,7 +17,7 @@
 #include <PdhMsg.h>
 #include <gdiplus.h>
 #include <shlobj.h>
-//#include <d2d1.h>
+#include <d2d1.h>
 //#include <CommCtrl.h>
 
 // C headers
