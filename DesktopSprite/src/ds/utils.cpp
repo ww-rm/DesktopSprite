@@ -329,7 +329,7 @@ void ShowLastError(PCWSTR func, INT line)
     );
 
     PWSTR errMsg = new WCHAR[length + 1024]{ 0 };
-    StringCchPrintfW(errMsg, length + 1024, L"Func: %s\nLine: %d\nCode: 0x%X\nMsg: %s\n", func, line, GetLastError(), lastErrMsg);
+    StringCchPrintfW(errMsg, (size_t)length + 1024, L"Func: %s\nLine: %d\nCode: 0x%X\nMsg: %s\n", func, line, GetLastError(), lastErrMsg);
     MessageBoxW(NULL, errMsg, L"GetLastError", MB_ICONERROR);
 
     LocalFree(lastErrMsg);
