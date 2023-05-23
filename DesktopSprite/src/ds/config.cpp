@@ -1,4 +1,5 @@
 #include <ds/framework.h>
+#include <ds/winapp.h>
 #include <ds/utils.h>
 #include <json/json.h>
 
@@ -15,12 +16,8 @@ static PCWSTR const CFGKEY_SHOWCONTENT              = L"ShowContent";
 
 AppConfig::AppConfig()
 {
-    // 获得程序路径
-    GetModuleFileNameW(NULL, this->rootDir, MAX_PATH);
-    PathCchRemoveFileSpec(this->rootDir, MAX_PATH);
-
     // 路径默认值
-    PathCchCombine(this->szBalloonIconPath, MAX_PATH, this->GetRootDir(), L"res\\image\\timealarm.ico");
+    PathCchCombine(this->szBalloonIconPath, MAX_PATH, g_winApp->GetDir(), L"res\\image\\timealarm.ico");
 }
 
 AppConfig::AppConfig(const AppConfig& other)

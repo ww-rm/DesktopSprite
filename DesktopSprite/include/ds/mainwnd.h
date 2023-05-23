@@ -27,7 +27,6 @@ BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT
 class MainWindow :public BaseWindow
 {
 private:
-    const WinApp*       app = NULL;
     AppConfig           config;
     PerfMonitor         perfMonitor;
     NotifyIcon*         pNotifyIcon = NULL;
@@ -48,11 +47,10 @@ private:
 
 public:
     PCWSTR GetClassName_() const { return L"DesktopSpriteMainWndClass"; }
-    PCWSTR GetConfigPath() const { return this->configPath; }
     PCWSTR GetFontPath() const { return this->fontPath; }
 
 public:
-    MainWindow(WinApp* app);
+    MainWindow();
 
     BOOL ApplyConfig();
     BOOL ApplyConfig(const AppConfig* newConfig); // 应用更改, 只修改发生变化的设置项

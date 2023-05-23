@@ -5,6 +5,8 @@
 #include <ds/spritewnd.h>
 #include <ds/winapp.h>
 
+WinApp* g_winApp = NULL;
+
 WinApp::WinApp()
 {
 #ifdef _DEBUG
@@ -52,6 +54,9 @@ WinApp::WinApp()
     GetModuleFileNameW(NULL, this->szExeFullDir, MAX_PATH);
     PathCchRemoveFileSpec(this->szExeFullDir, MAX_PATH);
     GetModuleFileNameW(NULL, this->szExeFullPath, MAX_PATH);
+
+    // »ñµÃÅäÖÃÂ·¾¶
+    PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szExeFullDir, L"config.json");
 }
 
 WinApp::~WinApp()
@@ -65,7 +70,7 @@ INT WinApp::Mainloop()
 {
     INT errCode = EXIT_SUCCESS;
 
-    MainWindow* mainWindow = new MainWindow(this);
+    MainWindow* mainWindow = new MainWindow();
     mainWindow->CreateWindow_();
 
     BOOL bRet;
@@ -92,8 +97,8 @@ INT WinApp::Mainloop()
 INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ INT nShowCmd)
 {
     INT errCode = EXIT_SUCCESS;
-    WinApp* app = new WinApp();
-    errCode = app->Mainloop();
-    delete app;
+    g_winApp = new WinApp();
+    errCode = g_winApp->Mainloop();
+    delete g_winApp;
     return errCode;
 }

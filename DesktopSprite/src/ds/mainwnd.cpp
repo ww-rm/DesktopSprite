@@ -73,10 +73,9 @@ BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT
 
 ///////////////////////////////////////////////////////////////////
 
-MainWindow::MainWindow(WinApp* app) : app(app) 
+MainWindow::MainWindow()
 {
-    PathCchCombine(this->configPath, MAX_PATH, this->app->GetAppDir(), L"config.json");
-    PathCchCombine(this->fontPath, MAX_PATH, this->app->GetAppDir(), L"res\\font\\AGENCYR.TTF");
+    PathCchCombine(this->fontPath, MAX_PATH, g_winApp->GetDir(), L"res\\font\\AGENCYR.TTF");
 }
 
 BOOL MainWindow::ShowContextMenu(INT x, INT y)
@@ -199,7 +198,7 @@ BOOL MainWindow::LoadLastPosFromReg(POINT* pt)
     DWORD cbData = 0;
 
     WCHAR subkey[128] = { 0 };
-    if (FAILED(StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", this->app->GetAppName())))
+    if (FAILED(StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", g_winApp->GetName())))
     {
         return FALSE;
     }
@@ -231,7 +230,7 @@ BOOL MainWindow::SaveCurrentPosToReg()
     DWORD cbData = 0;
 
     WCHAR subkey[128] = { 0 };
-    StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", this->app->GetAppName());
+    StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", g_winApp->GetName());
 
     if (RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition))
     {
@@ -271,11 +270,11 @@ BOOL MainWindow::ApplyConfig()
     // 开机启动
     if (this->config.bAutoRun)
     {
-        SetAppAutoRun(this->app->GetAppName());
+        SetAppAutoRun(g_winApp->GetName());
     }
     else
     {
-        UnsetAppAutoRun(this->app->GetAppName());
+        UnsetAppAutoRun(g_winApp->GetName());
     }
 
     // 是否整点报时
@@ -291,7 +290,7 @@ BOOL MainWindow::ApplyConfig()
     // 重绘一次
     InvalidateRect(this->hWnd, NULL, TRUE);
 
-    this->config.SaveToFile(this->GetConfigPath());
+    this->config.SaveToFile(g_winApp->GetConfigPath());
 
     return TRUE;
 }
@@ -338,11 +337,11 @@ BOOL MainWindow::ApplyConfig(const AppConfig* newConfig)
     {
         if (newConfig->bAutoRun)
         {
-            SetAppAutoRun(this->app->GetAppName());
+            SetAppAutoRun(g_winApp->GetName());
         }
         else
         {
-            UnsetAppAutoRun(this->app->GetAppName());
+            UnsetAppAutoRun(g_winApp->GetName());
         }
     }
 
@@ -363,7 +362,7 @@ BOOL MainWindow::ApplyConfig(const AppConfig* newConfig)
     InvalidateRect(this->hWnd, NULL, TRUE);
 
     this->config = *newConfig;
-    this->config.SaveToFile(this->GetConfigPath());
+    this->config.SaveToFile(g_winApp->GetConfigPath());
 
     return TRUE;
 }
@@ -462,7 +461,7 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
     // 添加图标
     this->pNotifyIcon = new NotifyIcon(this->hWnd, ID_NIDMAIN);
-    this->pNotifyIcon->Add(WM_NOTIFYICON, this->LoadNotifyIconBySysTheme(), this->app->GetAppName());
+    this->pNotifyIcon->Add(WM_NOTIFYICON, this->LoadNotifyIconBySysTheme(), g_winApp->GetName());
 
     // 初始化窗口位置
     POINT wndPos = { 0 };
@@ -470,9 +469,9 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     SetWindowPos(this->hWnd, HWND_TOPMOST, wndPos.x, wndPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
 
     // 初始化配置参数相关
-    if (PathFileExistsW(this->GetConfigPath()))
+    if (PathFileExistsW(g_winApp->GetConfigPath()))
     {
-        this->config.LoadFromFile(this->GetConfigPath());
+        this->config.LoadFromFile(g_winApp->GetConfigPath());
     }
 
     // 应用配置项
@@ -502,7 +501,7 @@ LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
     delete this->spritewnd;
 
     this->SaveCurrentPosToReg();
-    this->config.SaveToFile(this->GetConfigPath());
+    this->config.SaveToFile(g_winApp->GetConfigPath());
 
     this->pNotifyIcon->Delete();
     delete this->pNotifyIcon;
@@ -995,6 +994,6 @@ LRESULT MainWindow::OnTimeAlarm(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnTaskbarCreated(WPARAM wParam, LPARAM lParam)
 {
     // 添加图标
-    this->pNotifyIcon->Add(WM_NOTIFYICON, LoadNotifyIconBySysTheme(), this->app->GetAppName());
+    this->pNotifyIcon->Add(WM_NOTIFYICON, LoadNotifyIconBySysTheme(), g_winApp->GetName());
     return 0;
 }

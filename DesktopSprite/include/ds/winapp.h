@@ -11,6 +11,7 @@ private:
     ULONG_PTR gdiplusToken = 0;
     WCHAR szExeFullDir[MAX_PATH] = { 0 };
     WCHAR szExeFullPath[MAX_PATH] = { 0 };
+    WCHAR szConfigFullPath[MAX_PATH] = { 0 };
 
 public:
     WinApp();
@@ -19,12 +20,15 @@ public:
 
 public:
 #ifdef _DEBUG
-    PCWSTR GetAppName() const { return L"DesktopSprite_d"; };
+    PCWSTR GetName() const { return L"DesktopSprite_d"; };
 #else
-    PCWSTR GetAppName() const { return L"DesktopSprite"; };
+    PCWSTR GetName() const { return L"DesktopSprite"; };
 #endif // _DEBUG
-    PCWSTR GetAppPath() const { return this->szExeFullPath; }
-    PCWSTR GetAppDir() const { return this->szExeFullDir; }
+    PCWSTR GetPath() const { return this->szExeFullPath; }
+    PCWSTR GetDir() const { return this->szExeFullDir; }
+    PCWSTR GetConfigPath() const { return this->szConfigFullPath; }
 };
+
+extern WinApp* g_winApp;
 
 #endif // !DS_WINAPP_H

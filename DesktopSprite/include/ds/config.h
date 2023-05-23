@@ -10,12 +10,6 @@
 
 class AppConfig
 {
-private:
-    WCHAR   rootDir[MAX_PATH] = { 0 };
-
-private:
-    PCWSTR  GetRootDir() const { return this->rootDir; }
-
 public:
     BOOL    bFloatWnd = TRUE;                                           // 是否显示主窗口
     BOOL    bAutoRun = FALSE;                                           // 开机自启
