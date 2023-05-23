@@ -1,4 +1,5 @@
 #include <ds/framework.h>
+#include <resource.h>
 #include <ds/utils.h>
 #include <ds/config.h>
 #include <ds/notifyicon.h>

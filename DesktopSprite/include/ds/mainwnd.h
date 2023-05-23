@@ -9,6 +9,7 @@
 #include <ds/basewindow.h>
 #include <ds/winapp.h>
 #include <ds/spritewnd.h>
+#include <resource.h>
 
 
 // 窗口消息相关宏定义

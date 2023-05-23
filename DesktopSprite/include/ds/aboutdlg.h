@@ -4,6 +4,7 @@
 
 #include <ds/framework.h>
 #include <ds/basewindow.h>
+#include <resource.h>
 
 class AboutDlg : public BaseDialog
 {
