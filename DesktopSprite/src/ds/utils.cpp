@@ -1,6 +1,24 @@
 #include <ds/framework.h>
 #include <ds/utils.h>
 
+FLOAT HighResolutionTimer::GetSeconds()
+{
+    if (!this->stoped)
+    {
+        QueryPerformanceCounter(&this->end);
+    }
+    return (float)((double)(this->end.QuadPart - this->start.QuadPart) / (double)this->freq.QuadPart);
+}
+
+FLOAT HighResolutionTimer::GetMilliseconds()
+{
+    if (!this->stoped)
+    {
+        QueryPerformanceCounter(&this->end);
+    }
+    return (float)((double)(1000 * (this->end.QuadPart - this->start.QuadPart)) / (double)this->freq.QuadPart);
+}
+
 HANDLE DefCreateThread(LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter)
 {
     return CreateThread(NULL, 0, lpStartAddress, lpParameter, 0, NULL);
@@ -290,6 +308,13 @@ INT CheckRectContainment(const RECT* rc1, const RECT* rc2)
         return 1;
     }
     return 0;
+}
+
+void HighResolutionSleep(DWORD dwMilliseconds)
+{
+    timeBeginPeriod(1);
+    Sleep(dwMilliseconds);
+    timeEndPeriod(1);
 }
 
 // Show error Line and GetLastError

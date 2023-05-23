@@ -4,6 +4,23 @@
 
 #include <ds/framework.h>
 
+class HighResolutionTimer
+{
+private:
+    LARGE_INTEGER freq = { 0 };
+    BOOL stoped = TRUE;
+    LARGE_INTEGER start = { 0 };
+    LARGE_INTEGER end = { 0 };
+
+public:
+    HighResolutionTimer() { QueryPerformanceFrequency(&this->freq); }
+    void Start() { this->stoped = FALSE; QueryPerformanceCounter(&this->start); }
+    void Stop() { this->stoped = TRUE; QueryPerformanceCounter(&this->end); }
+    
+    FLOAT GetSeconds();
+    FLOAT GetMilliseconds();
+};
+
 // 默认参数创建线程
 HANDLE DefCreateThread(LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter);
 
@@ -101,6 +118,9 @@ INT StrWtoA(PCWSTR wStr, PSTR aStr, INT aStrLen);
 
 // 比较两个矩形的范围, rc1 包含于 rc2 返回负数, rc1 包含 rc2 返回正数, 其余返回 0
 INT CheckRectContainment(const RECT* rc1, const RECT* rc2);
+
+// 高精度休眠
+void HighResolutionSleep(DWORD dwMilliseconds);
 
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line = -1);
