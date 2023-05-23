@@ -101,6 +101,7 @@ BOOL Spine::SendAction(SpineAction action)
             this->state = SpineState::SLEEP;
             this->SetAnime(SpineAnime::SLEEP);
             break;
+
         case SpineAction::STAND:
             this->SetAnime(SpineAnime::STAND, TRUE);
             break;
@@ -117,7 +118,6 @@ BOOL Spine::SendAction(SpineAction action)
             this->SetAnime(SpineAnime::DIZZY, TRUE);
             break;
         default:
-            this->SetAnime(SpineAnime::IDLE);
             break;
         }
     case SpineState::DRAG:
@@ -128,7 +128,6 @@ BOOL Spine::SendAction(SpineAction action)
             this->SetAnime(SpineAnime::IDLE);
             break;
         default:
-            this->SetAnime(SpineAnime::DRAG); 
             break;
         }
     case SpineState::WORK:
@@ -136,19 +135,16 @@ BOOL Spine::SendAction(SpineAction action)
         {
         case SpineAction::ENDWORK:
             this->state = SpineState::IDLE;
-            this->SetAnime(SpineAnime::IDLE);
+            this->SetAnime(SpineAnime::VICTORY, TRUE);
             break;
+
         case SpineAction::TOUCH:
             this->SetAnime(SpineAnime::TOUCH, TRUE, SpineAnime::WORK);
-            break;
-        case SpineAction::WINK:
-            this->SetAnime(SpineAnime::WINK, TRUE, SpineAnime::WORK);
             break;
         case SpineAction::DIZZY:
             this->SetAnime(SpineAnime::DIZZY, TRUE, SpineAnime::WORK);
             break;
         default:
-            this->SetAnime(SpineAnime::WORK);
             break;
         }
     case SpineState::SLEEP:
@@ -162,27 +158,14 @@ BOOL Spine::SendAction(SpineAction action)
             this->state = SpineState::WORK;
             this->SetAnime(SpineAnime::WORK);
             break;
-        case SpineAction::STAND:
-            this->SetAnime(SpineAnime::STAND, TRUE);
-            break;
         case SpineAction::TOUCH:
+            this->state = SpineState::IDLE;
             this->SetAnime(SpineAnime::TOUCH, TRUE);
             break;
-        case SpineAction::WINK:
-            this->SetAnime(SpineAnime::WINK, TRUE);
-            break;
-        case SpineAction::DANCE:
-            this->SetAnime(SpineAnime::STAND, TRUE);
-            break;
-        case SpineAction::DIZZY:
-            this->SetAnime(SpineAnime::DIZZY, TRUE);
-            break;
         default:
-            this->SetAnime(SpineAnime::IDLE);
             break;
         }
     default:
-        this->SetAnime(SpineAnime::IDLE);
         break;
     }
     return TRUE;
