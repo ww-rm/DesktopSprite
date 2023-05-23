@@ -71,7 +71,7 @@ BOOL Spine::SetAnime(SpineAnime anime, BOOL isOneShot, SpineAnime rollin)
     return TRUE;
 }
 
-BOOL Spine::SetAction(SpineAction action)
+BOOL Spine::SendAction(SpineAction action)
 {
     //case SpineAction::DRAGUP:
     //case SpineAction::DRAGDOWN:

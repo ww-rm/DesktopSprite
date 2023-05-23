@@ -71,7 +71,7 @@ public:
     INT GetValidAnimeNamesCount() const { return this->skeletonData->animationsCount; }
     INT GetValidAnimeNames(PCSTR* names, INT length);
 
-    BOOL SetAction(SpineAction action);
+    BOOL SendAction(SpineAction action);
 
     BOOL Update(FLOAT elapseTime);
 };
