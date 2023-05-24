@@ -32,7 +32,7 @@ BOOL PerfMonitor::Stop()
     SetEvent(this->hQueryEvent);
     if (WaitForSingleObject(this->hQueryThread, INFINITE) ||
         !CloseHandle(this->hQueryThread) ||
-        PdhCloseQuery(hPdhQuery))
+        PdhCloseQuery(this->hPdhQuery))
     {
         ShowLastError(__FUNCTIONW__, __LINE__);
         return FALSE;
