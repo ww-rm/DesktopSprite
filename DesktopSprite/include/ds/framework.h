@@ -25,6 +25,7 @@
 
 // C++ headers
 #include <list>
+#include <vector>
 #include <map>
 #include <fstream>
 
