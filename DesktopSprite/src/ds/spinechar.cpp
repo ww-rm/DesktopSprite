@@ -70,6 +70,11 @@ BOOL Spine::CreateResources(PCSTR atlasPath, PCSTR skelPath)
         this->animationNames.push_back(this->skeletonData->animations[i]->name);
     }
 
+    this->skeleton->x = 350;
+    this->skeleton->y = 350;
+    this->skeleton->flipX = 1;
+    this->skeleton->flipY = 1;
+
     return TRUE;
 }
 
@@ -116,7 +121,7 @@ BOOL Spine::Update(FLOAT elapseTime)
     return TRUE;
 }
 
-BOOL Spine::GetRenderTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>& vertexIndexBuffer)
+BOOL Spine::GetMeshTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>& vertexIndexBuffer)
 {
     vertexBuffer.clear();
     vertexIndexBuffer.clear();
@@ -220,6 +225,7 @@ BOOL Spine::GetRenderTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<in
     return TRUE;
 }
 
+
 SpineChar::SpineChar(HWND targetWnd) : targetWnd(targetWnd)
 {
     this->threadEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
@@ -271,7 +277,29 @@ SpineChar::~SpineChar()
     }
 }
 
-void SpineChar::RenderTriangles()
+BOOL SpineChar::CreateTargetResourcse()
+{
+    if (!(this->hdcScreen = GetDC(NULL))) return FALSE;
+    if (!(this->hdcMem = CreateCompatibleDC(this->hdcScreen))) return FALSE;
+
+    SIZE screen = { 0 };
+    GetScreenResolution(&screen);
+    auto r1 = CreateCompatibleBitmap(this->hdcScreen, screen.cx, screen.cy);
+    auto r2 = SelectObject(this->hdcMem, r1);
+    auto r3 = DeleteObject(r2);
+
+    this->graphics = new Gdiplus::Graphics(this->hdcMem);
+    return TRUE;
+}
+
+void SpineChar::ReleaseTargetResources()
+{
+    delete this->graphics;
+    DeleteDC(this->hdcMem);
+    ReleaseDC(NULL, this->hdcScreen);
+}
+
+void SpineChar::DrawTriangles()
 {
     int width = this->texture->GetWidth();
     int height = this->texture->GetHeight();
@@ -291,8 +319,16 @@ void SpineChar::RenderTriangles()
 
         this->textureBrush->SetTransform(&transform);
         Gdiplus::PointF pts[3] = { {vt1.x, vt1.y}, {vt2.x, vt2.y}, {vt3.x, vt3.y} };
-        //graphics.FillPolygon(this->textureBrush, pts, 3);
+        this->graphics->FillPolygon(this->textureBrush, pts, 3);
     }
+}
+
+BOOL SpineChar::RenderFrame()
+{
+    POINT ptSrc = { 0, 0 };
+    SIZE sizeWnd = { 700, 700 };
+    BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+    return UpdateLayeredWindow(this->targetWnd, this->hdcScreen, NULL, &sizeWnd, this->hdcMem, &ptSrc, 0, &blend, ULW_ALPHA);
 }
 
 BOOL SpineChar::LoadSpine(PCSTR atlasPath, PCSTR skelPath)
@@ -302,6 +338,7 @@ BOOL SpineChar::LoadSpine(PCSTR atlasPath, PCSTR skelPath)
     {
         this->UnloadSpine();
         this->spine = spine;
+        this->spine->SetAnimation(this->animeToName[SpineAnime::IDLE].c_str());
         this->texture = this->spine->GetTexture();
         this->textureBrush = new Gdiplus::TextureBrush(this->texture); // 创建一次
         return TRUE;
@@ -325,6 +362,90 @@ void SpineChar::UnloadSpine()
         delete this->spine;
         this->spine = NULL;
     }
+}
+
+DWORD SpineChar::Mainloop()
+{
+    FLOAT elapse = 0;
+    this->timer.Start();
+
+    while (WaitForSingleObject(this->threadEvent, 0))
+    {
+        this->Lock(); // 上锁
+
+        // 真实逻辑帧间隔
+        elapse = this->timer.GetMilliseconds();
+
+        // 重置计时器
+        this->timer.Start();
+
+        // 按真实间隔更新并渲染
+        this->Update((UINT)(elapse + 0.5));
+        this->Render();
+
+        // 获得这一帧的真实间隔
+        elapse = this->timer.GetMilliseconds();
+        if (elapse < this->frameInterval)
+        {
+            // 限制最大帧率
+            HighResolutionSleep((DWORD)(this->frameInterval - elapse));
+        }
+
+        this->Unlock(); // 解锁
+    }
+
+    this->timer.Stop();
+    return EXIT_SUCCESS;
+}
+
+BOOL SpineChar::Start()
+{
+    if (!ResetEvent(this->threadEvent))
+    {
+        return FALSE;
+    }
+
+    this->thread = DefCreateThread(SpineChar::FrameProc, (LPVOID)this);
+    if (!this->thread)
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
+    return TRUE;
+}
+
+BOOL SpineChar::Stop()
+{
+    if (!SetEvent(this->threadEvent))
+    {
+        return FALSE;
+    }
+
+    if (this->thread)
+    {
+        if (WaitForSingleObject(this->thread, INFINITE) || !CloseHandle(this->thread))
+        {
+            ShowLastError(__FUNCTIONW__, __LINE__);
+            return FALSE;
+        }
+        this->thread = NULL;
+    }
+
+    return TRUE;
+}
+
+BOOL SpineChar::Update(UINT milliseconds)
+{
+    return this->spine->Update((FLOAT)milliseconds / 1000.0f);
+}
+
+BOOL SpineChar::Render()
+{
+    this->graphics->Clear(Gdiplus::Color::Transparent);
+    this->spine->GetMeshTriangles(this->vertexBuffer, this->vertexIndexBuffer);
+    this->DrawTriangles();
+    this->RenderFrame();
+    return TRUE;
 }
 
 BOOL SpineChar::SetAnime(SpineAnime anime, BOOL isOneShot, SpineAnime rollin)
@@ -439,85 +560,5 @@ BOOL SpineChar::SendAction(SpineAction action)
     default:
         break;
     }
-    return TRUE;
-}
-
-DWORD SpineChar::Mainloop()
-{
-    FLOAT elapse = 0;
-    this->timer.Start();
-
-    while (WaitForSingleObject(this->threadEvent, 0))
-    {
-        this->Lock(); // 上锁
-
-        // 真实逻辑帧间隔
-        elapse = this->timer.GetMilliseconds();
-
-        // 重置计时器
-        this->timer.Start();
-
-        // 按真实间隔更新并渲染
-        this->Update((UINT)(elapse + 0.5));
-        this->Render();
-
-        // 获得这一帧的真实间隔
-        elapse = this->timer.GetMilliseconds();
-        if (elapse < this->frameInterval)
-        {
-            // 限制最大帧率
-            HighResolutionSleep((DWORD)(this->frameInterval - elapse));
-        }
-
-        this->Unlock(); // 解锁
-    }
-
-    this->timer.Stop();
-    return EXIT_SUCCESS;
-}
-
-BOOL SpineChar::Start()
-{
-    if (!ResetEvent(this->threadEvent))
-    {
-        return FALSE;
-    }
-
-    this->thread = DefCreateThread(SpineChar::FrameProc, (LPVOID)this);
-    if (!this->thread)
-    {
-        ShowLastError(__FUNCTIONW__, __LINE__);
-        return FALSE;
-    }
-    return TRUE;
-}
-
-BOOL SpineChar::Stop()
-{
-    if (!SetEvent(this->threadEvent))
-    {
-        return FALSE;
-    }
-
-    if (this->thread)
-    {
-        if (WaitForSingleObject(this->thread, INFINITE) || !CloseHandle(this->thread))
-        {
-            ShowLastError(__FUNCTIONW__, __LINE__);
-            return FALSE;
-        }
-        this->thread = NULL;
-    }
-
-    return TRUE;
-}
-
-BOOL SpineChar::Update(UINT milliseconds)
-{
-    return this->spine->Update((FLOAT)milliseconds / 1000.0f);
-}
-
-BOOL SpineChar::Render()
-{
     return TRUE;
 }

@@ -3,6 +3,7 @@
 #define DS_SPINECHAR_H
 
 #include <ds/framework.h>
+#include <ds/utils.h>
 #include <spine/spine.h>
 
 typedef struct _VERTEX {
@@ -83,55 +84,69 @@ public:
     BOOL Update(FLOAT elapseTime);
 
     // 获得要渲染的基元
-    BOOL GetRenderTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>& vertexIndexBuffer);
+    BOOL GetMeshTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>& vertexIndexBuffer);
 };
 
 class SpineChar
 {
 private:
+    // 渲染设备数据
     HWND targetWnd = NULL;
+    HDC hdcScreen = NULL;
+    HDC hdcMem = NULL;
     Gdiplus::Graphics* graphics = NULL;
 
+    // 渲染数据缓冲
+    std::vector<int> vertexIndexBuffer;
+    std::vector<VERTEX> vertexBuffer;
+
+    // spine 数据
     Spine* spine = NULL;
     Gdiplus::Bitmap* texture = NULL;
     Gdiplus::TextureBrush* textureBrush = NULL;
+    BOOL flipX = TRUE;
+    SpineState state = SpineState::IDLE;
+    std::map<SpineAnime, std::string> animeToName;
 
-    INT maxFps = 30; // 最大帧率
-    FLOAT frameInterval = 1000.0f / 30.0f + 0.5f; // 帧间间隔, 毫秒数
-
+    // 主循环数据
     HANDLE threadMutex = NULL;
     HANDLE threadEvent = NULL;
     HANDLE thread = NULL;
     HighResolutionTimer timer;
+    INT maxFps = 30; // 最大帧率
+    FLOAT frameInterval = 1000.0f / 30.0f + 0.5f; // 帧间间隔, 毫秒数
 
-    SpineState state = SpineState::IDLE;
-    std::map<SpineAnime, std::string> animeToName;
-
-    std::vector<int> vertexIndexBuffer;
-    std::vector<VERTEX> vertexBuffer;
 
 public:
     SpineChar(HWND targetWnd);
     ~SpineChar();
 
-    void RenderTriangles();
+    // 创建与释放绘图资源
+    BOOL CreateTargetResourcse();
+    void ReleaseTargetResources();
+
+    // 加载与卸载 spine 数据
+    BOOL LoadSpine(PCSTR atlasPath, PCSTR skelPath);
+    void UnloadSpine();
+
+    void DrawTriangles();
+    BOOL RenderFrame();
 
     // 多线程锁住数据, caller 自行调用
     BOOL Lock() { return !WaitForSingleObject(this->threadMutex, INFINITE); }
     BOOL Unlock() { return ReleaseMutex(this->threadMutex); }
 
     // 启动/停止运行
-    static DWORD CALLBACK FrameProc(_In_ LPVOID lpParameter) { return ((SpineChar*)lpParameter)->Mainloop(); }
+    static DWORD CALLBACK FrameProc(_In_ LPVOID lpParameter) { 
+        return ((SpineChar*)lpParameter)->Mainloop(); 
+    }
     DWORD Mainloop();
+
     BOOL Start();
     BOOL Stop();
 
     BOOL Update(UINT milliseconds);
     BOOL Render();
-
-    // 加载与卸载 spine 数据
-    BOOL LoadSpine(PCSTR atlasPath, PCSTR skelPath);
-    void UnloadSpine();
 
     // 设置动画
     BOOL SetAnime(SpineAnime anime, BOOL isOneShot = FALSE, SpineAnime rollin = SpineAnime::IDLE);

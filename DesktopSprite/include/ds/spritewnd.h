@@ -1,33 +1,20 @@
 #pragma once
+#ifndef DS_SPRITEWND_H
+#define DS_SPRITEWND_H
 
 #include <ds/framework.h>
-#include <spine/spine.h>
+#include <ds/spinechar.h>
 
 #include <ds/basewindow.h>
 
 using namespace Gdiplus;
 
 
-class SpineChar
-{
-private:
-    HANDLE dataMutex        = NULL;
-
-public:
-    BOOL Lock();
-    BOOL UnLock();
-};
-
-class SpineRenderer
-{
-public:
-    SpineRenderer(SpineChar* spineChar, HWND hWnd);
-};
-
 class SpriteWindow : public BaseWindow
 {
 private:
-    POINT                               ptDragSrc = { 0 };              // 拖动窗口时的源点
+    POINT ptDragSrc = { 0 };              // 拖动窗口时的源点
+    SpineChar* spinechar = NULL;
 
 public:
     PCWSTR GetClassName_() const { return L"DesktopSpriteSpriteWndClass"; }
@@ -49,3 +36,6 @@ private:
     LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
     LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
 };
+
+
+#endif // !DS_SPRITEWND_H
