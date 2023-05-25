@@ -12,6 +12,7 @@ class SpriteConfig
 {
 public:
     INT maxFps = 30;
+    FLOAT scale = 1.0f;
     WCHAR szSpineAtlasPath[MAX_PATH] = { 0 };
     WCHAR szSpineSkelPath[MAX_PATH] = { 0 };
 
