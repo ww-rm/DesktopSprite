@@ -54,30 +54,6 @@ Spine::~Spine()
     }
 }
 
-void SpineChar::RenderTriangles()
-{
-    int width = this->texture->GetWidth();
-    int height = this->texture->GetHeight();
-    Gdiplus::Matrix transform;
-
-    for (auto it = this->vertexIndexBuffer.begin(); it < this->vertexIndexBuffer.end(); it += 3)
-    {
-        VERTEX vt1 = this->vertexBuffer[*it];
-        VERTEX vt2 = this->vertexBuffer[*(it + 1)];
-        VERTEX vt3 = this->vertexBuffer[*(it + 2)];
-
-        GetAffineMatrix(
-            vt1.x, vt1.y, vt2.x, vt2.y, vt3.x, vt3.y,
-            vt1.u * width, vt1.v * height, vt2.u * width, vt2.v * height, vt3.u * width, vt3.v * height,
-            &transform
-        );
-
-        this->textureBrush->SetTransform(&transform);
-        Gdiplus::PointF pts[3] = { {vt1.x, vt1.y}, {vt2.x, vt2.y}, {vt3.x, vt3.y} };
-        //graphics.FillPolygon(this->textureBrush, pts, 3);
-    }
-}
-
 BOOL Spine::CreateResources(PCSTR atlasPath, PCSTR skelPath)
 {
     if (!(this->atlas =              spAtlas_createFromFile(atlasPath, 0)))                                  return FALSE;
@@ -154,6 +130,7 @@ BOOL Spine::GetRenderTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<in
             continue;
         }
 
+        int preVertexCount = (int)vertexBuffer.size();
         if (attachment->type == SP_ATTACHMENT_REGION)
         {
             spRegionAttachment* region = (spRegionAttachment*)attachment;
@@ -191,13 +168,13 @@ BOOL Spine::GetRenderTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<in
             );
 
             // split to two triangles
-            vertexIndexBuffer.push_back(0);
-            vertexIndexBuffer.push_back(1);
-            vertexIndexBuffer.push_back(2);
+            vertexIndexBuffer.push_back(0 + preVertexCount);
+            vertexIndexBuffer.push_back(1 + preVertexCount);
+            vertexIndexBuffer.push_back(2 + preVertexCount);
 
-            vertexIndexBuffer.push_back(2);
-            vertexIndexBuffer.push_back(3);
-            vertexIndexBuffer.push_back(0);
+            vertexIndexBuffer.push_back(2 + preVertexCount);
+            vertexIndexBuffer.push_back(3 + preVertexCount);
+            vertexIndexBuffer.push_back(0 + preVertexCount);
         }
         else if (attachment->type == SP_ATTACHMENT_MESH)
         {
@@ -220,7 +197,6 @@ BOOL Spine::GetRenderTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<in
             spVertexAttachment_computeWorldVertices(SUPER(mesh), slot, 0, mesh->super.worldVerticesLength, this->vtPosBuffer, 0, 2);
 
             // add vertex
-            int preVertexCount = (int)vertexBuffer.size();
             for (int j = 0; j < mesh->super.worldVerticesLength; j += 2)
             {
                 vertexBuffer.push_back(
@@ -292,6 +268,30 @@ SpineChar::~SpineChar()
     {
         CloseHandle(this->threadEvent);
         this->threadEvent = NULL;
+    }
+}
+
+void SpineChar::RenderTriangles()
+{
+    int width = this->texture->GetWidth();
+    int height = this->texture->GetHeight();
+    Gdiplus::Matrix transform;
+
+    for (auto it = this->vertexIndexBuffer.begin(); it < this->vertexIndexBuffer.end(); it += 3)
+    {
+        VERTEX vt1 = this->vertexBuffer[*it];
+        VERTEX vt2 = this->vertexBuffer[*(it + 1)];
+        VERTEX vt3 = this->vertexBuffer[*(it + 2)];
+
+        GetAffineMatrix(
+            vt1.x, vt1.y, vt2.x, vt2.y, vt3.x, vt3.y,
+            vt1.u * width, vt1.v * height, vt2.u * width, vt2.v * height, vt3.u * width, vt3.v * height,
+            &transform
+        );
+
+        this->textureBrush->SetTransform(&transform);
+        Gdiplus::PointF pts[3] = { {vt1.x, vt1.y}, {vt2.x, vt2.y}, {vt3.x, vt3.y} };
+        //graphics.FillPolygon(this->textureBrush, pts, 3);
     }
 }
 
