@@ -1232,8 +1232,8 @@ Value& StreamWriterBuilder::operator[](const String& key) {
 void StreamWriterBuilder::setDefaults(Json::Value* settings) {
   //! [StreamWriterBuilderDefaults]
   (*settings)["commentStyle"] = "All";
-  (*settings)["indentation"] = "\t";
-  (*settings)["enableYAMLCompatibility"] = false;
+  (*settings)["indentation"] = "    ";
+  (*settings)["enableYAMLCompatibility"] = true;
   (*settings)["dropNullPlaceholders"] = false;
   (*settings)["useSpecialFloats"] = false;
   (*settings)["emitUTF8"] = false;
