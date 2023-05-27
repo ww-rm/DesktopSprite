@@ -28,7 +28,7 @@ void GetAffineMatrix(
     float u23 = u2 - u3;
     float v23 = v2 - v3;
 
-    float invdet = 1.0000 / (u12 * v23 - v12 * u23);
+    float invdet = 1.0000f / (u12 * v23 - v12 * u23);
     float m11 = invdet * (x12 * v23 - v12 * x23);
     float m12 = invdet * (y12 * v23 - v12 * y23);
     float m21 = invdet * (u12 * x23 - x12 * u23);
@@ -122,14 +122,14 @@ Gdiplus::Bitmap* Spine::GetTexture()
     return (Gdiplus::Bitmap*)this->atlas->pages->rendererObject;
 }
 
-void Spine::SetAnimation(PCWSTR animationName, BOOL loop = TRUE, INT trackIndex = 0)
+void Spine::SetAnimation(PCWSTR animationName, BOOL loop, INT trackIndex)
 {
     char animationNameA[MAX_PATH] = { 0 };
     StrWtoA(animationName, animationNameA, MAX_PATH);
     spAnimationState_setAnimationByName(this->animationState, trackIndex, animationNameA, loop);
 }
 
-void Spine::AddAnimation(PCWSTR animationName, BOOL loop = TRUE, FLOAT delay = 0, INT trackIndex = 0)
+void Spine::AddAnimation(PCWSTR animationName, BOOL loop, FLOAT delay, INT trackIndex)
 {
     char animationNameA[MAX_PATH] = { 0 };
     StrWtoA(animationName, animationNameA, MAX_PATH);
