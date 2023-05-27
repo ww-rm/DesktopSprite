@@ -29,8 +29,8 @@ namespace WinApp {
 
     // global functions
 
-    BOOL InitializeWinApp();
-    BOOL UnInitializeWinApp();
+    BOOL Init();
+    BOOL Uninit();
 
     PCWSTR GetName();
     PCWSTR GetPath();

@@ -26,9 +26,9 @@ namespace WinApp {
             MessageBoxW(NULL, L"程序已在运行, 请勿重复启动", L"提示消息", MB_OK | MB_ICONINFORMATION);
             exit(EXIT_SUCCESS);
         }
-        INITCOMMONCONTROLSEX cce = { sizeof(cce), 0xffff };
 
         // 初始化 CommonControls
+        INITCOMMONCONTROLSEX cce = { sizeof(cce), 0xffff };
         if (!InitCommonControlsEx(&cce))
         {
             ShowLastError(__FUNCTIONW__, __LINE__);
@@ -57,10 +57,22 @@ namespace WinApp {
 
         // 获得配置路径
         PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szExeFullDir, L"config.json");
+
+        // 读取配置
+        AppConfig::Init();
+        if (PathFileExistsW(this->GetConfigPath()))
+        {
+            AppConfig::LoadFromFile(this->GetConfigPath());
+        }
+
+        // 启动性能监视器
+        PerfMonitor::Init();
     }
 
     WinApp::~WinApp()
     {
+        PerfMonitor::Uninit();
+        AppConfig::SaveToFile(this->GetConfigPath());
         GdiplusShutdown(this->gdiplusToken);
         CoUninitialize();
         CloseHandle(this->hAppMutex);
@@ -122,7 +134,7 @@ namespace WinApp {
 
     static WinApp* g_winApp = NULL;
 
-    BOOL InitializeWinApp()
+    BOOL Init()
     {
         if (!g_winApp)
         {
@@ -131,11 +143,12 @@ namespace WinApp {
         return TRUE;
     }
 
-    BOOL UnInitializeWinApp()
+    BOOL Uninit()
     {
         if (g_winApp)
         {
             delete g_winApp;
+            g_winApp = NULL;
         }
         return TRUE;
     }
@@ -173,8 +186,8 @@ namespace WinApp {
 INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ INT nShowCmd)
 {
     INT errCode = EXIT_SUCCESS;
-    WinApp::InitializeWinApp();
+    WinApp::Init();
     errCode = WinApp::Mainloop();
-    WinApp::UnInitializeWinApp();
+    WinApp::Uninit();
     return errCode;
 }
