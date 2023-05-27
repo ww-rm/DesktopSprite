@@ -9,7 +9,7 @@
 class AboutDlg : public BaseDialog
 {
 public:
-    PCWSTR GetTemplateName() const { return MAKEINTRESOURCEW(IDD_ABOUT); }
+    PCWSTR GetTemplateName() const;
 
 private:
     INT_PTR HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);

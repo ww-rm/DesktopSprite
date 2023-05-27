@@ -5,6 +5,11 @@
 
 #include <ds/aboutdlg.h>
 
+PCWSTR AboutDlg::GetTemplateName() const
+{
+    return MAKEINTRESOURCEW(IDD_ABOUT);
+}
+
 INT_PTR AboutDlg::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
