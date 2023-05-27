@@ -9,6 +9,17 @@ namespace WinApp {
 
     WinApp::WinApp()
     {
+        // 获得程序路径
+        GetModuleFileNameW(NULL, this->szExeFullDir, MAX_PATH);
+        PathCchRemoveFileSpec(this->szExeFullDir, MAX_PATH);
+        GetModuleFileNameW(NULL, this->szExeFullPath, MAX_PATH);
+
+        // 获得配置路径
+        PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szExeFullDir, L"config.json");
+    }
+
+    BOOL WinApp::Initialize()
+    {
 #ifdef _DEBUG
         this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex_d");
 #else
@@ -50,29 +61,24 @@ namespace WinApp {
             exit(EXIT_FAILURE);
         }
 
-        // 获得程序路径
-        GetModuleFileNameW(NULL, this->szExeFullDir, MAX_PATH);
-        PathCchRemoveFileSpec(this->szExeFullDir, MAX_PATH);
-        GetModuleFileNameW(NULL, this->szExeFullPath, MAX_PATH);
-
-        // 获得配置路径
-        PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szExeFullDir, L"config.json");
-
-        // 读取配置
+        // 读取配置, 不能放构造函数里, 因为全局的 WinApp 指针还没初始化, 不能调用全局接口
         AppConfig::Init();
         AppConfig::LoadFromFile(this->GetConfigPath());
 
         // 启动性能监视器
         PerfMonitor::Init();
+
+        return TRUE;
     }
 
-    WinApp::~WinApp()
+    BOOL WinApp::Uninitialize()
     {
         PerfMonitor::Uninit();
         AppConfig::SaveToFile(this->GetConfigPath());
         GdiplusShutdown(this->gdiplusToken);
         CoUninitialize();
         CloseHandle(this->hAppMutex);
+        return TRUE;
     }
 
     INT WinApp::Mainloop()
@@ -136,6 +142,7 @@ namespace WinApp {
         if (!g_winApp)
         {
             g_winApp = new WinApp();
+            g_winApp->Initialize();
         }
         return TRUE;
     }
@@ -144,6 +151,7 @@ namespace WinApp {
     {
         if (g_winApp)
         {
+            g_winApp->Uninitialize();
             delete g_winApp;
             g_winApp = NULL;
         }

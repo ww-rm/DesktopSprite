@@ -17,10 +17,12 @@ namespace WinApp {
 
     public:
         WinApp();
-        ~WinApp();
+
+        BOOL Initialize();
+        BOOL Uninitialize();
+
         INT Mainloop();
 
-    public:
         PCWSTR GetName() const;
         PCWSTR GetPath() const;
         PCWSTR GetDir() const;
