@@ -33,6 +33,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_35ABB47B2C2D4791BD2A152F7D4D6230"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_4ADF7EA8229645E69D9242AC728A573A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -45,8 +51,20 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_5163161F356840A6ABBA7D43F8817C21"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_698A80141339D88FBA43EDA81F58658B"
         "OwnerKey" = "8:_4ADF7EA8229645E69D9242AC728A573A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6E797230E0764C19AEFC0342D86713AF"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -250,6 +268,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_35ABB47B2C2D4791BD2A152F7D4D6230"
+            {
+            "SourcePath" = "8:..\\DesktopSprite\\res\\spine\\guanghui_2.atlas"
+            "TargetName" = "8:guanghui_2.atlas"
+            "Tag" = "8:"
+            "Folder" = "8:_4D46A896D3AE4399B99E10F83801A71E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4B6BD621D53351E27E5DA471EC2E374A"
             {
             "SourcePath" = "8:VCRUNTIME140_1D.dll"
@@ -270,6 +308,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5163161F356840A6ABBA7D43F8817C21"
+            {
+            "SourcePath" = "8:..\\DesktopSprite\\res\\spine\\guanghui_2.skel"
+            "TargetName" = "8:guanghui_2.skel"
+            "Tag" = "8:"
+            "Folder" = "8:_4D46A896D3AE4399B99E10F83801A71E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_698A80141339D88FBA43EDA81F58658B"
             {
             "SourcePath" = "8:MSVCP140D.dll"
@@ -288,6 +346,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6E797230E0764C19AEFC0342D86713AF"
+            {
+            "SourcePath" = "8:..\\DesktopSprite\\res\\spine\\guanghui_2.png"
+            "TargetName" = "8:guanghui_2.png"
+            "Tag" = "8:"
+            "Folder" = "8:_4D46A896D3AE4399B99E10F83801A71E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7637C3B762714DE2B6D4221AD733C2E6"
@@ -506,6 +584,17 @@
                     "Property" = "8:_9BE98AC69A38433586DFC4740EE068DC"
                         "Folders"
                         {
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_4D46A896D3AE4399B99E10F83801A71E"
+                            {
+                            "Name" = "8:spine"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_89CF80654D8F4841AEF3271972CA4DF0"
+                                "Folders"
+                                {
+                                }
+                            }
                             "{9EF0B969-E518-4E46-987F-47570745A589}:_D163558C2AA344E5AD5D885C31D822CC"
                             {
                             "Name" = "8:image"
@@ -1097,7 +1186,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4ADF7EA8229645E69D9242AC728A573A"
             {
-            "SourcePath" = "8:..\\bin\\x64\\Release\\DesktopSprite.exe"
+            "SourcePath" = "8:..\\bin\\x64\\Debug\\DesktopSprite_d.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_46CD9A4D49F5436B9FF28A5B9E2F1D7E"
