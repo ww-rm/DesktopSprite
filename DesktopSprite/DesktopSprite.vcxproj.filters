@@ -446,9 +446,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="res\font\AGENCYB.TTF">
-      <Filter>资源文件\字体</Filter>
-    </Font>
     <Font Include="res\font\AGENCYR.TTF">
       <Filter>资源文件\字体</Filter>
     </Font>

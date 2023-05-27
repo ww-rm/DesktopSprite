@@ -167,7 +167,6 @@
     <ClCompile Include="src\spine\VertexEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Font Include="res\font\AGENCYB.TTF" />
     <Font Include="res\font\AGENCYR.TTF" />
   </ItemGroup>
   <ItemGroup>
