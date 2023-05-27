@@ -42,7 +42,7 @@ namespace PerfMonitor {
         // 停止监视器
         BOOL Stop();
 
-        // 注册更新消息
+        // 注册更新消息 lParam: (PerfMonitor::PerfMonitor*)
         BOOL RegisterMessage(HWND hWnd, UINT wndMsg);
 
         BOOL UnregisterMessage(HWND hWnd);
