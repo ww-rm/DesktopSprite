@@ -15,7 +15,7 @@ private:
     UINT uID = 0;
 
 public:
-    NotifyIcon(HWND hWnd, UINT uID) : hWnd(hWnd), uID(uID) {}
+    NotifyIcon(HWND hWnd, UINT uID);
 
     // 添加图标, 重复添加返回 FALSE
     BOOL Add(UINT uCallbackMessage = 0, HICON hIcon = NULL, PCWSTR szTip = NULL);

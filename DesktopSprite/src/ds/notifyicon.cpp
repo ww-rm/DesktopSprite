@@ -1,6 +1,8 @@
 #include <ds/framework.h>
 #include <ds/notifyicon.h>
 
+NotifyIcon::NotifyIcon(HWND hWnd, UINT uID) : hWnd(hWnd), uID(uID) {}
+
 BOOL NotifyIcon::Add(UINT uCallbackMessage, HICON hIcon, PCWSTR szTip)
 {
     NOTIFYICONDATAW nid = { 0 };
