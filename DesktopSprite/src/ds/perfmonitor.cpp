@@ -286,7 +286,7 @@ namespace PerfMonitor {
 
     static PerfMonitor* g_perfMonitor = NULL;
 
-    BOOL InitializePerfMonitor(DWORD queryInterval)
+    BOOL Init(DWORD queryInterval)
     {
         if (!g_perfMonitor)
         {
@@ -296,12 +296,13 @@ namespace PerfMonitor {
         return TRUE;
     }
 
-    BOOL UninitializePerfMonitor()
+    BOOL Uninit()
     {
         if (g_perfMonitor)
         {
             g_perfMonitor->Stop();
             delete g_perfMonitor;
+            g_perfMonitor = NULL;
         }
         return TRUE;
     }

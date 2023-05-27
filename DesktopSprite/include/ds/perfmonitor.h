@@ -69,9 +69,9 @@ namespace PerfMonitor {
 
     // global functions
 
-    BOOL InitializePerfMonitor(DWORD queryInterval = 1000);
+    BOOL Init(DWORD queryInterval = 1000);
 
-    BOOL UninitializePerfMonitor();
+    BOOL Uninit();
 
     BOOL RegisterMessage(HWND hWnd, UINT wndMsg);
 
