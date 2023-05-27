@@ -60,10 +60,7 @@ namespace WinApp {
 
         // 读取配置
         AppConfig::Init();
-        if (PathFileExistsW(this->GetConfigPath()))
-        {
-            AppConfig::LoadFromFile(this->GetConfigPath());
-        }
+        AppConfig::LoadFromFile(this->GetConfigPath());
 
         // 启动性能监视器
         PerfMonitor::Init();
