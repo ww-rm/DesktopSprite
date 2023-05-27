@@ -19,7 +19,7 @@ LRESULT CALLBACK BaseWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
-inline HWND BaseWindow::GetWindowHandle() const
+HWND BaseWindow::GetWindowHandle() const
 {
     return this->hWnd;
 }

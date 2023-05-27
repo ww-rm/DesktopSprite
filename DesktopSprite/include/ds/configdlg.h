@@ -11,17 +11,17 @@
 class ConfigDlg : public BaseDialog
 {
 public:
-    PCWSTR GetTemplateName() const { return MAKEINTRESOURCEW(IDD_CONFIG); }
+    PCWSTR GetTemplateName() const;
 
 private:
     MainWindow* mainwnd = NULL;
-    AppConfig form;
+    AppConfig::AppConfig form;
 
 public:
-    ConfigDlg(MainWindow* mainwnd) : mainwnd(mainwnd) {}
+    ConfigDlg(MainWindow* mainwnd);
 
-    void SetFormData(const AppConfig* config) { this->form = *config; }
-    void GetFormData(AppConfig* config) const { *config = this->form; }
+    void SetFormData(const AppConfig::AppConfig* config);
+    void GetFormData(AppConfig::AppConfig* config) const;
 
 private:
     // 检查并收集对话框里的数据到 form 里

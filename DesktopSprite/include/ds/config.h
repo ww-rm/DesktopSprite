@@ -54,7 +54,7 @@ namespace AppConfig {
     BOOL Init();
     BOOL Uninit();
 
-    const AppConfig& Get();
+    const AppConfig* Get();
     void Get(AppConfig* other);
     void Set(const AppConfig* other);
 

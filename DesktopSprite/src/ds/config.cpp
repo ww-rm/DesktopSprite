@@ -73,7 +73,7 @@ namespace AppConfig {
         this->byShowContent = (BYTE)root.get("ShowContent", (UINT)this->byShowContent).asUInt();
 
         // sprite ÉèÖÃ
-        Json::Value sprite = root.get("Sprite", Json::Value("{}"));
+        Json::Value sprite = root.get("Sprite", Json::Value());
 
         this->maxFps = sprite.get("MaxFPS", (UINT)this->maxFps).asUInt();
         this->scale = sprite.get("Scale", (UINT)this->scale).asUInt();
@@ -82,7 +82,7 @@ namespace AppConfig {
         StrAtoW(sprite.get("SkelPath", this->szSpineSkelPath).asCString(), this->szSpineSkelPath, MAX_PATH);
 
         // spine anime settings
-        Json::Value spriteAnime = sprite.get("Anime", Json::Value("{}"));
+        Json::Value spriteAnime = sprite.get("Anime", Json::Value());
         StrAtoW(spriteAnime.get("Idle", this->spAnimeIdle).asCString(), this->spAnimeIdle, MAX_PATH);
         StrAtoW(spriteAnime.get("Drag", this->spAnimeDrag).asCString(), this->spAnimeDrag, MAX_PATH);
         StrAtoW(spriteAnime.get("Work", this->spAnimeWork).asCString(), this->spAnimeWork, MAX_PATH);
@@ -164,27 +164,27 @@ namespace AppConfig {
         return TRUE;
     }
 
-    inline const AppConfig& Get()
+    const AppConfig* Get()
     {
-        return *g_appConfig;
+        return g_appConfig;
     }
 
-    inline void Get(AppConfig* other)
+    void Get(AppConfig* other)
     {
         *other = *g_appConfig;
     }
 
-    inline void Set(const AppConfig* other)
+    void Set(const AppConfig* other)
     {
         *g_appConfig = *other;
     }
 
-    inline BOOL LoadFromFile(PCWSTR path)
+    BOOL LoadFromFile(PCWSTR path)
     {
         return g_appConfig->LoadFromFile(path);
     }
 
-    inline BOOL SaveToFile(PCWSTR path)
+    BOOL SaveToFile(PCWSTR path)
     {
         return g_appConfig->SaveToFile(path);
     }

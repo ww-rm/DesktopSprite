@@ -4,6 +4,23 @@
 
 #include <ds/configdlg.h>
 
+inline PCWSTR ConfigDlg::GetTemplateName() const
+{
+    return MAKEINTRESOURCEW(IDD_CONFIG);
+}
+
+ConfigDlg::ConfigDlg(MainWindow* mainwnd) : mainwnd(mainwnd) {}
+
+void ConfigDlg::SetFormData(const AppConfig::AppConfig* config)
+{
+    this->form = *config;
+}
+
+void ConfigDlg::GetFormData(AppConfig::AppConfig* config) const
+{
+    *config = this->form;
+}
+
 BOOL ConfigDlg::CheckValidFormData()
 {
     // check
