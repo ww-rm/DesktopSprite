@@ -7,7 +7,7 @@ FLOAT HighResolutionTimer::GetSeconds()
     {
         QueryPerformanceCounter(&this->end);
     }
-    return (float)((double)(this->end.QuadPart - this->start.QuadPart) / (double)this->freq.QuadPart);
+    return (float)(this->end.QuadPart - this->start.QuadPart) / (float)this->freq.QuadPart;
 }
 
 FLOAT HighResolutionTimer::GetMilliseconds()
@@ -16,7 +16,7 @@ FLOAT HighResolutionTimer::GetMilliseconds()
     {
         QueryPerformanceCounter(&this->end);
     }
-    return (float)((double)(1000 * (this->end.QuadPart - this->start.QuadPart)) / (double)this->freq.QuadPart);
+    return (float)(1000 * (this->end.QuadPart - this->start.QuadPart)) / (float)this->freq.QuadPart;
 }
 
 HANDLE DefCreateThread(LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter)
