@@ -48,6 +48,12 @@ namespace PerfMonitor {
         return TRUE;
     }
 
+    inline BOOL PerfMonitor::UnregisterMessage(HWND hWnd)
+    {
+        this->registeredMsg.erase(hWnd);
+        return TRUE;
+    }
+
     BOOL PerfMonitor::GetPerfData(PERFDATA* pPerfData)
     {
         // 获得数据访问锁
@@ -210,7 +216,10 @@ namespace PerfMonitor {
             // 发送消息表示已经更新
             for (auto it = this->registeredMsg.begin(); it != this->registeredMsg.end(); it++)
             {
-                PostMessageW((*it).first, (*it).second, 0, (LPARAM)this);
+                if (IsWindow((*it).first))
+                {
+                    PostMessageW((*it).first, (*it).second, 0, (LPARAM)this);
+                }
             }
 
             Sleep(1);
@@ -311,6 +320,12 @@ namespace PerfMonitor {
     {
         if (!g_perfMonitor) return FALSE;
         return g_perfMonitor->RegisterMessage(hWnd, wndMsg);
+    }
+
+    BOOL UnregisterMessage(HWND hWnd)
+    {
+        if (!g_perfMonitor) return FALSE;
+        return g_perfMonitor->UnregisterMessage(hWnd);
     }
 
     BOOL GetPerfData(PERFDATA* pPerfData)

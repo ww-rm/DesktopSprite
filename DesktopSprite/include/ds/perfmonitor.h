@@ -45,6 +45,8 @@ namespace PerfMonitor {
         // 注册更新消息
         BOOL RegisterMessage(HWND hWnd, UINT wndMsg);
 
+        BOOL UnregisterMessage(HWND hWnd);
+
         // 获得性能数据
         BOOL GetPerfData(PERFDATA* pPerfData);
 
@@ -74,6 +76,8 @@ namespace PerfMonitor {
     BOOL Uninit();
 
     BOOL RegisterMessage(HWND hWnd, UINT wndMsg);
+
+    BOOL UnregisterMessage(HWND hWnd);
 
     BOOL GetPerfData(PERFDATA* pPerfData);
 }
