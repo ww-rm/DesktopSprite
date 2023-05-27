@@ -19,6 +19,11 @@ LRESULT CALLBACK BaseWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
+inline HWND BaseWindow::GetWindowHandle() const
+{
+    return this->hWnd;
+}
+
 BOOL BaseWindow::CreateWindow_(HINSTANCE hInst)
 {
     if (this->hWnd)
@@ -88,6 +93,11 @@ INT_PTR CALLBACK BaseDialog::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         return this_->HandleMessage(uMsg, wParam, lParam);
     }
     return FALSE;
+}
+
+inline HWND BaseDialog::GetDialogHandle() const
+{
+    return this->hDlg;
 }
 
 INT_PTR BaseDialog::ShowDialogBox(HINSTANCE hInst, HWND hWndParent)

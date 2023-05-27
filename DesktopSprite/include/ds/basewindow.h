@@ -6,6 +6,7 @@
 
 #define WM_NOTIFYICON                   (WM_USER + 1)           // 通知区域消息
 #define WM_TIMEALARM                    (WM_USER + 2)           // 报时消息
+#define WM_PERFDATAUPDATED              (WM_USER + 3)           // 性能监视器数据更新
 
 class BaseWindow
 {
@@ -19,7 +20,7 @@ protected:
     virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
 
 public:
-    HWND GetWindowHandle() const { return this->hWnd; }
+    HWND GetWindowHandle() const;
     BOOL CreateWindow_(HINSTANCE hInst = NULL);
 };
 
@@ -35,7 +36,7 @@ protected:
     virtual INT_PTR HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
 
 public:
-    HWND GetDialogHandle() const { return this->hDlg; }
+    HWND GetDialogHandle() const;
     INT_PTR ShowDialogBox(HINSTANCE hInst, HWND hWndParent = NULL);
 };
 
