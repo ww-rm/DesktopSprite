@@ -27,6 +27,7 @@ namespace AppConfig {
         this->byShowContent = other.byShowContent;
         
         // sprite ÉèÖÃ
+        this->bShowSprite = other.bShowSprite;
         this->maxFps = other.maxFps;
         this->scale = other.scale;
         this->spTransparencyPercent = other.spTransparencyPercent;
@@ -75,9 +76,10 @@ namespace AppConfig {
         // sprite ÉèÖÃ
         Json::Value sprite = root.get("Sprite", Json::Value());
 
-        this->maxFps = sprite.get("MaxFPS", (UINT)this->maxFps).asUInt();
-        this->scale = sprite.get("Scale", (UINT)this->scale).asUInt();
-        this->spTransparencyPercent = sprite.get("Transparency", (UINT)this->spTransparencyPercent).asUInt();
+        this->bShowSprite = (BOOL)sprite.get("IsSpriteShow", (bool)this->bShowSprite).asBool();
+        this->maxFps = (UINT)sprite.get("MaxFPS", (UINT)this->maxFps).asUInt();
+        this->scale = (UINT)sprite.get("Scale", (UINT)this->scale).asUInt();
+        this->spTransparencyPercent = (UINT)sprite.get("Transparency", (UINT)this->spTransparencyPercent).asUInt();
         StrAtoW(sprite.get("AtlasPath", this->szSpineAtlasPath).asCString(), this->szSpineAtlasPath, MAX_PATH);
         StrAtoW(sprite.get("SkelPath", this->szSpineSkelPath).asCString(), this->szSpineSkelPath, MAX_PATH);
 
@@ -116,6 +118,7 @@ namespace AppConfig {
         Json::Value sprite;
         sprite["Anime"] = spriteAnime;
 
+        sprite["IsSpriteShow"] = (bool)this->bShowSprite;
         sprite["MaxFPS"] = (UINT)this->maxFps;
         sprite["Scale"] = (UINT)this->scale;
         sprite["Transparency"] = (UINT)this->spTransparencyPercent;

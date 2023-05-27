@@ -24,6 +24,7 @@ namespace AppConfig {
         BYTE    byShowContent = SHOWCONTENT_CPUMEM | SHOWCONTENT_NETSPEED;  // 要显示的内容
 
         // sprite 设置
+        BOOL bShowSprite = TRUE;
         UINT maxFps = 30;
         UINT scale = 100;
         UINT spTransparencyPercent = 100;
