@@ -109,6 +109,7 @@
     <Image Include="res\image\appicon_light.png" />
     <Image Include="res\image\timealarm.ico" />
     <Image Include="res\image\timealarm.png" />
+    <Image Include="res\spine\guanghui_2.png" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ds\aboutdlg.cpp" />
@@ -170,6 +171,8 @@
     <Font Include="res\font\AGENCYR.TTF" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\spine\guanghui_2.atlas" />
+    <None Include="res\spine\guanghui_2.skel" />
     <None Include="src\json\json_valueiterator.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

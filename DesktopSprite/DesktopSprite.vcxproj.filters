@@ -43,6 +43,9 @@
     <Filter Include="资源文件\资源">
       <UniqueIdentifier>{2879658b-cbde-443a-b6f9-caa62dcac620}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\spine">
+      <UniqueIdentifier>{530ef0f5-424a-41a7-bddf-3d4e0e5fe7f8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\DesktopSprite.rc">
@@ -438,6 +441,9 @@
     <Image Include="res\image\timealarm.png">
       <Filter>资源文件\图像</Filter>
     </Image>
+    <Image Include="res\spine\guanghui_2.png">
+      <Filter>资源文件\spine</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Font Include="res\font\AGENCYB.TTF">
@@ -450,6 +456,12 @@
   <ItemGroup>
     <None Include="src\json\json_valueiterator.inl">
       <Filter>源文件\json</Filter>
+    </None>
+    <None Include="res\spine\guanghui_2.atlas">
+      <Filter>资源文件\spine</Filter>
+    </None>
+    <None Include="res\spine\guanghui_2.skel">
+      <Filter>资源文件\spine</Filter>
     </None>
   </ItemGroup>
 </Project>
