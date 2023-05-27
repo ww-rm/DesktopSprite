@@ -42,13 +42,13 @@ namespace PerfMonitor {
         return TRUE;
     }
 
-    inline BOOL PerfMonitor::RegisterMessage(HWND hWnd, UINT wndMsg)
+    BOOL PerfMonitor::RegisterMessage(HWND hWnd, UINT wndMsg)
     {
         this->registeredMsg[hWnd] = wndMsg;
         return TRUE;
     }
 
-    inline BOOL PerfMonitor::UnregisterMessage(HWND hWnd)
+    BOOL PerfMonitor::UnregisterMessage(HWND hWnd)
     {
         this->registeredMsg.erase(hWnd);
         return TRUE;

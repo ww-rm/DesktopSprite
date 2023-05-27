@@ -95,7 +95,7 @@ INT_PTR CALLBACK BaseDialog::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
     return FALSE;
 }
 
-inline HWND BaseDialog::GetDialogHandle() const
+HWND BaseDialog::GetDialogHandle() const
 {
     return this->hDlg;
 }

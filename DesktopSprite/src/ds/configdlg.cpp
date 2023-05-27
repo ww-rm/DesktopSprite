@@ -4,7 +4,7 @@
 
 #include <ds/configdlg.h>
 
-inline PCWSTR ConfigDlg::GetTemplateName() const
+PCWSTR ConfigDlg::GetTemplateName() const
 {
     return MAKEINTRESOURCEW(IDD_CONFIG);
 }

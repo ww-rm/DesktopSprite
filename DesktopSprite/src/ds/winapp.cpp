@@ -103,7 +103,7 @@ namespace WinApp {
         return errCode;
     }
 
-    inline PCWSTR WinApp::GetName() const
+    PCWSTR WinApp::GetName() const
     {
 #ifdef _DEBUG
         return L"DesktopSprite_d";
@@ -112,17 +112,17 @@ namespace WinApp {
 #endif // _DEBUG
     };
 
-    inline PCWSTR WinApp::GetPath() const
+    PCWSTR WinApp::GetPath() const
     {
         return this->szExeFullPath;
     }
 
-    inline PCWSTR WinApp::GetDir() const
+    PCWSTR WinApp::GetDir() const
     {
         return this->szExeFullDir;
     }
 
-    inline PCWSTR WinApp::GetConfigPath() const
+    PCWSTR WinApp::GetConfigPath() const
     {
         return this->szConfigFullPath;
     }
