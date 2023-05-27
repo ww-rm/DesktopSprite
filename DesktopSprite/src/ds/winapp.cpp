@@ -5,100 +5,176 @@
 #include <ds/spritewnd.h>
 #include <ds/winapp.h>
 
-WinApp* g_winApp = NULL;
+namespace WinApp {
 
-WinApp::WinApp()
-{
+    WinApp::WinApp()
+    {
 #ifdef _DEBUG
-    this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex_d");
+        this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex_d");
 #else
-    this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex");
+        this->hAppMutex = CreateMutexW(NULL, FALSE, L"DesktopSpriteMutex");
 #endif // _DEBUG
 
-    if (!this->hAppMutex)
-    {
-        ShowLastError(__FUNCTIONW__, __LINE__);
-        exit(EXIT_FAILURE);
-    }
-
-    if (GetLastError() == ERROR_ALREADY_EXISTS)
-    {
-        MessageBoxW(NULL, L"程序已在运行, 请勿重复启动", L"提示消息", MB_OK | MB_ICONINFORMATION);
-        exit(EXIT_SUCCESS);
-    }
-    INITCOMMONCONTROLSEX cce = { sizeof(cce), 0xffff };
-
-    // 初始化 CommonControls
-    if (!InitCommonControlsEx(&cce))
-    {
-        ShowLastError(__FUNCTIONW__, __LINE__);
-        exit(EXIT_FAILURE);
-    }
-    
-    // 初始化, 这里不用 CoInitializeEx, 其他通用对话框会死锁 (不知道啥原因)
-    if (FAILED(CoInitialize(NULL)))
-    {
-        ShowLastError(__FUNCTIONW__, __LINE__);
-        exit(EXIT_FAILURE);
-    }
-
-    // 初始化 GDI+.
-    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-    if (Gdiplus::Status::Ok != Gdiplus::GdiplusStartup(&this->gdiplusToken, &gdiplusStartupInput, NULL))
-    {
-        ShowLastError(__FUNCTIONW__, __LINE__);
-        exit(EXIT_FAILURE);
-    }
-
-    // 获得程序路径
-    GetModuleFileNameW(NULL, this->szExeFullDir, MAX_PATH);
-    PathCchRemoveFileSpec(this->szExeFullDir, MAX_PATH);
-    GetModuleFileNameW(NULL, this->szExeFullPath, MAX_PATH);
-
-    // 获得配置路径
-    PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szExeFullDir, L"config.json");
-}
-
-WinApp::~WinApp()
-{
-    GdiplusShutdown(this->gdiplusToken);
-    CoUninitialize();
-    CloseHandle(this->hAppMutex);
-}
-
-INT WinApp::Mainloop()
-{
-    INT errCode = EXIT_SUCCESS;
-
-    MainWindow* mainWindow = new MainWindow();
-    mainWindow->CreateWindow_();
-
-    BOOL bRet;
-    MSG msg;
-    // 开启消息循环
-    while ((bRet = GetMessageW(&msg, NULL, 0, 0)))
-    {
-        if (bRet == -1)
+        if (!this->hAppMutex)
         {
-            errCode = EXIT_FAILURE;
-            break;
+            ShowLastError(__FUNCTIONW__, __LINE__);
+            exit(EXIT_FAILURE);
         }
-        else
+
+        if (GetLastError() == ERROR_ALREADY_EXISTS)
         {
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
+            MessageBoxW(NULL, L"程序已在运行, 请勿重复启动", L"提示消息", MB_OK | MB_ICONINFORMATION);
+            exit(EXIT_SUCCESS);
         }
+        INITCOMMONCONTROLSEX cce = { sizeof(cce), 0xffff };
+
+        // 初始化 CommonControls
+        if (!InitCommonControlsEx(&cce))
+        {
+            ShowLastError(__FUNCTIONW__, __LINE__);
+            exit(EXIT_FAILURE);
+        }
+
+        // 初始化, 这里不用 CoInitializeEx, 其他通用对话框会死锁 (不知道啥原因)
+        if (FAILED(CoInitialize(NULL)))
+        {
+            ShowLastError(__FUNCTIONW__, __LINE__);
+            exit(EXIT_FAILURE);
+        }
+
+        // 初始化 GDI+.
+        Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+        if (Gdiplus::Status::Ok != Gdiplus::GdiplusStartup(&this->gdiplusToken, &gdiplusStartupInput, NULL))
+        {
+            ShowLastError(__FUNCTIONW__, __LINE__);
+            exit(EXIT_FAILURE);
+        }
+
+        // 获得程序路径
+        GetModuleFileNameW(NULL, this->szExeFullDir, MAX_PATH);
+        PathCchRemoveFileSpec(this->szExeFullDir, MAX_PATH);
+        GetModuleFileNameW(NULL, this->szExeFullPath, MAX_PATH);
+
+        // 获得配置路径
+        PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szExeFullDir, L"config.json");
     }
 
-    delete mainWindow;
-    return errCode;
+    WinApp::~WinApp()
+    {
+        GdiplusShutdown(this->gdiplusToken);
+        CoUninitialize();
+        CloseHandle(this->hAppMutex);
+    }
+
+    INT WinApp::Mainloop()
+    {
+        INT errCode = EXIT_SUCCESS;
+
+        MainWindow* mainWindow = new MainWindow();
+        mainWindow->CreateWindow_();
+
+        BOOL bRet;
+        MSG msg;
+        // 开启消息循环
+        while ((bRet = GetMessageW(&msg, NULL, 0, 0)))
+        {
+            if (bRet == -1)
+            {
+                errCode = EXIT_FAILURE;
+                break;
+            }
+            else
+            {
+                TranslateMessage(&msg);
+                DispatchMessageW(&msg);
+            }
+        }
+
+        delete mainWindow;
+        return errCode;
+    }
+
+    inline PCWSTR WinApp::GetName() const
+    {
+#ifdef _DEBUG
+        return L"DesktopSprite_d";
+#else
+        return L"DesktopSprite";
+#endif // _DEBUG
+    };
+
+    inline PCWSTR WinApp::GetPath() const
+    {
+        return this->szExeFullPath;
+    }
+
+    inline PCWSTR WinApp::GetDir() const
+    {
+        return this->szExeFullDir;
+    }
+
+    inline PCWSTR WinApp::GetConfigPath() const
+    {
+        return this->szConfigFullPath;
+    }
+
+    // global functions
+
+    static WinApp* g_winApp = NULL;
+
+    BOOL InitializeWinApp()
+    {
+        if (!g_winApp)
+        {
+            g_winApp = new WinApp();
+        }
+        return TRUE;
+    }
+
+    BOOL UnInitializeWinApp()
+    {
+        if (g_winApp)
+        {
+            delete g_winApp;
+        }
+        return TRUE;
+    }
+
+    INT Mainloop()
+    {
+        return g_winApp->Mainloop();
+    }
+
+    PCWSTR GetName()
+    {
+        if (!g_winApp) return NULL;
+        return g_winApp->GetName();
+    }
+
+    PCWSTR GetPath()
+    {
+        if (!g_winApp) return NULL;
+        return g_winApp->GetPath();
+    }
+
+    PCWSTR GetDir()
+    {
+        if (!g_winApp) return NULL;
+        return g_winApp->GetDir();
+    }
+
+    PCWSTR GetConfigPath()
+    {
+        if (!g_winApp) return NULL;
+        return g_winApp->GetConfigPath();
+    }
 }
 
 INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ INT nShowCmd)
 {
     INT errCode = EXIT_SUCCESS;
-    g_winApp = new WinApp();
-    errCode = g_winApp->Mainloop();
-    delete g_winApp;
+    WinApp::InitializeWinApp();
+    errCode = WinApp::Mainloop();
+    WinApp::UnInitializeWinApp();
     return errCode;
 }

@@ -4,31 +4,38 @@
 
 #include <ds/framework.h>
 
-class WinApp
-{
-private:
-    HANDLE hAppMutex = NULL;
-    ULONG_PTR gdiplusToken = 0;
-    WCHAR szExeFullDir[MAX_PATH] = { 0 };
-    WCHAR szExeFullPath[MAX_PATH] = { 0 };
-    WCHAR szConfigFullPath[MAX_PATH] = { 0 };
+namespace WinApp {
 
-public:
-    WinApp();
-    ~WinApp();
-    INT Mainloop();
+    class WinApp
+    {
+    private:
+        HANDLE hAppMutex = NULL;
+        ULONG_PTR gdiplusToken = 0;
+        WCHAR szExeFullDir[MAX_PATH] = { 0 };
+        WCHAR szExeFullPath[MAX_PATH] = { 0 };
+        WCHAR szConfigFullPath[MAX_PATH] = { 0 };
 
-public:
-#ifdef _DEBUG
-    PCWSTR GetName() const { return L"DesktopSprite_d"; };
-#else
-    PCWSTR GetName() const { return L"DesktopSprite"; };
-#endif // _DEBUG
-    PCWSTR GetPath() const { return this->szExeFullPath; }
-    PCWSTR GetDir() const { return this->szExeFullDir; }
-    PCWSTR GetConfigPath() const { return this->szConfigFullPath; }
-};
+    public:
+        WinApp();
+        ~WinApp();
+        INT Mainloop();
 
-extern WinApp* g_winApp;
+    public:
+        PCWSTR GetName() const;
+        PCWSTR GetPath() const;
+        PCWSTR GetDir() const;
+        PCWSTR GetConfigPath() const;
+    };
+
+    // global functions
+
+    BOOL InitializeWinApp();
+    BOOL UnInitializeWinApp();
+
+    PCWSTR GetName();
+    PCWSTR GetPath();
+    PCWSTR GetDir();
+    PCWSTR GetConfigPath();
+}
 
 #endif // !DS_WINAPP_H
