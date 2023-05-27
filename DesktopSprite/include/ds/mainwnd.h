@@ -14,8 +14,7 @@
 
 // 窗口消息相关宏定义
 
-#define IDT_REFRESHRECT                 1
-#define IDT_TIMEALARM                   2
+#define IDT_TIMEALARM                   1
 
 using namespace Gdiplus;
 
@@ -28,10 +27,8 @@ BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT
 class MainWindow :public BaseWindow
 {
 private:
-    AppConfig           config;
-    PerfMonitor         perfMonitor;
-    NotifyIcon*         pNotifyIcon = NULL;
-    SpriteWindow*       spritewnd = NULL;
+    NotifyIcon* pNotifyIcon = NULL;
+    SpriteWindow* spritewnd = NULL;
 
 private:
     INT                                 wndSizeUnit = 0;                // 窗口单元格大小, 在运行时随 DPI 进行缩放
@@ -41,20 +38,17 @@ private:
     POINT                               currentFloatPos = { 0 };        // 在显示弹出窗口时临时保存当前浮动窗口位置
     Gdiplus::PrivateFontCollection      fontColl;                       // 文本字体容器
     HICON                               balloonIcon = NULL;             // 气泡消息的图标资源
-
-private:
-    WCHAR                               configPath[MAX_PATH] = { 0 };   // 配置文件路径
     WCHAR                               fontPath[MAX_PATH] = { 0 };     // 字体路径
-
-public:
-    PCWSTR GetClassName_() const { return L"DesktopSpriteMainWndClass"; }
-    PCWSTR GetFontPath() const { return this->fontPath; }
+    PerfMonitor::PERFDATA               perfData = { 0 };               // 性能数据缓冲
 
 public:
     MainWindow();
 
-    BOOL ApplyConfig();
-    BOOL ApplyConfig(const AppConfig* newConfig); // 应用更改, 只修改发生变化的设置项
+    PCWSTR GetClassName_() const;
+    PCWSTR GetFontPath() const;
+
+    // 应用更改, 只修改发生变化的设置项, 空参数则应用全局设置
+    BOOL ApplyConfig(const AppConfig::AppConfig* newConfig = NULL);
 
     // 显示右键菜单
     BOOL ShowContextMenu(INT x, INT y);
@@ -64,7 +58,7 @@ public:
 
     // 根据任务栏位置计算窗口的位置
     BOOL GetPopupWindowPos(POINT* pt);
-    
+
     // 显示/隐藏弹出窗口
     BOOL PopupOpen();
     BOOL PopupClose();
@@ -77,7 +71,7 @@ public:
     BOOL SaveCurrentPosToReg();
 
     // 根据电脑颜色主题加载通知区域图标
-    HICON LoadNotifyIconBySysTheme() { return LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)); }
+    HICON LoadNotifyIconBySysTheme();
 
     void GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent);
     BOOL TimeAlarm();
@@ -103,6 +97,7 @@ private:
     LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
     LRESULT OnNotifyIcon(WPARAM wParam, LPARAM lParam);
     LRESULT OnTimeAlarm(WPARAM wParam, LPARAM lParam);
+    LRESULT OnPerfDataUpdated(WPARAM wParam, LPARAM lParam);
     LRESULT OnTaskbarCreated(WPARAM wParam, LPARAM lParam);
 };
 

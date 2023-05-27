@@ -21,7 +21,6 @@ static Gdiplus::Color const STATUSCOLOR_BAD = 0xffff0000;
 static PCWSTR const REGVAL_LASTFLOATPOS = L"LastFloatPos";
 
 // 常量定义
-static UINT     const   REFRESHINTERVAL = 1000;                // 屏幕显示刷新间隔
 static UINT     const   ID_NIDMAIN = 1;                        // 图标 ID
 static UINT     const   BASE_WNDSIZE_PIXELS = 20;              // 主窗口的基本单元格像素大小
 
@@ -76,7 +75,17 @@ BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT
 
 MainWindow::MainWindow()
 {
-    PathCchCombine(this->fontPath, MAX_PATH, g_winApp->GetDir(), L"res\\font\\AGENCYR.TTF");
+    PathCchCombine(this->fontPath, MAX_PATH, WinApp::GetDir(), L"res\\font\\AGENCYR.TTF");
+}
+
+PCWSTR MainWindow::GetClassName_() const
+{
+    return L"DesktopSpriteMainWndClass";
+}
+
+PCWSTR MainWindow::GetFontPath() const
+{
+    return this->fontPath;
 }
 
 BOOL MainWindow::ShowContextMenu(INT x, INT y)
@@ -199,7 +208,7 @@ BOOL MainWindow::LoadLastPosFromReg(POINT* pt)
     DWORD cbData = 0;
 
     WCHAR subkey[128] = { 0 };
-    if (FAILED(StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", g_winApp->GetName())))
+    if (FAILED(StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", WinApp::GetName())))
     {
         return FALSE;
     }
@@ -231,7 +240,7 @@ BOOL MainWindow::SaveCurrentPosToReg()
     DWORD cbData = 0;
 
     WCHAR subkey[128] = { 0 };
-    StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", g_winApp->GetName());
+    StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", WinApp::GetName());
 
     if (RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition))
     {
@@ -244,72 +253,39 @@ BOOL MainWindow::SaveCurrentPosToReg()
     return TRUE;
 }
 
-BOOL MainWindow::ApplyConfig()
+HICON MainWindow::LoadNotifyIconBySysTheme()
 {
-    // 加载气泡图标资源
-    DestroyIcon(this->balloonIcon);
-    Bitmap(this->config.szBalloonIconPath).GetHICON(&this->balloonIcon);
-
-    // 是否显示浮动窗口
-    if (this->config.bFloatWnd)
-    {
-        ShowWindow(this->hWnd, SW_SHOWNA);
-    }
-    else
-    {
-        ShowWindow(this->hWnd, SW_HIDE);
-    }
-
-    // 设置显示内容
-    SIZE sizeWnd = { 0 };
-    GetWndSizeByShowContent(&sizeWnd, this->config.byShowContent);
-    SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, sizeWnd.cx, sizeWnd.cy, SWP_NOACTIVATE | SWP_NOMOVE);
-
-    // 设置透明度
-    SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(this->config.transparencyPercent), LWA_ALPHA);
-
-    // 开机启动
-    if (this->config.bAutoRun)
-    {
-        SetAppAutoRun(g_winApp->GetName());
-    }
-    else
-    {
-        UnsetAppAutoRun(g_winApp->GetName());
-    }
-
-    // 是否整点报时
-    if (this->config.bTimeAlarm)
-    {
-        SetTimer(this->hWnd, IDT_TIMEALARM, 500, (TIMERPROC)NULL);
-    }
-    else
-    {
-        KillTimer(this->hWnd, IDT_TIMEALARM);
-    }
-
-    // 重绘一次
-    InvalidateRect(this->hWnd, NULL, TRUE);
-
-    this->config.SaveToFile(g_winApp->GetConfigPath());
-
-    return TRUE;
+    return LoadIconW(
+        GetModuleHandleW(NULL), 
+        MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
+    );
 }
 
-BOOL MainWindow::ApplyConfig(const AppConfig* newConfig)
+BOOL MainWindow::ApplyConfig(const AppConfig::AppConfig* other)
 {
+    const AppConfig::AppConfig* currentConfig = AppConfig::Get();
+    if (!other)
+    {
+        other = currentConfig;
+    }
+    BOOL isNew = (other != currentConfig);
+
     // 重设气泡图标
-    if (StrCmpW(newConfig->szBalloonIconPath, this->config.szBalloonIconPath))
+    if (!isNew || StrCmpW(other->szBalloonIconPath, currentConfig->szBalloonIconPath))
     {
         DestroyIcon(this->balloonIcon);
-        Bitmap(newConfig->szBalloonIconPath).GetHICON(&this->balloonIcon);
-        this->pNotifyIcon->PopupIconInfo(L"图标修改成功", L"来看看效果吧~", this->balloonIcon, TRUE);
+        Bitmap(other->szBalloonIconPath).GetHICON(&this->balloonIcon);
+
+        if (isNew)
+        {
+            this->pNotifyIcon->PopupIconInfo(L"图标修改成功", L"来看看效果吧~", this->balloonIcon, TRUE);
+        }
     }
 
     // 设置浮动窗口
-    if (newConfig->bFloatWnd != this->config.bFloatWnd)
+    if (!isNew || other->bFloatWnd != currentConfig->bFloatWnd)
     {
-        if (newConfig->bFloatWnd)
+        if (other->bFloatWnd)
         {
             ShowWindow(this->hWnd, SW_SHOWNA);
         }
@@ -320,36 +296,36 @@ BOOL MainWindow::ApplyConfig(const AppConfig* newConfig)
     }
 
     // 调整显示内容
-    if (newConfig->byShowContent != this->config.byShowContent)
+    if (!isNew || other->byShowContent != currentConfig->byShowContent)
     {
         SIZE sizeWnd = { 0 };
-        GetWndSizeByShowContent(&sizeWnd, newConfig->byShowContent);
+        GetWndSizeByShowContent(&sizeWnd, other->byShowContent);
         SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, sizeWnd.cx, sizeWnd.cy, SWP_NOACTIVATE | SWP_NOMOVE);
     }
 
     // 设置透明度
-    if (newConfig->transparencyPercent != this->config.transparencyPercent)
+    if (!isNew || other->transparencyPercent != currentConfig->transparencyPercent)
     {
-        SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(newConfig->transparencyPercent), LWA_ALPHA);
+        SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(other->transparencyPercent), LWA_ALPHA);
     }
 
     // 设置开机自启
-    if (newConfig->bAutoRun != this->config.bAutoRun)
+    if (!isNew || other->bAutoRun != currentConfig->bAutoRun)
     {
-        if (newConfig->bAutoRun)
+        if (other->bAutoRun)
         {
-            SetAppAutoRun(g_winApp->GetName());
+            SetAppAutoRun(WinApp::GetName());
         }
         else
         {
-            UnsetAppAutoRun(g_winApp->GetName());
+            UnsetAppAutoRun(WinApp::GetName());
         }
     }
 
     // 整点报时
-    if (newConfig->bTimeAlarm != this->config.bTimeAlarm)
+    if (!isNew || other->bTimeAlarm != currentConfig->bTimeAlarm)
     {
-        if (newConfig->bTimeAlarm)
+        if (other->bTimeAlarm)
         {
             SetTimer(this->hWnd, IDT_TIMEALARM, 500, (TIMERPROC)NULL);
         }
@@ -361,9 +337,6 @@ BOOL MainWindow::ApplyConfig(const AppConfig* newConfig)
 
     // 重绘一次
     InvalidateRect(this->hWnd, NULL, TRUE);
-
-    this->config = *newConfig;
-    this->config.SaveToFile(g_winApp->GetConfigPath());
 
     return TRUE;
 }
@@ -390,7 +363,7 @@ BOOL MainWindow::TimeAlarm()
     WCHAR szInfo[MAX_NIDINFO] = { 0 };
     StringCchPrintfW(szInfo, MAX_NIDINFO, L"北京时间 %02d: %02d", st.wHour, st.wMinute);
 
-    return this->pNotifyIcon->PopupIconInfo(L"Take a break~", szInfo, this->balloonIcon, this->config.bInfoSound);
+    return this->pNotifyIcon->PopupIconInfo(L"Take a break~", szInfo, this->balloonIcon, AppConfig::Get()->bInfoSound);
 }
 
 INT MainWindow::ShowNoConentWarningMsg()
@@ -438,6 +411,8 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return this->OnNotifyIcon(wParam, lParam);
     case WM_TIMEALARM:
         return this->OnTimeAlarm(wParam, lParam);
+    case WM_PERFDATAUPDATED:
+        return this->OnPerfDataUpdated(wParam, lParam);
     default:
         if (uMsg == this->uMsgTaskbarCreated)
             return this->OnTaskbarCreated(wParam, lParam);
@@ -451,8 +426,8 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     // 设置窗口类样式, 增加阴影边框
     SetClassLongPtrW(this->hWnd, GCL_STYLE, GetClassLongPtrW(this->hWnd, GCL_STYLE) | CS_DROPSHADOW);
 
-    // 启动监视器
-    this->perfMonitor.Start();
+    // 注册监视器
+    PerfMonitor::RegisterMessage(this->hWnd, WM_PERFDATAUPDATED);
 
     // DPI 相关
     this->wndSizeUnit = BASE_WNDSIZE_PIXELS * GetDpiForWindow(this->hWnd) / 96;
@@ -462,18 +437,12 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
     // 添加图标
     this->pNotifyIcon = new NotifyIcon(this->hWnd, ID_NIDMAIN);
-    this->pNotifyIcon->Add(WM_NOTIFYICON, this->LoadNotifyIconBySysTheme(), g_winApp->GetName());
+    this->pNotifyIcon->Add(WM_NOTIFYICON, this->LoadNotifyIconBySysTheme(), WinApp::GetName());
 
     // 初始化窗口位置
     POINT wndPos = { 0 };
     this->LoadLastPosFromReg(&wndPos);
     SetWindowPos(this->hWnd, HWND_TOPMOST, wndPos.x, wndPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
-
-    // 初始化配置参数相关
-    if (PathFileExistsW(g_winApp->GetConfigPath()))
-    {
-        this->config.LoadFromFile(g_winApp->GetConfigPath());
-    }
 
     // 应用配置项
     this->ApplyConfig();
@@ -485,9 +454,6 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
         SetWindowPos(this->hWnd, HWND_TOPMOST, wndPos.x, wndPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE);
         this->SaveCurrentPosToReg();
     }
-
-    // 每 1s 刷新一次显示
-    SetTimer(this->hWnd, IDT_REFRESHRECT, REFRESHINTERVAL, (TIMERPROC)NULL);
 
     // 创建 sprite 窗口
     this->spritewnd = new SpriteWindow;
@@ -502,14 +468,14 @@ LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
     delete this->spritewnd;
 
     this->SaveCurrentPosToReg();
-    this->config.SaveToFile(g_winApp->GetConfigPath());
+    AppConfig::SaveToFile(WinApp::GetConfigPath());
 
     this->pNotifyIcon->Delete();
     delete this->pNotifyIcon;
 
     DestroyIcon(this->balloonIcon);
 
-    this->perfMonitor.Stop();
+    PerfMonitor::UnregisterMessage(this->hWnd);
 
     PostQuitMessage(EXIT_SUCCESS);
     return 0;
@@ -518,7 +484,7 @@ LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnActivate(WPARAM wParam, LPARAM lParam)
 {
     // 不是浮动且处于固定并失去激活
-    if (!this->config.bFloatWnd && this->bWndFixed && !wParam)
+    if (!AppConfig::Get()->bFloatWnd && this->bWndFixed && !wParam)
     {
         this->bWndFixed = FALSE;
         // ShowWindow(this->hWnd, SW_HIDE); // 不能在 WM_ACTIVATE 里用这个, 有 bug, 会丢失鼠标按下的消息, 见 http://www.cnblogs.com/cswuyg/archive/2012/08/20/2647445.html
@@ -537,8 +503,6 @@ LRESULT MainWindow::OnClose(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
 {
     // 得到性能数据
-    PERFDATA perfData = { 0 };
-    this->perfMonitor.GetPerfData(&perfData);
     WCHAR szDataBuffer[16] = { 0 };     // 字符串缓冲区
     INT nLevel = 0;
     Color statusColor;
@@ -565,8 +529,8 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
     // 绘图属性对象
     SizeF drawSize(sizeUnit * 3, sizeUnit * 3);                 // 绘制矩形
     Pen pen(Color::Green, sizeUnit / 6);                                                   // 图形颜色
-    SolidBrush textbrush(this->config.bDarkTheme ? Color::White : Color::Black);   // 文本颜色
-    SolidBrush bgbrush(this->config.bDarkTheme ? Color::Black : Color::White);     // 背景颜色
+    SolidBrush textbrush(AppConfig::Get()->bDarkTheme ? Color::White : Color::Black);   // 文本颜色
+    SolidBrush bgbrush(AppConfig::Get()->bDarkTheme ? Color::Black : Color::White);     // 背景颜色
 
     // 从容器中创建要使用的字体
     FontFamily fontFamily;
@@ -583,19 +547,19 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
 
     // 绘制CPU与MEM
     PointF circleCenter;
-    if (this->config.byShowContent & SHOWCONTENT_CPUMEM)
+    if (AppConfig::Get()->byShowContent & SHOWCONTENT_CPUMEM)
     {
         drawSize.Width = sizeUnit * 3;
         drawSize.Height = sizeUnit * 3;
         graphicsMem.TranslateTransform(0, 0);
 
         // CPU
-        StringCchPrintfW(szDataBuffer, 16, L"C:%.0f%%", perfData.cpuPercent);
-        if (perfData.cpuPercent < 50)
+        StringCchPrintfW(szDataBuffer, 16, L"C:%.0f%%", this->perfData.cpuPercent);
+        if (this->perfData.cpuPercent < 50)
         {
             pen.SetColor(STATUSCOLOR_GOOD);
         }
-        else if (perfData.cpuPercent < 75)
+        else if (this->perfData.cpuPercent < 75)
         {
             pen.SetColor(STATUSCOLOR_NORMAL);
         }
@@ -614,16 +578,16 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
             graphicsMem, pen,
             circleCenter,
             drawSize.Height / 2 - sizeUnit * 0.3f,
-            REAL(perfData.cpuPercent / 100)
+            REAL(this->perfData.cpuPercent / 100)
         );
 
         // 绘制内存
-        StringCchPrintfW(szDataBuffer, 16, L"M:%.0f%%", perfData.memPercent);
-        if (perfData.memPercent < 75)
+        StringCchPrintfW(szDataBuffer, 16, L"M:%.0f%%", this->perfData.memPercent);
+        if (this->perfData.memPercent < 75)
         {
             pen.SetColor(STATUSCOLOR_GOOD);
         }
-        else if (perfData.memPercent < 90)
+        else if (this->perfData.memPercent < 90)
         {
             pen.SetColor(STATUSCOLOR_NORMAL);
         }
@@ -642,25 +606,25 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
             graphicsMem, pen,
             circleCenter,
             drawSize.Height / 2 - sizeUnit * 0.3f,
-            REAL(perfData.memPercent / 100)
+            REAL(this->perfData.memPercent / 100)
         );
     }
 
     // 绘制网速
     RectF rectSpeed;
-    if (this->config.byShowContent & SHOWCONTENT_NETSPEED)
+    if (AppConfig::Get()->byShowContent & SHOWCONTENT_NETSPEED)
     {
         drawSize.Width = sizeUnit * 3;
         drawSize.Height = sizeUnit * 1;
         graphicsMem.TranslateTransform(0, 0);
 
-        if (this->config.byShowContent & SHOWCONTENT_CPUMEM)
+        if (AppConfig::Get()->byShowContent & SHOWCONTENT_CPUMEM)
         {
             graphicsMem.TranslateTransform(0, sizeUnit * 3);
         }
 
         // 绘制上传
-        nLevel = ConvertSpeed(perfData.uploadSpeed, szDataBuffer, 16);
+        nLevel = ConvertSpeed(this->perfData.uploadSpeed, szDataBuffer, 16);
         if (nLevel < 3)
         {
             statusColor = STATUSCOLOR_BAD;
@@ -683,7 +647,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         DrawSpeedStair(graphicsMem, statusColor, rectSpeed, TRUE, nLevel);
 
         // 绘制下载
-        nLevel = ConvertSpeed(perfData.downloadSpeed, szDataBuffer, 16);
+        nLevel = ConvertSpeed(this->perfData.downloadSpeed, szDataBuffer, 16);
         if (nLevel < 3)
         {
             statusColor = STATUSCOLOR_BAD;
@@ -723,7 +687,7 @@ LRESULT MainWindow::OnSettingChange(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnContextMenu(WPARAM wParam, LPARAM lParam)
 {
     // 只在显示浮窗的时候才弹出右键菜单
-    if (this->config.bFloatWnd)
+    if (AppConfig::Get()->bFloatWnd)
     {
         this->ShowContextMenu(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
     }
@@ -755,7 +719,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     // lParam: 0
     BOOL configChanged = FALSE;
 
-    AppConfig* pcfgdata = new AppConfig(this->config);
+    AppConfig::AppConfig* pcfgdata = new AppConfig::AppConfig(*AppConfig::Get());
 
     switch (LOWORD(wParam))
     {
@@ -798,7 +762,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     case IDM_CONFIG:
     {
         ConfigDlg* dlg = new ConfigDlg(this);
-        dlg->SetFormData(&this->config);
+        dlg->SetFormData(AppConfig::Get());
         if (dlg->ShowDialogBox(GetModuleHandleW(NULL), this->hWnd))
         {
             dlg->GetFormData(pcfgdata);
@@ -825,6 +789,9 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     if (configChanged)
     {
         this->ApplyConfig(pcfgdata);
+        // TODO: 对 sprite 窗口应用
+        AppConfig::Set(pcfgdata);
+        AppConfig::SaveToFile(WinApp::GetConfigPath());
     }
 
     delete pcfgdata;
@@ -835,9 +802,6 @@ LRESULT MainWindow::OnTimer(WPARAM wParam, LPARAM lParam)
 {
     switch (wParam)
     {
-    case IDT_REFRESHRECT:
-        InvalidateRect(this->hWnd, NULL, TRUE);
-        break;
     case IDT_TIMEALARM:
         PostMessageW(this->hWnd, WM_TIMEALARM, 0, 0);
         break;
@@ -853,15 +817,15 @@ LRESULT MainWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
     HMENU hMenu = (HMENU)wParam;
 
     // 设置菜单状态
-    SetMenuItemState(hMenu, IDM_FLOATWND, FALSE, (this->config.bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
+    SetMenuItemState(hMenu, IDM_FLOATWND, FALSE, (AppConfig::Get()->bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
 
     // 子菜单
-    SetMenuItemState(hMenu, IDM_SHOWCPUMEM, FALSE, ((this->config.byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
-    SetMenuItemState(hMenu, IDM_SHOWNETSPEED, FALSE, ((this->config.byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
+    SetMenuItemState(hMenu, IDM_SHOWCPUMEM, FALSE, ((AppConfig::Get()->byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
+    SetMenuItemState(hMenu, IDM_SHOWNETSPEED, FALSE, ((AppConfig::Get()->byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
 
     // 子菜单
-    SetMenuItemState(hMenu, IDM_TIMEALARM, FALSE, this->config.bTimeAlarm ? MFS_CHECKED : MFS_UNCHECKED);
-    SetMenuItemState(hMenu, IDM_INFOSOUND, FALSE, this->config.bInfoSound ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_TIMEALARM, FALSE, AppConfig::Get()->bTimeAlarm ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_INFOSOUND, FALSE, AppConfig::Get()->bInfoSound ? MFS_CHECKED : MFS_UNCHECKED);
 
 
     return 0;
@@ -869,7 +833,7 @@ LRESULT MainWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 {
-    if (this->config.bFloatWnd)
+    if (AppConfig::Get()->bFloatWnd)
     {
         if (wParam & MK_LBUTTON)
         {
@@ -902,7 +866,7 @@ LRESULT MainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
     ReleaseCapture();
 
-    if (this->config.bFloatWnd)
+    if (AppConfig::Get()->bFloatWnd)
     {
         // 保存一次现在的窗口位置
         this->SaveCurrentPosToReg();
@@ -916,7 +880,7 @@ LRESULT MainWindow::OnDpiChanged(WPARAM wParam, LPARAM lParam)
     // 重新计算窗体大小
     this->wndSizeUnit = BASE_WNDSIZE_PIXELS * GetDpiForWindow(this->hWnd) / 96;
     SIZE sizeWnd = { 0 };
-    this->GetWndSizeByShowContent(&sizeWnd, this->config.byShowContent);
+    this->GetWndSizeByShowContent(&sizeWnd, AppConfig::Get()->byShowContent);
 
     // 设置新的窗体大小
     SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, sizeWnd.cx, sizeWnd.cy, SWP_NOACTIVATE | SWP_NOMOVE);
@@ -945,7 +909,7 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         break;
     case NIN_SELECT:
     case NIN_KEYSELECT:
-        if (!this->config.bFloatWnd && !this->bWndFixed)
+        if (!AppConfig::Get()->bFloatWnd && !this->bWndFixed)
         {
             this->bWndFixed = TRUE; // 固定住窗口显示
             this->PopupOpen();
@@ -954,14 +918,14 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         break;
     case NIN_POPUPOPEN:
         // 不是浮动且没有固定则显示弹窗
-        if (!this->config.bFloatWnd && !this->bWndFixed)
+        if (!AppConfig::Get()->bFloatWnd && !this->bWndFixed)
         {
             this->PopupOpen();
         }
         break;
     case NIN_POPUPCLOSE:
         // 不是浮动且没有固定则隐藏弹窗
-        if (!this->config.bFloatWnd && !this->bWndFixed)
+        if (!AppConfig::Get()->bFloatWnd && !this->bWndFixed)
         {
             this->PopupClose();
         }
@@ -992,9 +956,16 @@ LRESULT MainWindow::OnTimeAlarm(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+LRESULT MainWindow::OnPerfDataUpdated(WPARAM wParam, LPARAM lParam)
+{
+    ((PerfMonitor::PerfMonitor*)lParam)->GetPerfData(&this->perfData);
+    InvalidateRect(this->hWnd, NULL, TRUE);
+    return 0;
+}
+
 LRESULT MainWindow::OnTaskbarCreated(WPARAM wParam, LPARAM lParam)
 {
     // 添加图标
-    this->pNotifyIcon->Add(WM_NOTIFYICON, LoadNotifyIconBySysTheme(), g_winApp->GetName());
+    this->pNotifyIcon->Add(WM_NOTIFYICON, LoadNotifyIconBySysTheme(), WinApp::GetName());
     return 0;
 }
