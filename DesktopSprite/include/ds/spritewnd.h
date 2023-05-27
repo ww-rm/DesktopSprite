@@ -14,6 +14,7 @@ class SpriteWindow : public BaseWindow
 {
 private:
     POINT ptDragSrc = { 0 };              // 拖动窗口时的源点
+    BOOL isDragging = FALSE;
     SpineChar* spinechar = NULL;
 
 public:
@@ -35,6 +36,8 @@ private:
     LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
     LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
     LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
+    LRESULT OnLButtonDBClick(WPARAM wParam, LPARAM lParam);
+    LRESULT OnMouseWheel(WPARAM wParam, LPARAM lParam);
 };
 
 

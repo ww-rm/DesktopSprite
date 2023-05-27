@@ -31,6 +31,10 @@ LRESULT SpriteWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return this->OnLButtonDown(wParam, lParam);
     case WM_LBUTTONUP:
         return this->OnLButtonUp(wParam, lParam);
+    case WM_LBUTTONDBLCLK:
+        return this->OnLButtonDBClick(wParam, lParam);
+    case WM_MOUSEWHEEL:
+        return this->OnMouseWheel(wParam, lParam);
     default:
         return DefWindowProcW(this->hWnd, uMsg, wParam, lParam);
     }
@@ -38,16 +42,15 @@ LRESULT SpriteWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 {
-
     // ¼ÓÔØ spine
     this->spinechar = new SpineChar(this->hWnd);
     this->spinechar->CreateTargetResourcse();
     this->spinechar->LoadSpine(
-        "D:\\ACGN\\AzurLane_Export\\spines\\guanghui_2\\guanghui_2.atlas",
-        "D:\\ACGN\\AzurLane_Export\\spines\\guanghui_2\\guanghui_2.skel"
+        "D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.atlas",
+        "D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.skel"
     );
 
-    SetWindowPos(this->hWnd, HWND_TOPMOST, 1000, 600, 700, 700, SWP_SHOWWINDOW);
+    SetWindowPos(this->hWnd, HWND_TOPMOST, 1000, 600, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 
     this->spinechar->Start();
     return 0;
@@ -99,10 +102,10 @@ LRESULT SpriteWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
 
 LRESULT SpriteWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 {
-    if (wParam & MK_LBUTTON)
+    if (this->isDragging && (wParam & MK_LBUTTON))
     {
         POINT ptCursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-        RECT rcWnd;
+        RECT rcWnd = { 0 };
         GetWindowRect(this->hWnd, &rcWnd);
         SetWindowPos(
             this->hWnd, HWND_TOPMOST,
@@ -129,11 +132,59 @@ LRESULT SpriteWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
     ReleaseCapture();
 
-    this->spinechar->Lock();
-    this->spinechar->SendAction(SpineAction::TOUCH);
-    this->spinechar->Unlock();
+    if (this->isDragging)
+    {
+        this->isDragging = FALSE;
+        this->spinechar->Lock();
+        this->spinechar->SendAction(SpineAction::DRAGDOWN);
+        this->spinechar->Unlock();
+    }
+    else
+    {
+        this->spinechar->Lock();
+        this->spinechar->SendAction(SpineAction::TOUCH);
+        this->spinechar->Unlock();
+    }
 
-    return DefWindowProcW(this->hWnd, WM_LBUTTONUP, wParam, lParam);
+    return 0;
 }
 
+LRESULT SpriteWindow::OnLButtonDBClick(WPARAM wParam, LPARAM lParam)
+{
+    SetCapture(this->hWnd); // ·ÀÖ¹Êó±ê¸ú¶ª
 
+    // ±£´æµã»÷Î»ÖÃ
+    this->ptDragSrc.x = GET_X_LPARAM(lParam);
+    this->ptDragSrc.y = GET_Y_LPARAM(lParam);
+
+    if (!this->isDragging)
+    {
+        this->isDragging = TRUE;
+        this->spinechar->Lock();
+        this->spinechar->SendAction(SpineAction::DRAGUP);
+        this->spinechar->Unlock();
+    }
+
+    return 0;
+}
+
+LRESULT SpriteWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
+{
+    WORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
+    SHORT zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+    if (zDelta >= 0)
+    {
+        this->spinechar->Lock();
+        this->spinechar->SendAction(SpineAction::WINK);
+        this->spinechar->Unlock();
+    }
+    else
+    {
+        this->spinechar->Lock();
+        this->spinechar->SendAction(SpineAction::DANCE);
+        this->spinechar->Unlock();
+    }
+
+    return 0;
+}
