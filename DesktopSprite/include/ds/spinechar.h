@@ -71,14 +71,14 @@ public:
     void DisposeResources();
 
     // 获取所有存在的动画名字
-    std::list<std::string>& GetAnimeNames() { return this->animationNames; };
+    std::list<std::string>& GetAnimeNames();
 
     // 获得纹理
-    Gdiplus::Bitmap* GetTexture() { return (Gdiplus::Bitmap*)this->atlas->pages->rendererObject; }
+    Gdiplus::Bitmap* GetTexture();
 
     // 设置动画
-    void SetAnimation(PCSTR animationName, BOOL loop = TRUE, INT trackIndex = 0) { spAnimationState_setAnimationByName(this->animationState, trackIndex, animationName, loop); }
-    void AddAnimation(PCSTR animationName, BOOL loop = TRUE, FLOAT delay = 0, INT trackIndex = 0) { spAnimationState_addAnimationByName(this->animationState, trackIndex, animationName, loop, delay); }
+    void SetAnimation(PCWSTR animationName, BOOL loop = TRUE, INT trackIndex = 0);
+    void AddAnimation(PCWSTR animationName, BOOL loop = TRUE, FLOAT delay = 0, INT trackIndex = 0);
 
     // 更新状态
     BOOL Update(FLOAT elapseTime);
@@ -106,7 +106,7 @@ private:
     Gdiplus::TextureBrush* textureBrush = NULL;
     BOOL flipX = TRUE;
     SpineState state = SpineState::IDLE;
-    std::map<SpineAnime, std::string> animeToName;
+    std::map<SpineAnime, std::wstring> animeToName;
 
     // 主循环数据
     HANDLE threadMutex = NULL;
@@ -133,13 +133,11 @@ public:
     BOOL RenderFrame();
 
     // 多线程锁住数据, caller 自行调用
-    BOOL Lock() { return !WaitForSingleObject(this->threadMutex, INFINITE); }
-    BOOL Unlock() { return ReleaseMutex(this->threadMutex); }
+    BOOL Lock();
+    BOOL Unlock();
 
     // 启动/停止运行
-    static DWORD CALLBACK FrameProc(_In_ LPVOID lpParameter) { 
-        return ((SpineChar*)lpParameter)->Mainloop(); 
-    }
+    static DWORD CALLBACK FrameProc(_In_ LPVOID lpParameter);
     DWORD Mainloop();
 
     BOOL Start();
@@ -155,12 +153,12 @@ public:
     BOOL SendAction(SpineAction action);
 
     // 设置精灵不同动画要使用的 spine 动画
-    void SetAnimeName(SpineAnime anime, PCSTR name) { this->animeToName[anime] = name; }
-    PCSTR GetAnimeName(SpineAnime anime) { return this->animeToName[anime].c_str(); }
+    void SetAnimeName(SpineAnime anime, PCWSTR name);
+    PCWSTR GetAnimeName(SpineAnime anime);
 
     // 设置帧率
-    void SetMaxFps(INT fps) { this->maxFps = fps; this->frameInterval = 1000.0f / (FLOAT)fps + 0.5f; }
-    INT GetMaxFps() const { return this->maxFps; }
+    void SetMaxFps(INT fps);
+    INT GetMaxFps() const;
 };
 
 

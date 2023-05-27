@@ -10,31 +10,31 @@
 // | x2, y2 | = | u2, v2, 1 | @ | m21, m22 |
 // | x3, y3 |   | u3, v3, 1 |   | dx,  dy  |
 void GetAffineMatrix(
-    double x1, double y1,
-    double x2, double y2,
-    double x3, double y3,
-    double u1, double v1,
-    double u2, double v2,
-    double u3, double v3,
+    float x1, float y1,
+    float x2, float y2,
+    float x3, float y3,
+    float u1, float v1,
+    float u2, float v2,
+    float u3, float v3,
     Gdiplus::Matrix* m
 )
 {
-    double x12 = x1 - x2;
-    double y12 = y1 - y2;
-    double x23 = x2 - x3;
-    double y23 = y2 - y3;
-    double u12 = u1 - u2;
-    double v12 = v1 - v2;
-    double u23 = u2 - u3;
-    double v23 = v2 - v3;
+    float x12 = x1 - x2;
+    float y12 = y1 - y2;
+    float x23 = x2 - x3;
+    float y23 = y2 - y3;
+    float u12 = u1 - u2;
+    float v12 = v1 - v2;
+    float u23 = u2 - u3;
+    float v23 = v2 - v3;
 
-    double invdet = 1.0000 / (u12 * v23 - v12 * u23);
-    double m11 = invdet * (x12 * v23 - v12 * x23);
-    double m12 = invdet * (y12 * v23 - v12 * y23);
-    double m21 = invdet * (u12 * x23 - x12 * u23);
-    double m22 = invdet * (u12 * y23 - y12 * u23);
-    double dx = x1 - m11 * u1 - m21 * v1;
-    double dy = y1 - m12 * u1 - m22 * v1;
+    float invdet = 1.0000 / (u12 * v23 - v12 * u23);
+    float m11 = invdet * (x12 * v23 - v12 * x23);
+    float m12 = invdet * (y12 * v23 - v12 * y23);
+    float m21 = invdet * (u12 * x23 - x12 * u23);
+    float m22 = invdet * (u12 * y23 - y12 * u23);
+    float dx = x1 - m11 * u1 - m21 * v1;
+    float dy = y1 - m12 * u1 - m22 * v1;
 
     m->SetElements((float)m11, (float)m12, (float)m21, (float)m22, (float)dx, (float)dy);
 }
@@ -63,7 +63,7 @@ BOOL Spine::CreateResources(PCSTR atlasPath, PCSTR skelPath)
     if (!(this->skeleton =           spSkeleton_create(this->skeletonData)))                                 return FALSE;
     if (!(this->animationState =     spAnimationState_create(this->animationStateData)))                     return FALSE;
 
-    animationStateData->defaultMix = 0.25f;
+    animationStateData->defaultMix = 0.15f;
 
     for (int i = 0; i < this->skeletonData->animationsCount; i++)
     {
@@ -110,6 +110,30 @@ void Spine::DisposeResources()
         spAtlas_dispose(this->atlas);
         this->atlas = NULL;
     }
+}
+
+std::list<std::string>& Spine::GetAnimeNames()
+{
+    return this->animationNames;
+}
+
+Gdiplus::Bitmap* Spine::GetTexture()
+{
+    return (Gdiplus::Bitmap*)this->atlas->pages->rendererObject;
+}
+
+void Spine::SetAnimation(PCWSTR animationName, BOOL loop = TRUE, INT trackIndex = 0)
+{
+    char animationNameA[MAX_PATH] = { 0 };
+    StrWtoA(animationName, animationNameA, MAX_PATH);
+    spAnimationState_setAnimationByName(this->animationState, trackIndex, animationNameA, loop);
+}
+
+void Spine::AddAnimation(PCWSTR animationName, BOOL loop = TRUE, FLOAT delay = 0, INT trackIndex = 0)
+{
+    char animationNameA[MAX_PATH] = { 0 };
+    StrWtoA(animationName, animationNameA, MAX_PATH);
+    spAnimationState_addAnimationByName(this->animationState, trackIndex, animationNameA, loop, delay);
 }
 
 BOOL Spine::Update(FLOAT elapseTime)
@@ -243,18 +267,18 @@ SpineChar::SpineChar(HWND targetWnd) : targetWnd(targetWnd)
     }
 
     // continuous
-    this->animeToName[SpineAnime::IDLE] = "normal";
-    this->animeToName[SpineAnime::DRAG] = "tuozhuai";
-    this->animeToName[SpineAnime::WORK] = "walk";
-    this->animeToName[SpineAnime::SLEEP] = "sleep";
+    this->animeToName[SpineAnime::IDLE] = L"normal";
+    this->animeToName[SpineAnime::DRAG] = L"tuozhuai";
+    this->animeToName[SpineAnime::WORK] = L"walk";
+    this->animeToName[SpineAnime::SLEEP] = L"sleep";
 
     // one-shot
-    this->animeToName[SpineAnime::STAND] = "stand";
-    this->animeToName[SpineAnime::TOUCH] = "touch";
-    this->animeToName[SpineAnime::WINK] = "motou";
-    this->animeToName[SpineAnime::VICTORY] = "victory";
-    this->animeToName[SpineAnime::DANCE] = "dance";
-    this->animeToName[SpineAnime::DIZZY] = "yun";
+    this->animeToName[SpineAnime::STAND] = L"stand";
+    this->animeToName[SpineAnime::TOUCH] = L"touch";
+    this->animeToName[SpineAnime::WINK] = L"motou";
+    this->animeToName[SpineAnime::VICTORY] = L"victory";
+    this->animeToName[SpineAnime::DANCE] = L"dance";
+    this->animeToName[SpineAnime::DIZZY] = L"yun";
 
     this->vertexBuffer.reserve(2048);
     this->vertexIndexBuffer.reserve(2048);
@@ -305,7 +329,7 @@ void SpineChar::DrawTriangles()
     int height = this->texture->GetHeight();
     Gdiplus::Matrix transform;
 
-    for (auto it = this->vertexIndexBuffer.begin(); it < this->vertexIndexBuffer.end(); it += 3)
+    for (auto it = this->vertexIndexBuffer.begin(); it != this->vertexIndexBuffer.end(); it += 3)
     {
         VERTEX vt1 = this->vertexBuffer[*it];
         VERTEX vt2 = this->vertexBuffer[*(it + 1)];
@@ -326,9 +350,19 @@ void SpineChar::DrawTriangles()
 BOOL SpineChar::RenderFrame()
 {
     POINT ptSrc = { 0, 0 };
-    SIZE sizeWnd = { 700, 700 };
+    SIZE sizeWnd = { 1920, 1080 };
     BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
     return UpdateLayeredWindow(this->targetWnd, this->hdcScreen, NULL, &sizeWnd, this->hdcMem, &ptSrc, 0, &blend, ULW_ALPHA);
+}
+
+BOOL SpineChar::Lock()
+{
+    return !WaitForSingleObject(this->threadMutex, INFINITE);
+}
+
+BOOL SpineChar::Unlock()
+{
+    return ReleaseMutex(this->threadMutex);
 }
 
 BOOL SpineChar::LoadSpine(PCSTR atlasPath, PCSTR skelPath)
@@ -338,6 +372,14 @@ BOOL SpineChar::LoadSpine(PCSTR atlasPath, PCSTR skelPath)
     {
         this->UnloadSpine();
         this->spine = spine;
+
+        for (auto it = this->spine->GetAnimeNames().begin(); it != this->spine->GetAnimeNames().end(); it++)
+        {
+            OutputDebugStringA((*it).c_str());
+            OutputDebugStringA("; ");
+        }
+        OutputDebugStringA("\n");
+
         this->spine->SetAnimation(this->animeToName[SpineAnime::IDLE].c_str());
         this->texture = this->spine->GetTexture();
         this->textureBrush = new Gdiplus::TextureBrush(this->texture); // 创建一次
@@ -362,6 +404,11 @@ void SpineChar::UnloadSpine()
         delete this->spine;
         this->spine = NULL;
     }
+}
+
+DWORD CALLBACK SpineChar::FrameProc(_In_ LPVOID lpParameter) 
+{
+    return ((SpineChar*)lpParameter)->Mainloop();
 }
 
 DWORD SpineChar::Mainloop()
@@ -561,4 +608,25 @@ BOOL SpineChar::SendAction(SpineAction action)
         break;
     }
     return TRUE;
+}
+
+void SpineChar::SetAnimeName(SpineAnime anime, PCWSTR name)
+{
+    this->animeToName[anime] = name;
+}
+
+PCWSTR SpineChar::GetAnimeName(SpineAnime anime)
+{
+    return this->animeToName[anime].c_str();
+}
+
+void SpineChar::SetMaxFps(INT fps)
+{
+    this->maxFps = fps; 
+    this->frameInterval = 1000.0f / (FLOAT)fps + 0.5f;
+}
+
+INT SpineChar::GetMaxFps() const
+{
+    return this->maxFps;
 }
