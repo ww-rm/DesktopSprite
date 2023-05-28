@@ -22,9 +22,11 @@
 #define IDC_CHECK_DARKTHEME             1014
 #define IDC_SLIDER_TRANSPARENCY         1015
 #define IDC_STATIC_TRANSPARENCY         1016
+#define IDC_CB_SPIDLE                   1017
 #define IDC_EDIT_SPATLASPATH            1019
 #define IDC_BTN_SPATLASPATH             1020
 #define IDC_EDIT_SPPNGPATH              1021
+#define IDC_CB_SPDRAG                   1022
 #define IDC_EDIT_SPSKELPATH             1023
 #define IDC_BTN_SPSKELPATH              1024
 #define IDC_CHECK_SHOWSPRITE            1025
@@ -34,8 +36,16 @@
 #define IDC_STATIC_SPMAXFPS             1029
 #define IDC_SLIDER_SPSCALE              1030
 #define IDC_STATIC_SPSCALE              1031
-#define IDC_CHECK_SHOWSPRITE2           1032
 #define IDC_CHECK_MOUSEPASS             1032
+#define IDC_CB_SPWORK                   1033
+#define IDC_CB_SPSLEEP                  1034
+#define IDC_CB_SPSTAND                  1035
+#define IDC_CB_SPTOUCH                  1036
+#define IDC_CB_SPWINK                   1037
+#define IDC_CB_SPVICTORY                1038
+#define IDC_CB_SPDANCE                  1039
+#define IDC_CB_SPIDLE10                 1040
+#define IDC_CB_SPDIZZY                  1040
 #define IDM_FLOATWND                    40001
 #define IDM_EXIT                        40002
 #define IDM_TIMEALARM                   40004
@@ -50,9 +60,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        124
+#define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40038
-#define _APS_NEXT_CONTROL_VALUE         1017
+#define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
