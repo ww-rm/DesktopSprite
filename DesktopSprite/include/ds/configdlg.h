@@ -27,7 +27,12 @@ private:
     // 检查并收集对话框里的数据到 form 里
     BOOL CheckValidFormData();
 
-    BOOL ShowBalloonIconPathSelectDlg();
+    // 点了确认返回 TRUE, 其余 FALSE
+    BOOL ShowPathSelectDlg(INT pathEditID, PCWSTR lpstrTitle, PCWSTR lpstrFilter); 
+
+    BOOL SetSpinePngPath(PCWSTR atlasPath = NULL);
+
+    BOOL InitTrackBar(INT trackBarID, INT range1, INT range2, INT pageSize, INT freq, INT pos);
 
 private:
     INT_PTR HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);

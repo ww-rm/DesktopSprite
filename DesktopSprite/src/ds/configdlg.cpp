@@ -61,28 +61,55 @@ BOOL ConfigDlg::CheckValidFormData()
     return TRUE;
 }
 
-BOOL ConfigDlg::ShowBalloonIconPathSelectDlg()
+BOOL ConfigDlg::ShowPathSelectDlg(INT pathEditID, PCWSTR lpstrTitle, PCWSTR lpstrFilter)
 {
     // 获得当前显示路径
-    WCHAR ballooniconPath[MAX_PATH] = { 0 };
-    GetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, ballooniconPath, MAX_PATH);
+    WCHAR path[MAX_PATH] = { 0 };
+    GetDlgItemTextW(this->hDlg, pathEditID, path, MAX_PATH);
 
     OPENFILENAMEW ofn = { 0 };
     ofn.lStructSize = sizeof(OPENFILENAMEW);
     ofn.hwndOwner = this->hDlg;
-    ofn.lpstrFile = ballooniconPath;
+    ofn.lpstrFile = path;
     ofn.nMaxFile = MAX_PATH;
-    ofn.lpstrFilter = L"图像文件 (*.jpg;*.jpeg;*.png;*.bmp;*.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0所有文件 (*.*)\0*.*\0";
-    ofn.lpstrTitle = L"选择气泡图标文件";
+    ofn.lpstrTitle = lpstrTitle;
+    ofn.lpstrFilter = lpstrFilter;
 
     // OFN_NOCHANGEDIR: 文档里说对 GetOpenFileName 无效, 但其实有效
     ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
 
     if (GetOpenFileNameW(&ofn))
     {
-        SetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, ballooniconPath);
+        SetDlgItemTextW(this->hDlg, pathEditID, path);
+        return TRUE;
     }
 
+    return FALSE;
+}
+
+BOOL ConfigDlg::SetSpinePngPath(PCWSTR atlasPath)
+{
+    WCHAR pngPath[MAX_PATH] = { 0 };
+    WCHAR currentAtlasPath[MAX_PATH] = { 0 };
+    if (!atlasPath)
+    {
+        GetDlgItemTextW(this->hDlg, IDC_EDIT_SPATLASPATH, currentAtlasPath, MAX_PATH);
+        atlasPath = currentAtlasPath;
+    }
+    if (SUCCEEDED(StringCchCopyW(pngPath, MAX_PATH, atlasPath)) && 
+        SUCCEEDED(PathCchRenameExtension(pngPath, MAX_PATH, L".png")))
+    {
+        return SetDlgItemTextW(this->hDlg, IDC_EDIT_SPPNGPATH, pngPath);
+    }
+    return FALSE;
+}
+
+BOOL ConfigDlg::InitTrackBar(INT trackBarID, INT range1, INT range2, INT pageSize, INT freq, INT pos)
+{
+    SendDlgItemMessageW(this->hDlg, trackBarID, TBM_SETRANGE, TRUE, MAKELPARAM(range1, range2)); // 范围
+    SendDlgItemMessageW(this->hDlg, trackBarID, TBM_SETPAGESIZE, 0, pageSize); // 单击一下的跳动范围
+    SendDlgItemMessageW(this->hDlg, trackBarID, TBM_SETTICFREQ, freq, 0); // 刻度线频率
+    SendDlgItemMessageW(this->hDlg, trackBarID, TBM_SETPOS, TRUE, pos); // 当前位置
     return TRUE;
 }
 
@@ -103,22 +130,35 @@ INT_PTR ConfigDlg::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
 {
+    // 系统设置
     CheckDlgButton(this->hDlg, IDC_CHECK_AUTORUN, this->form.bAutoRun ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(this->hDlg, IDC_CHECK_TIMEALARM, this->form.bTimeAlarm ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(this->hDlg, IDC_CHECK_INFOSOUND, this->form.bInfoSound ? BST_CHECKED : BST_UNCHECKED);
     SetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, this->form.szBalloonIconPath);
 
+    // 显示设置
     CheckDlgButton(this->hDlg, IDC_CHECK_FLOATWND, this->form.bFloatWnd ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(this->hDlg, IDC_CHECK_SHOWUSAGE, (this->form.byShowContent & SHOWCONTENT_CPUMEM) ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(this->hDlg, IDC_CHECK_SHOWNETSPEED, (this->form.byShowContent & SHOWCONTENT_NETSPEED) ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(this->hDlg, IDC_CHECK_DARKTHEME, this->form.bDarkTheme ? BST_CHECKED : BST_UNCHECKED);
-
-    SendDlgItemMessageW(this->hDlg, IDC_SLIDER_TRANSPARENCY, TBM_SETRANGE, TRUE, MAKELPARAM(0, 100)); // 范围
-    SendDlgItemMessageW(this->hDlg, IDC_SLIDER_TRANSPARENCY, TBM_SETPAGESIZE, 0, 1); // 单击一下的跳动范围
-    SendDlgItemMessageW(this->hDlg, IDC_SLIDER_TRANSPARENCY, TBM_SETTICFREQ, 10, 0); // 刻度线频率
-    SendDlgItemMessageW(this->hDlg, IDC_SLIDER_TRANSPARENCY, TBM_SETPOS, TRUE, this->form.transparencyPercent); // 当前位置
-
+    this->InitTrackBar(IDC_SLIDER_TRANSPARENCY, 0, 100, 1, 10, this->form.transparencyPercent);
     SetDlgItemInt(this->hDlg, IDC_STATIC_TRANSPARENCY, this->form.transparencyPercent, FALSE);
+
+    // 精灵设置
+    SetDlgItemTextW(this->hDlg, IDC_EDIT_SPSKELPATH, this->form.szSpineSkelPath);
+    SetDlgItemTextW(this->hDlg, IDC_EDIT_SPATLASPATH, this->form.szSpineAtlasPath);
+    this->SetSpinePngPath(this->form.szSpineAtlasPath);
+    CheckDlgButton(this->hDlg, IDC_CHECK_SHOWSPRITE, this->form.bShowSprite ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(this->hDlg, IDC_CHECK_MOUSEPASS, this->form.bSpriteMousePass ? BST_CHECKED : BST_UNCHECKED);
+    this->InitTrackBar(IDC_SLIDER_SPMAXFPS, 12, 60, 1, 6, this->form.maxFps);
+    SetDlgItemInt(this->hDlg, IDC_STATIC_SPMAXFPS, this->form.maxFps, FALSE);
+    this->InitTrackBar(IDC_SLIDER_SPTRANSPARENCY, 0, 100, 1, 10, this->form.spTransparencyPercent);
+    SetDlgItemInt(this->hDlg, IDC_STATIC_SPTRANSPARENCY, this->form.spTransparencyPercent, FALSE);
+    this->InitTrackBar(IDC_SLIDER_SPSCALE, 10, 200, 5, 10, this->form.spScale);
+    SetDlgItemInt(this->hDlg, IDC_STATIC_SPSCALE, this->form.spScale, FALSE);
+
+    // TODO: Spine 设置
+
 
     return TRUE;
 }
@@ -131,7 +171,14 @@ INT_PTR ConfigDlg::OnCommand(WPARAM wParam, LPARAM lParam)
     switch (LOWORD(wParam))
     {
     case IDC_BTN_BALLOONICONPATH:
-        this->ShowBalloonIconPathSelectDlg();
+        this->ShowPathSelectDlg(IDC_EDIT_BALLOONICONPATH, L"选择气泡图标文件", L"图像文件 (*.jpg;*.jpeg;*.png;*.bmp;*.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0所有文件 (*.*)\0*.*\0");
+        return TRUE;
+    case IDC_BTN_SPATLASPATH:
+        this->ShowPathSelectDlg(IDC_EDIT_SPATLASPATH, L"选择 Atlas 文件", L"Atlas 文件 (*.atlas)\0*.atlas\0");
+        this->SetSpinePngPath();
+        return TRUE;
+    case IDC_BTN_SPSKELPATH:
+        this->ShowPathSelectDlg(IDC_EDIT_SPSKELPATH, L"选择 Skel 文件", L"Skel 文件 (*.skel)\0*.skel\0");
         return TRUE;
     case IDOK:
         if (this->CheckValidFormData())
@@ -154,22 +201,60 @@ INT_PTR ConfigDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 
 INT_PTR ConfigDlg::OnHScroll(WPARAM wParam, LPARAM lParam)
 {
-    switch (LOWORD(wParam))
+    HWND trackBar = (HWND)lParam;
+    if (trackBar)
     {
-    case TB_LINEUP:
-    case TB_LINEDOWN:
-    case TB_PAGEUP:
-    case TB_PAGEDOWN:
-    case TB_TOP:
-    case TB_BOTTOM:
-    case TB_ENDTRACK:
-        SetDlgItemInt(this->hDlg, IDC_STATIC_TRANSPARENCY, (UINT)SendMessageW((HWND)lParam, TBM_GETPOS, 0, 0), FALSE);
-        return TRUE;
-    case TB_THUMBPOSITION:
-    case TB_THUMBTRACK:
-        SetDlgItemInt(this->hDlg, IDC_STATIC_TRANSPARENCY, HIWORD(wParam), FALSE);
-        return TRUE;
-    default:
-        return FALSE;
+        INT trackBarID = GetDlgCtrlID(trackBar);
+        switch (LOWORD(wParam))
+        {
+        case TB_LINEUP:
+        case TB_LINEDOWN:
+        case TB_PAGEUP:
+        case TB_PAGEDOWN:
+        case TB_TOP:
+        case TB_BOTTOM:
+        case TB_ENDTRACK:
+            switch (trackBarID)
+            {
+            case IDC_SLIDER_TRANSPARENCY:
+                SetDlgItemInt(this->hDlg, IDC_STATIC_TRANSPARENCY, (UINT)SendMessageW((HWND)lParam, TBM_GETPOS, 0, 0), FALSE);
+                break;
+            case IDC_SLIDER_SPMAXFPS:
+                SetDlgItemInt(this->hDlg, IDC_STATIC_SPMAXFPS, (UINT)SendMessageW((HWND)lParam, TBM_GETPOS, 0, 0), FALSE);
+                break;
+            case IDC_SLIDER_SPSCALE:
+                SetDlgItemInt(this->hDlg, IDC_STATIC_SPSCALE, (UINT)SendMessageW((HWND)lParam, TBM_GETPOS, 0, 0), FALSE);
+                break;
+            case IDC_SLIDER_SPTRANSPARENCY:
+                SetDlgItemInt(this->hDlg, IDC_STATIC_SPTRANSPARENCY, (UINT)SendMessageW((HWND)lParam, TBM_GETPOS, 0, 0), FALSE);
+                break;
+            default:
+                break;
+            }
+            return TRUE;
+        case TB_THUMBPOSITION:
+        case TB_THUMBTRACK:
+            switch (trackBarID)
+            {
+            case IDC_SLIDER_TRANSPARENCY:
+                SetDlgItemInt(this->hDlg, IDC_STATIC_TRANSPARENCY, HIWORD(wParam), FALSE);
+                break;
+            case IDC_SLIDER_SPMAXFPS:
+                SetDlgItemInt(this->hDlg, IDC_STATIC_SPMAXFPS, HIWORD(wParam), FALSE);
+                break;
+            case IDC_SLIDER_SPSCALE:
+                SetDlgItemInt(this->hDlg, IDC_STATIC_SPSCALE, HIWORD(wParam), FALSE);
+                break;
+            case IDC_SLIDER_SPTRANSPARENCY:
+                SetDlgItemInt(this->hDlg, IDC_STATIC_SPTRANSPARENCY, HIWORD(wParam), FALSE);
+                break;
+            default:
+                break;
+            }
+            return TRUE;
+        default:
+            return FALSE;
+        }
     }
+    return FALSE;
 }

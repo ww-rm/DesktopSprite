@@ -30,7 +30,7 @@ namespace AppConfig {
         this->bShowSprite = other.bShowSprite;
         this->bSpriteMousePass = other.bSpriteMousePass;
         this->maxFps = other.maxFps;
-        this->scale = other.scale;
+        this->spScale = other.spScale;
         this->spTransparencyPercent = other.spTransparencyPercent;
         StringCchCopyW(this->szSpineAtlasPath, MAX_PATH, other.szSpineAtlasPath);
         StringCchCopyW(this->szSpineSkelPath, MAX_PATH, other.szSpineSkelPath);
@@ -80,7 +80,7 @@ namespace AppConfig {
         this->bShowSprite = (BOOL)sprite.get("IsSpriteShow", (bool)this->bShowSprite).asBool();
         this->bSpriteMousePass = (BOOL)sprite.get("IsMousePass", (bool)this->bSpriteMousePass).asBool();
         this->maxFps = (UINT)sprite.get("MaxFPS", (UINT)this->maxFps).asUInt();
-        this->scale = (UINT)sprite.get("Scale", (UINT)this->scale).asUInt();
+        this->spScale = (UINT)sprite.get("Scale", (UINT)this->spScale).asUInt();
         this->spTransparencyPercent = (UINT)sprite.get("Transparency", (UINT)this->spTransparencyPercent).asUInt();
         StrAtoW(sprite.get("AtlasPath", this->szSpineAtlasPath).asCString(), this->szSpineAtlasPath, MAX_PATH);
         StrAtoW(sprite.get("SkelPath", this->szSpineSkelPath).asCString(), this->szSpineSkelPath, MAX_PATH);
@@ -123,7 +123,7 @@ namespace AppConfig {
         sprite["IsSpriteShow"] = (bool)this->bShowSprite;
         sprite["IsMousePass"] = (bool)this->bSpriteMousePass;
         sprite["MaxFPS"] = (UINT)this->maxFps;
-        sprite["Scale"] = (UINT)this->scale;
+        sprite["Scale"] = (UINT)this->spScale;
         sprite["Transparency"] = (UINT)this->spTransparencyPercent;
         sprite["AtlasPath"] = this->szSpineAtlasPath;
         sprite["SkelPath"] = this->szSpineSkelPath;
