@@ -33,8 +33,9 @@
 #define IDC_SLIDER_SPMAXFPS             1028
 #define IDC_STATIC_SPMAXFPS             1029
 #define IDC_SLIDER_SPSCALE              1030
-#define IDC_STATIC_SPTRANSPARENCY2      1031
 #define IDC_STATIC_SPSCALE              1031
+#define IDC_CHECK_SHOWSPRITE2           1032
+#define IDC_CHECK_MOUSEPASS             1032
 #define IDM_FLOATWND                    40001
 #define IDM_EXIT                        40002
 #define IDM_TIMEALARM                   40004
