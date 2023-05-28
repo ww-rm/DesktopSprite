@@ -351,7 +351,7 @@ BOOL SpineChar::RenderFrame()
 {
     POINT ptSrc = { 0, 0 };
     SIZE sizeWnd = { 1920, 1080 };
-    BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+    BLENDFUNCTION blend = { AC_SRC_OVER, 0, 128, AC_SRC_ALPHA };
     return UpdateLayeredWindow(this->targetWnd, this->hdcScreen, NULL, &sizeWnd, this->hdcMem, &ptSrc, 0, &blend, ULW_ALPHA);
 }
 
@@ -528,6 +528,9 @@ BOOL SpineChar::SendAction(SpineAction action)
     case SpineState::IDLE:
         switch (action)
         {
+        case SpineAction::FLUSH:
+            this->SetAnime(SpineAnime::IDLE);
+            break;
         case SpineAction::DRAGUP:
             this->state = SpineState::DRAG;
             this->SetAnime(SpineAnime::DRAG);
@@ -562,6 +565,9 @@ BOOL SpineChar::SendAction(SpineAction action)
     case SpineState::DRAG:
         switch (action)
         {
+        case SpineAction::FLUSH:
+            this->SetAnime(SpineAnime::DRAG);
+            break;
         case SpineAction::DRAGDOWN:
             this->state = SpineState::IDLE;
             this->SetAnime(SpineAnime::IDLE);
@@ -572,6 +578,9 @@ BOOL SpineChar::SendAction(SpineAction action)
     case SpineState::WORK:
         switch (action)
         {
+        case SpineAction::FLUSH:
+            this->SetAnime(SpineAnime::WORK);
+            break;
         case SpineAction::ENDWORK:
             this->state = SpineState::IDLE;
             this->SetAnime(SpineAnime::VICTORY, TRUE);
@@ -589,6 +598,9 @@ BOOL SpineChar::SendAction(SpineAction action)
     case SpineState::SLEEP:
         switch (action)
         {
+        case SpineAction::FLUSH:
+            this->SetAnime(SpineAnime::SLEEP);
+            break;
         case SpineAction::DRAGUP:
             this->state = SpineState::DRAG;
             this->SetAnime(SpineAnime::DRAG);

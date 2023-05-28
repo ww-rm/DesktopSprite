@@ -36,6 +36,8 @@ enum class SpineState {
 };
 
 enum class SpineAction {
+    FLUSH,
+
     DRAGUP,
     DRAGDOWN,
     BEGINWORK,
