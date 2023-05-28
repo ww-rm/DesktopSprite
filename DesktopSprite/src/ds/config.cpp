@@ -28,6 +28,7 @@ namespace AppConfig {
         
         // sprite ÉèÖÃ
         this->bShowSprite = other.bShowSprite;
+        this->bSpriteMousePass = other.bSpriteMousePass;
         this->maxFps = other.maxFps;
         this->scale = other.scale;
         this->spTransparencyPercent = other.spTransparencyPercent;
@@ -77,6 +78,7 @@ namespace AppConfig {
         Json::Value sprite = root.get("Sprite", Json::Value());
 
         this->bShowSprite = (BOOL)sprite.get("IsSpriteShow", (bool)this->bShowSprite).asBool();
+        this->bSpriteMousePass = (BOOL)sprite.get("IsMousePass", (bool)this->bSpriteMousePass).asBool();
         this->maxFps = (UINT)sprite.get("MaxFPS", (UINT)this->maxFps).asUInt();
         this->scale = (UINT)sprite.get("Scale", (UINT)this->scale).asUInt();
         this->spTransparencyPercent = (UINT)sprite.get("Transparency", (UINT)this->spTransparencyPercent).asUInt();
@@ -119,6 +121,7 @@ namespace AppConfig {
         sprite["Anime"] = spriteAnime;
 
         sprite["IsSpriteShow"] = (bool)this->bShowSprite;
+        sprite["IsMousePass"] = (bool)this->bSpriteMousePass;
         sprite["MaxFPS"] = (UINT)this->maxFps;
         sprite["Scale"] = (UINT)this->scale;
         sprite["Transparency"] = (UINT)this->spTransparencyPercent;

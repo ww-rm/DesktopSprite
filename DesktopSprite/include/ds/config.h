@@ -25,6 +25,7 @@ namespace AppConfig {
 
         // sprite …Ë÷√
         BOOL bShowSprite = TRUE;
+        BOOL bSpriteMousePass = FALSE;
         UINT maxFps = 30;
         UINT scale = 100;
         UINT spTransparencyPercent = 100;
