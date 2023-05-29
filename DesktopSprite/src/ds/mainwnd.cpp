@@ -503,7 +503,8 @@ LRESULT MainWindow::OnClose(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
 {
     // 得到性能数据
-    WCHAR szDataBuffer[16] = { 0 };     // 字符串缓冲区
+    const INT dataBufferLen = 16;
+    WCHAR szDataBuffer[dataBufferLen] = { 0 };     // 字符串缓冲区
     INT nLevel = 0;
     Color statusColor;
 
@@ -554,7 +555,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         graphicsMem.TranslateTransform(0, 0);
 
         // CPU
-        StringCchPrintfW(szDataBuffer, 16, L"C:%.0f%%", this->perfData.cpuPercent);
+        StringCchPrintfW(szDataBuffer, dataBufferLen, L"C:%.0f%%", this->perfData.cpuPercent);
         if (this->perfData.cpuPercent < 50)
         {
             pen.SetColor(STATUSCOLOR_GOOD);
@@ -582,7 +583,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         );
 
         // 绘制内存
-        StringCchPrintfW(szDataBuffer, 16, L"M:%.0f%%", this->perfData.memPercent);
+        StringCchPrintfW(szDataBuffer, dataBufferLen, L"M:%.0f%%", this->perfData.memPercent);
         if (this->perfData.memPercent < 75)
         {
             pen.SetColor(STATUSCOLOR_GOOD);
@@ -624,7 +625,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         }
 
         // 绘制上传
-        nLevel = ConvertSpeed(this->perfData.uploadSpeed, szDataBuffer, 16);
+        nLevel = ConvertSpeed(this->perfData.uploadSpeed, szDataBuffer, dataBufferLen);
         if (nLevel < 3)
         {
             statusColor = STATUSCOLOR_BAD;
@@ -647,7 +648,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         DrawSpeedStair(graphicsMem, statusColor, rectSpeed, TRUE, nLevel);
 
         // 绘制下载
-        nLevel = ConvertSpeed(this->perfData.downloadSpeed, szDataBuffer, 16);
+        nLevel = ConvertSpeed(this->perfData.downloadSpeed, szDataBuffer, dataBufferLen);
         if (nLevel < 3)
         {
             statusColor = STATUSCOLOR_BAD;
