@@ -31,11 +31,14 @@ BOOL ConfigDlg::CheckValidFormData()
     }
 
     // collect
+
+    // 系统设置
     this->form.bAutoRun = IsDlgButtonChecked(this->hDlg, IDC_CHECK_AUTORUN);
     this->form.bTimeAlarm = IsDlgButtonChecked(this->hDlg, IDC_CHECK_TIMEALARM);
     this->form.bInfoSound = IsDlgButtonChecked(this->hDlg, IDC_CHECK_INFOSOUND);
     GetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, this->form.szBalloonIconPath, MAX_PATH);
 
+    // 显示设置
     this->form.bFloatWnd = IsDlgButtonChecked(this->hDlg, IDC_CHECK_FLOATWND);
 
     if (IsDlgButtonChecked(this->hDlg, IDC_CHECK_SHOWUSAGE))
@@ -58,6 +61,10 @@ BOOL ConfigDlg::CheckValidFormData()
 
     this->form.bDarkTheme = IsDlgButtonChecked(this->hDlg, IDC_CHECK_DARKTHEME);
     this->form.transparencyPercent = GetDlgItemInt(this->hDlg, IDC_STATIC_TRANSPARENCY, NULL, FALSE);
+
+    // 精灵设置
+
+    // spine 设置
     return TRUE;
 }
 
@@ -150,6 +157,7 @@ INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
     this->SetSpinePngPath(this->form.szSpineAtlasPath);
     CheckDlgButton(this->hDlg, IDC_CHECK_SHOWSPRITE, this->form.bShowSprite ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(this->hDlg, IDC_CHECK_MOUSEPASS, this->form.bSpriteMousePass ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(this->hDlg, IDC_CHECK_ALWAYSBOTTOM, this->form.bAlwaysBottom ? BST_CHECKED : BST_UNCHECKED);
     this->InitTrackBar(IDC_SLIDER_SPMAXFPS, 12, 60, 1, 6, this->form.maxFps);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPMAXFPS, this->form.maxFps, FALSE);
     this->InitTrackBar(IDC_SLIDER_SPTRANSPARENCY, 0, 100, 1, 10, this->form.spTransparencyPercent);
