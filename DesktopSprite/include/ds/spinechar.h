@@ -60,7 +60,7 @@ private:
     spAnimationStateData* animationStateData = NULL;
     spSkeleton* skeleton = NULL;
     spAnimationState* animationState = NULL;
-    std::list<std::string> animationNames;
+    std::list<std::wstring> animationNames;
 
     int vtPosBufferMaxLen = 0;
     float* vtPosBuffer = NULL;
@@ -73,7 +73,7 @@ public:
     void DisposeResources();
 
     // 获取所有存在的动画名字
-    std::list<std::string>& GetAnimeNames();
+    std::list<std::wstring>& GetAnimeNames();
 
     // 获得纹理
     Gdiplus::Bitmap* GetTexture();
@@ -157,6 +157,9 @@ public:
     // 设置精灵不同动画要使用的 spine 动画
     void SetAnimeName(SpineAnime anime, PCWSTR name);
     PCWSTR GetAnimeName(SpineAnime anime);
+
+    // 获取当前加载的 spine 的所有动画名字, 如果 spine 加载失败则返回 NULL
+    const std::list<std::string>* GetAnimeNames();
 
     // 设置帧率
     void SetMaxFps(INT fps);

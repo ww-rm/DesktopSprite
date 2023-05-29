@@ -65,9 +65,11 @@ BOOL Spine::CreateResources(PCSTR atlasPath, PCSTR skelPath)
 
     animationStateData->defaultMix = 0.15f;
 
+    WCHAR strBuffer[MAX_PATH] = { 0 };
     for (int i = 0; i < this->skeletonData->animationsCount; i++)
     {
-        this->animationNames.push_back(this->skeletonData->animations[i]->name);
+        StrAtoW(this->skeletonData->animations[i]->name, strBuffer, MAX_PATH);
+        this->animationNames.push_back(strBuffer);
     }
 
     this->skeleton->x = 350;
@@ -112,7 +114,7 @@ void Spine::DisposeResources()
     }
 }
 
-std::list<std::string>& Spine::GetAnimeNames()
+std::list<std::wstring>& Spine::GetAnimeNames()
 {
     return this->animationNames;
 }
@@ -375,10 +377,10 @@ BOOL SpineChar::LoadSpine(PCSTR atlasPath, PCSTR skelPath)
 
         for (auto it = this->spine->GetAnimeNames().begin(); it != this->spine->GetAnimeNames().end(); it++)
         {
-            OutputDebugStringA((*it).c_str());
-            OutputDebugStringA("; ");
+            OutputDebugStringW((*it).c_str());
+            OutputDebugStringW(L"; ");
         }
-        OutputDebugStringA("\n");
+        OutputDebugStringW(L"\n");
 
         this->spine->SetAnimation(this->animeToName[SpineAnime::IDLE].c_str());
         this->texture = this->spine->GetTexture();
