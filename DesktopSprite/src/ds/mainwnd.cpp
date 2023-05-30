@@ -844,7 +844,7 @@ LRESULT MainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
             INT deltaX = ptCursor.x - this->ptDragSrc.x;
             INT deltaY = ptCursor.y - this->ptDragSrc.y;
 
-            if (!this->isDragging && abs(deltaX) >= this->sysDragSize.cx && abs(deltaY) >= this->sysDragSize.cy)
+            if (!this->isDragging && (abs(deltaX) >= this->sysDragSize.cx || abs(deltaY) >= this->sysDragSize.cy))
             {
                 this->isDragging = TRUE;
             }

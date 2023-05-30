@@ -13,7 +13,8 @@ using namespace Gdiplus;
 class SpriteWindow : public BaseWindow
 {
 private:
-    POINT ptDragSrc = { 0 };              // 拖动窗口时的源点
+    SIZE sysDragSize = { 0 };               // 系统拖动判定大小
+    POINT ptDragSrc = { 0 };                // 拖动窗口时的源点
     BOOL isDragging = FALSE;
     SpineChar* spinechar = NULL;
 

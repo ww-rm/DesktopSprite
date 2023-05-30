@@ -42,6 +42,8 @@ LRESULT SpriteWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 {
+    GetSysDragSize(&this->sysDragSize);
+
     // 加载 spine
     this->spinechar = new SpineChar(this->hWnd);
     this->spinechar->CreateTargetResourcse();
@@ -102,18 +104,27 @@ LRESULT SpriteWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
 
 LRESULT SpriteWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 {
-    if (this->isDragging && (wParam & MK_LBUTTON))
+    POINT ptCursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+    INT deltaX = ptCursor.x - this->ptDragSrc.x;
+    INT deltaY = ptCursor.y - this->ptDragSrc.y;
+    RECT rcWnd = { 0 };
+
+    if (wParam & MK_LBUTTON)
     {
-        POINT ptCursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-        RECT rcWnd = { 0 };
-        GetWindowRect(this->hWnd, &rcWnd);
-        SetWindowPos(
-            this->hWnd, HWND_TOPMOST,
-            rcWnd.left + (ptCursor.x - this->ptDragSrc.x),
-            rcWnd.top + (ptCursor.y - this->ptDragSrc.y),
-            0, 0,
-            SWP_SHOWWINDOW | SWP_NOSIZE
-        );
+        // 判定是否超过拖动阈值, 避免误拖动
+        if (!this->isDragging && (abs(deltaX) >= this->sysDragSize.cx || abs(deltaY) >= this->sysDragSize.cy))
+        {
+            this->isDragging = TRUE;
+            this->spinechar->Lock();
+            this->spinechar->SendAction(SpineAction::DRAGUP);
+            this->spinechar->Unlock();
+        }
+
+        if (this->isDragging)
+        {
+            GetWindowRect(this->hWnd, &rcWnd);
+            SetWindowPos(this->hWnd, 0, rcWnd.left + deltaX, rcWnd.top + deltaY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        }
     }
     return 0;
 }
@@ -157,13 +168,7 @@ LRESULT SpriteWindow::OnLButtonDBClick(WPARAM wParam, LPARAM lParam)
     this->ptDragSrc.x = GET_X_LPARAM(lParam);
     this->ptDragSrc.y = GET_Y_LPARAM(lParam);
 
-    if (!this->isDragging)
-    {
-        this->isDragging = TRUE;
-        this->spinechar->Lock();
-        this->spinechar->SendAction(SpineAction::DRAGUP);
-        this->spinechar->Unlock();
-    }
+    // TODO: 转向
 
     return 0;
 }
