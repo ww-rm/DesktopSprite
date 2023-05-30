@@ -17,9 +17,6 @@ static Gdiplus::Color const STATUSCOLOR_GOOD = 0xff00ff00;
 static Gdiplus::Color const STATUSCOLOR_NORMAL = 0xffff8000;
 static Gdiplus::Color const STATUSCOLOR_BAD = 0xffff0000;
 
-// 注册表键值
-static PCWSTR const REGVAL_LASTFLOATPOS = L"LastFloatPos";
-
 // 常量定义
 static UINT     const   ID_NIDMAIN = 1;                        // 图标 ID
 static UINT     const   BASE_WNDSIZE_PIXELS = 20;              // 主窗口的基本单元格像素大小
@@ -225,7 +222,7 @@ BOOL MainWindow::LoadLastPosFromReg(POINT* pt)
     }
 
     cbData = sizeof(POINT);
-    RegQueryAnyValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)pt, &cbData);
+    RegQueryAnyValue(hkApp, L"LastFloatPos", (PBYTE)pt, &cbData);
     RegCloseKey(hkApp);
 
     return TRUE;
@@ -253,7 +250,7 @@ BOOL MainWindow::SaveCurrentPosToReg()
         return FALSE;
     }
 
-    RegSetBinValue(hkApp, REGVAL_LASTFLOATPOS, (PBYTE)&currentWndRc, sizeof(POINT));
+    RegSetBinValue(hkApp, L"LastFloatPos", (PBYTE)&currentWndRc, sizeof(POINT));
     RegCloseKey(hkApp);
     return TRUE;
 }
