@@ -317,6 +317,20 @@ void HighResolutionSleep(DWORD dwMilliseconds)
     timeEndPeriod(1);
 }
 
+BOOL GetDragSize(PSIZE psizeDrag)
+{
+    INT cx = GetSystemMetrics(SM_CXDRAG);
+    INT cy = GetSystemMetrics(SM_CYDRAG);
+    if (cx && cy)
+    {
+        psizeDrag->cx = cx;
+        psizeDrag->cy = cy;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line)
 {

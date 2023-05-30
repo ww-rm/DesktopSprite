@@ -122,6 +122,9 @@ INT CheckRectContainment(const RECT* rc1, const RECT* rc2);
 // 高精度休眠
 void HighResolutionSleep(DWORD dwMilliseconds);
 
+// 获取系统当前拖动判定范围
+BOOL GetDragSize(PSIZE psizeDrag);
+
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line = -1);
 
