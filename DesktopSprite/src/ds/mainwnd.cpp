@@ -469,13 +469,14 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
     DestroyWindow(this->spritewnd->GetWindowHandle());
-    delete this->spritewnd;
+    this->spritewnd = NULL;
 
     this->SaveCurrentPosToReg();
     AppConfig::SaveToFile(WinApp::GetConfigPath());
 
     this->pNotifyIcon->Delete();
     delete this->pNotifyIcon;
+    this->pNotifyIcon = NULL;
 
     DestroyIcon(this->balloonIcon);
 
