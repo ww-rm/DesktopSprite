@@ -95,7 +95,7 @@ private:
     LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
     LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
     LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
-    //LRESULT OnPowerBroadcast(WPARAM wParam, LPARAM lParam);
+    LRESULT OnLButtonDBClick(WPARAM wParam, LPARAM lParam);
     LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
     LRESULT OnNotifyIcon(WPARAM wParam, LPARAM lParam);
     LRESULT OnTimeAlarm(WPARAM wParam, LPARAM lParam);

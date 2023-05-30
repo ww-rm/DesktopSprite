@@ -836,14 +836,13 @@ LRESULT MainWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 {
-    if (AppConfig::Get()->bFloatWnd)
+    POINT ptCursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+    INT deltaX = ptCursor.x - this->ptDragSrc.x;
+    INT deltaY = ptCursor.y - this->ptDragSrc.y;
+    if (wParam & MK_LBUTTON)
     {
-        if (wParam & MK_LBUTTON)
+        if (AppConfig::Get()->bFloatWnd)
         {
-            POINT ptCursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-            INT deltaX = ptCursor.x - this->ptDragSrc.x;
-            INT deltaY = ptCursor.y - this->ptDragSrc.y;
-
             if (!this->isDragging && (abs(deltaX) >= this->sysDragSize.cx || abs(deltaY) >= this->sysDragSize.cy))
             {
                 this->isDragging = TRUE;
@@ -880,6 +879,19 @@ LRESULT MainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
         // 保存一次现在的窗口位置
         this->SaveCurrentPosToReg();
     }
+    return 0;
+}
+
+LRESULT MainWindow::OnLButtonDBClick(WPARAM wParam, LPARAM lParam)
+{
+    SetCapture(this->hWnd); // 防止鼠标跟丢
+
+    // 保存点击位置
+    this->ptDragSrc.x = GET_X_LPARAM(lParam);
+    this->ptDragSrc.y = GET_Y_LPARAM(lParam);
+
+    // TODO: 转向
+
     return 0;
 }
 
