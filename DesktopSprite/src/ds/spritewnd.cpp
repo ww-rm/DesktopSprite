@@ -1,5 +1,6 @@
 #include <ds/framework.h>
 #include <ds/utils.h>
+#include <ds/winapp.h>
 
 #include <ds/spritewnd.h>
 
@@ -14,6 +15,116 @@ SpineChar* SpriteWindow::GetSpineChar()
 {
     return this->spinechar;
 }
+
+BOOL SpriteWindow::LoadLastPosFromReg(POINT* pt)
+{
+    // 默认主窗口位置是屏幕的左上角处
+    pt->x = 0;
+    pt->y = 0;
+
+
+    // 打开注册表项
+    HKEY hkApp = NULL;
+    DWORD dwDisposition = 0;
+    DWORD cbData = 0;
+
+    WCHAR subkey[128] = { 0 };
+    if (FAILED(StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", WinApp::GetName())))
+    {
+        return FALSE;
+    }
+
+    if (RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
+
+    cbData = sizeof(POINT);
+    RegQueryAnyValue(hkApp, L"LastSpritePos", (PBYTE)pt, &cbData);
+    RegCloseKey(hkApp);
+
+    return TRUE;
+}
+
+BOOL SpriteWindow::SaveCurrentPosToReg()
+{
+    RECT currentWndRc = { 0 };
+    if (!GetWindowRect(this->hWnd, &currentWndRc))
+    {
+        return FALSE;
+    }
+
+    // 打开注册表项
+    HKEY hkApp = NULL;
+    DWORD dwDisposition = 0;
+    DWORD cbData = 0;
+
+    WCHAR subkey[128] = { 0 };
+    StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", WinApp::GetName());
+
+    if (RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
+
+    RegSetBinValue(hkApp, L"LastSpritePos", (PBYTE)&currentWndRc, sizeof(POINT));
+    RegCloseKey(hkApp);
+    return TRUE;
+}
+
+BOOL SpriteWindow::LoadFlipXFromReg()
+{
+    // 默认翻转, 也就是朝向左侧
+    this->flipX = TRUE;
+
+
+    // 打开注册表项
+    HKEY hkApp = NULL;
+    DWORD dwDisposition = 0;
+    DWORD cbData = 0;
+
+    WCHAR subkey[128] = { 0 };
+    if (FAILED(StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", WinApp::GetName())))
+    {
+        return FALSE;
+    }
+
+    if (RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
+
+    cbData = sizeof(BOOL);
+    RegQueryAnyValue(hkApp, L"LastSpriteFlipX", (PBYTE)&this->flipX, &cbData);
+    RegCloseKey(hkApp);
+
+    return TRUE;
+}
+
+BOOL SpriteWindow::SaveFlipXFromReg()
+{
+    // 打开注册表项
+    HKEY hkApp = NULL;
+    DWORD dwDisposition = 0;
+    DWORD cbData = 0;
+
+    WCHAR subkey[128] = { 0 };
+    StringCchPrintfW(subkey, 128, L"SOFTWARE\\%s", WinApp::GetName());
+
+    if (RegCreateKeyExW(HKEY_CURRENT_USER, subkey, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkApp, &dwDisposition))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
+
+    RegSetBinValue(hkApp, L"LastSpritePos", (PBYTE)&this->flipX, sizeof(BOOL));
+    RegCloseKey(hkApp);
+    return TRUE;
+}
+
 
 ///////////////////////////// Message Process ////////////////////////////////
 
@@ -161,6 +272,9 @@ LRESULT SpriteWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
         this->spinechar->Lock();
         this->spinechar->SendAction(SpineAction::DRAGDOWN);
         this->spinechar->Unlock();
+
+        // 保存一次现在的窗口位置
+        this->SaveCurrentPosToReg();
     }
     else
     {
