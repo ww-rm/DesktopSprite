@@ -273,6 +273,7 @@ INT_PTR ConfigDlg::OnCommand(WPARAM wParam, LPARAM lParam)
         if (this->CheckValidFormData())
         {
             mainwnd->ApplyConfig(&this->form);
+            mainwnd->GetSpriteWnd()->ApplyConfig(&this->form);
         }
         return TRUE;
     default:
