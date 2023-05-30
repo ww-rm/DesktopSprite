@@ -21,7 +21,7 @@
 //#include <CommCtrl.h>
 
 // C headers
-#include <stdlib.h>
+#include <cstdlib>
 
 // C++ headers
 #include <list>
