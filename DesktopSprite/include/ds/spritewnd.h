@@ -4,6 +4,7 @@
 
 #include <ds/framework.h>
 #include <ds/spinechar.h>
+#include <ds/config.h>
 
 #include <ds/basewindow.h>
 
@@ -29,6 +30,8 @@ public:
 
     BOOL LoadFlipXFromReg();
     BOOL SaveFlipXFromReg();
+
+    BOOL ApplyConfig(const AppConfig::AppConfig* newConfig = NULL);
 
 private:
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);

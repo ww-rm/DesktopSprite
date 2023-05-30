@@ -50,18 +50,43 @@ Spine::~Spine()
     if (this->vtPosBuffer)
     {
         delete[] this->vtPosBuffer;
+        this->vtPosBuffer = NULL;
         this->vtPosBufferMaxLen = 0;
     }
 }
 
-BOOL Spine::CreateResources(PCSTR atlasPath, PCSTR skelPath)
+BOOL Spine::CreateResources(PCWSTR atlasPath, PCWSTR skelPath)
 {
-    if (!(this->atlas =              spAtlas_createFromFile(atlasPath, 0)))                                  return FALSE;
-    if (!(this->skeletonBinary =     spSkeletonBinary_create(this->atlas)))                                  return FALSE;
-    if (!(this->skeletonData =       spSkeletonBinary_readSkeletonDataFile(this->skeletonBinary, skelPath))) return FALSE;
-    if (!(this->animationStateData = spAnimationStateData_create(this->skeletonData)))                       return FALSE;
-    if (!(this->skeleton =           spSkeleton_create(this->skeletonData)))                                 return FALSE;
-    if (!(this->animationState =     spAnimationState_create(this->animationStateData)))                     return FALSE;
+    CHAR pathBuffer[MAX_PATH] = { 0 };
+
+    StrWtoA(atlasPath, pathBuffer, MAX_PATH);
+    if (!(this->atlas = spAtlas_createFromFile(pathBuffer, 0)))
+        return FALSE;
+
+    StrWtoA(skelPath, pathBuffer, MAX_PATH);
+    PCWSTR skelExtension = PathFindExtensionW(skelPath);
+
+    // 如果是 json 格式
+    if (skelExtension && !StrCmpW(skelExtension, L".json"))
+    {
+        if (!(this->skeletonJson = spSkeletonJson_create(this->atlas)))
+            return FALSE;
+        if (!(this->skeletonData = spSkeletonJson_readSkeletonDataFile(this->skeletonJson, pathBuffer)))
+            return FALSE;
+    }
+    else
+    {
+        if (!(this->skeletonBinary = spSkeletonBinary_create(this->atlas)))                                  
+            return FALSE;
+        if (!(this->skeletonData = spSkeletonBinary_readSkeletonDataFile(this->skeletonBinary, pathBuffer)))
+            return FALSE;
+    }
+    if (!(this->animationStateData = spAnimationStateData_create(this->skeletonData)))                       
+        return FALSE;
+    if (!(this->skeleton = spSkeleton_create(this->skeletonData)))                                 
+        return FALSE;
+    if (!(this->animationState = spAnimationState_create(this->animationStateData)))                     
+        return FALSE;
 
     animationStateData->defaultMix = 0.15f;
 
@@ -72,8 +97,8 @@ BOOL Spine::CreateResources(PCSTR atlasPath, PCSTR skelPath)
         this->animationNames.push_back(strBuffer);
     }
 
-    this->skeleton->x = 350;
-    this->skeleton->y = 350;
+    this->skeleton->x = 0;
+    this->skeleton->y = 0;
     this->skeleton->flipX = 1;
     this->skeleton->flipY = 1;
 
@@ -102,6 +127,11 @@ void Spine::DisposeResources()
         spSkeletonData_dispose(this->skeletonData);
         this->skeletonData = NULL;
     }
+    if (this->skeletonJson)
+    {
+        spSkeletonJson_dispose(this->skeletonJson);
+        this->skeletonJson = NULL;
+    }
     if (this->skeletonBinary) 
     {
         spSkeletonBinary_dispose(this->skeletonBinary);
@@ -114,9 +144,9 @@ void Spine::DisposeResources()
     }
 }
 
-std::list<std::wstring>& Spine::GetAnimeNames()
+const std::list<std::wstring>* Spine::GetAnimeNames()
 {
-    return this->animationNames;
+    return &this->animationNames;
 }
 
 Gdiplus::Bitmap* Spine::GetTexture()
@@ -147,11 +177,8 @@ BOOL Spine::Update(FLOAT elapseTime)
     return TRUE;
 }
 
-BOOL Spine::GetMeshTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>& vertexIndexBuffer)
+BOOL Spine::GetMeshTriangles(std::vector<VERTEX>* vertexBuffer, std::vector<int>* vertexIndexBuffer)
 {
-    vertexBuffer.clear();
-    vertexIndexBuffer.clear();
-
     for (int i = 0; i < this->skeleton->slotsCount; i++) {
         spSlot* slot = skeleton->drawOrder[i];
         spAttachment* attachment = slot->attachment;
@@ -161,7 +188,7 @@ BOOL Spine::GetMeshTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>
             continue;
         }
 
-        int preVertexCount = (int)vertexBuffer.size();
+        int preVertexCount = (int)vertexBuffer->size();
         if (attachment->type == SP_ATTACHMENT_REGION)
         {
             spRegionAttachment* region = (spRegionAttachment*)attachment;
@@ -174,38 +201,38 @@ BOOL Spine::GetMeshTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>
             spRegionAttachment_computeWorldVertices(region, slot->bone, this->vtPosBuffer, 0, 2);
 
             // push vt_0 -> vt_1 -> vt_2 -> vt_3
-            vertexBuffer.push_back(
+            vertexBuffer->push_back(
                 { this->vtPosBuffer[0], this->vtPosBuffer[1],
                 region->uvs[0], region->uvs[1],
                 tintR, tintG, tintB, tintA }
             );
 
-            vertexBuffer.push_back(
+            vertexBuffer->push_back(
                 { this->vtPosBuffer[2], this->vtPosBuffer[3],
                 region->uvs[2], region->uvs[3],
                 tintR, tintG, tintB, tintA }
             );
 
-            vertexBuffer.push_back(
+            vertexBuffer->push_back(
                 { this->vtPosBuffer[4], this->vtPosBuffer[5],
                 region->uvs[4], region->uvs[5],
                 tintR, tintG, tintB, tintA }
             );
 
-            vertexBuffer.push_back(
+            vertexBuffer->push_back(
                 { this->vtPosBuffer[6], this->vtPosBuffer[7],
                 region->uvs[6], region->uvs[7],
                 tintR, tintG, tintB, tintA }
             );
 
             // split to two triangles
-            vertexIndexBuffer.push_back(0 + preVertexCount);
-            vertexIndexBuffer.push_back(1 + preVertexCount);
-            vertexIndexBuffer.push_back(2 + preVertexCount);
+            vertexIndexBuffer->push_back(0 + preVertexCount);
+            vertexIndexBuffer->push_back(1 + preVertexCount);
+            vertexIndexBuffer->push_back(2 + preVertexCount);
 
-            vertexIndexBuffer.push_back(2 + preVertexCount);
-            vertexIndexBuffer.push_back(3 + preVertexCount);
-            vertexIndexBuffer.push_back(0 + preVertexCount);
+            vertexIndexBuffer->push_back(2 + preVertexCount);
+            vertexIndexBuffer->push_back(3 + preVertexCount);
+            vertexIndexBuffer->push_back(0 + preVertexCount);
         }
         else if (attachment->type == SP_ATTACHMENT_MESH)
         {
@@ -222,6 +249,7 @@ BOOL Spine::GetMeshTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>
                 float* largerBuffer = new float[largerLen];
                 CopyMemory(largerBuffer, this->vtPosBuffer, this->vtPosBufferMaxLen);
                 delete[] this->vtPosBuffer;
+                this->vtPosBuffer = largerBuffer;
                 this->vtPosBufferMaxLen = largerLen;
             }
 
@@ -230,7 +258,7 @@ BOOL Spine::GetMeshTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>
             // add vertex
             for (int j = 0; j < mesh->super.worldVerticesLength; j += 2)
             {
-                vertexBuffer.push_back(
+                vertexBuffer->push_back(
                     { this->vtPosBuffer[j], this->vtPosBuffer[j + 1],
                     mesh->uvs[j], mesh->uvs[j + 1],
                     tintR, tintG, tintB, tintA, }
@@ -240,7 +268,7 @@ BOOL Spine::GetMeshTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>
             // add index
             for (int j = 0; j < mesh->trianglesCount; j++) 
             {
-                vertexIndexBuffer.push_back(mesh->triangles[j] + preVertexCount);
+                vertexIndexBuffer->push_back(mesh->triangles[j] + preVertexCount);
             }
         }
         else
@@ -288,8 +316,6 @@ SpineChar::SpineChar(HWND targetWnd) : targetWnd(targetWnd)
 
 SpineChar::~SpineChar()
 {
-    this->UnloadSpine();
-
     if (this->threadMutex)
     {
         CloseHandle(this->threadMutex);
@@ -305,14 +331,18 @@ SpineChar::~SpineChar()
 
 BOOL SpineChar::CreateTargetResourcse()
 {
-    if (!(this->hdcScreen = GetDC(NULL))) return FALSE;
-    if (!(this->hdcMem = CreateCompatibleDC(this->hdcScreen))) return FALSE;
+    if (!(this->hdcScreen = GetDC(NULL))) 
+        return FALSE;
+    if (!(this->hdcMem = CreateCompatibleDC(this->hdcScreen))) 
+        return FALSE;
 
-    SIZE screen = { 0 };
-    GetScreenResolution(&screen);
-    auto r1 = CreateCompatibleBitmap(this->hdcScreen, screen.cx, screen.cy);
-    auto r2 = SelectObject(this->hdcMem, r1);
-    auto r3 = DeleteObject(r2);
+    GetWindowRect(this->targetWnd, &this->rcTarget);
+    DeleteObject(
+        SelectObject(
+            this->hdcMem, 
+            CreateCompatibleBitmap(this->hdcScreen, this->rcTarget.right - this->rcTarget.left, this->rcTarget.bottom - this->rcTarget.top)
+        )
+    );
 
     this->graphics = new Gdiplus::Graphics(this->hdcMem);
     return TRUE;
@@ -320,31 +350,50 @@ BOOL SpineChar::CreateTargetResourcse()
 
 void SpineChar::ReleaseTargetResources()
 {
-    delete this->graphics;
-    DeleteDC(this->hdcMem);
-    ReleaseDC(NULL, this->hdcScreen);
+    if (this->graphics)
+    {
+        delete this->graphics;
+        this->graphics = NULL;
+    }
+    if (this->hdcMem)
+    {
+        DeleteDC(this->hdcMem);
+        this->hdcMem = NULL;
+    }
+    if (this->hdcScreen)
+    {
+        ReleaseDC(NULL, this->hdcScreen);
+        this->hdcScreen = NULL;
+    }
 }
 
 void SpineChar::DrawTriangles()
 {
-    int width = this->texture->GetWidth();
-    int height = this->texture->GetHeight();
+    int W = this->texWidth;
+    int H = this->texHeight;
     Gdiplus::Matrix transform;
+    VERTEX* vt1 = NULL;
+    VERTEX* vt2 = NULL;
+    VERTEX* vt3 = NULL;
 
     for (auto it = this->vertexIndexBuffer.begin(); it != this->vertexIndexBuffer.end(); it += 3)
     {
-        VERTEX vt1 = this->vertexBuffer[*it];
-        VERTEX vt2 = this->vertexBuffer[*(it + 1)];
-        VERTEX vt3 = this->vertexBuffer[*(it + 2)];
+        vt1 = &this->vertexBuffer[*it];
+        vt2 = &this->vertexBuffer[*(it + 1)];
+        vt3 = &this->vertexBuffer[*(it + 2)];
 
         GetAffineMatrix(
-            vt1.x, vt1.y, vt2.x, vt2.y, vt3.x, vt3.y,
-            vt1.u * width, vt1.v * height, vt2.u * width, vt2.v * height, vt3.u * width, vt3.v * height,
+            vt1->x, vt1->y, 
+            vt2->x, vt2->y, 
+            vt3->x, vt3->y, 
+            vt1->u * W, vt1->v * H, 
+            vt2->u * W, vt2->v * H, 
+            vt3->u * W, vt3->v * H, 
             &transform
         );
 
         this->textureBrush->SetTransform(&transform);
-        Gdiplus::PointF pts[3] = { {vt1.x, vt1.y}, {vt2.x, vt2.y}, {vt3.x, vt3.y} };
+        Gdiplus::PointF pts[3] = { {vt1->x, vt1->y}, {vt2->x, vt2->y}, {vt3->x, vt3->y} };
         this->graphics->FillPolygon(this->textureBrush, pts, 3);
     }
 }
@@ -352,8 +401,11 @@ void SpineChar::DrawTriangles()
 BOOL SpineChar::RenderFrame()
 {
     POINT ptSrc = { 0, 0 };
-    SIZE sizeWnd = { 1920, 1080 };
-    BLENDFUNCTION blend = { AC_SRC_OVER, 0, 128, AC_SRC_ALPHA };
+    SIZE sizeWnd = { 
+        this->rcTarget.right - this->rcTarget.left, 
+        this->rcTarget.bottom - this->rcTarget.top
+    };
+    BLENDFUNCTION blend = { AC_SRC_OVER, 0, this->transparency, AC_SRC_ALPHA};
     return UpdateLayeredWindow(this->targetWnd, this->hdcScreen, NULL, &sizeWnd, this->hdcMem, &ptSrc, 0, &blend, ULW_ALPHA);
 }
 
@@ -367,28 +419,29 @@ BOOL SpineChar::Unlock()
     return ReleaseMutex(this->threadMutex);
 }
 
-BOOL SpineChar::LoadSpine(PCSTR atlasPath, PCSTR skelPath)
+BOOL SpineChar::LoadSpine(PCWSTR atlasPath, PCWSTR skelPath)
 {
-    Spine* spine = new Spine;
+    this->spine = new Spine();
     if (spine->CreateResources(atlasPath, skelPath))
     {
-        this->UnloadSpine();
-        this->spine = spine;
-
-        for (auto it = this->spine->GetAnimeNames().begin(); it != this->spine->GetAnimeNames().end(); it++)
+        for (auto it = this->spine->GetAnimeNames()->begin(); it != this->spine->GetAnimeNames()->end(); it++)
         {
             OutputDebugStringW((*it).c_str());
             OutputDebugStringW(L"; ");
         }
         OutputDebugStringW(L"\n");
 
-        this->spine->SetAnimation(this->animeToName[SpineAnime::IDLE].c_str());
+        this->spine->SetAnimation(this->animeToName[SpineAnime::IDLE].c_str()); // init animation
         this->texture = this->spine->GetTexture();
-        this->textureBrush = new Gdiplus::TextureBrush(this->texture); // 创建一次
+        this->texWidth = this->texture->GetWidth();
+        this->texHeight = this->texture->GetHeight();
+        this->textureBrush = new Gdiplus::TextureBrush(this->texture); // create once
         return TRUE;
     }
 
+    this->spine->DisposeResources();
     delete spine;
+    this->spine = NULL;
     return FALSE;
 }
 
@@ -399,6 +452,8 @@ void SpineChar::UnloadSpine()
         delete this->textureBrush;
         this->textureBrush = NULL;
     }
+    this->texWidth = 0;
+    this->texHeight = 0;
     this->texture = NULL;
     if (this->spine)
     {
@@ -485,13 +540,21 @@ BOOL SpineChar::Stop()
 
 BOOL SpineChar::Update(UINT milliseconds)
 {
+    if (!this->spine)
+        return FALSE;
+
     return this->spine->Update((FLOAT)milliseconds / 1000.0f);
 }
 
 BOOL SpineChar::Render()
 {
+    if (!this->spine)
+        return FALSE;
+
     this->graphics->Clear(Gdiplus::Color::Transparent);
-    this->spine->GetMeshTriangles(this->vertexBuffer, this->vertexIndexBuffer);
+    this->vertexBuffer.clear();
+    this->vertexIndexBuffer.clear();
+    this->spine->GetMeshTriangles(&this->vertexBuffer, &this->vertexIndexBuffer);
     this->DrawTriangles();
     this->RenderFrame();
     return TRUE;
@@ -636,8 +699,9 @@ PCWSTR SpineChar::GetAnimeName(SpineAnime anime)
 
 const std::list<std::wstring>* SpineChar::GetAnimeNames()
 {
-    if (!this->spine) return NULL;
-    return &this->spine->GetAnimeNames();
+    if (!this->spine) 
+        return NULL;
+    return this->spine->GetAnimeNames();
 }
 
 void SpineChar::SetMaxFps(INT fps)
@@ -649,4 +713,26 @@ void SpineChar::SetMaxFps(INT fps)
 INT SpineChar::GetMaxFps() const
 {
     return this->maxFps;
+}
+
+void SpineChar::SetTransparency(UINT transparency)
+{
+    this->transparency = PercentToAlpha(transparency);
+}
+
+UINT SpineChar::GetTransparency() const
+{
+    return AlphaToPercent(this->transparency);
+}
+
+BOOL SpineChar::SetScale(UINT scale)
+{
+    this->scale = (FLOAT)scale;
+    // TODO: 设置缩放
+    return TRUE;
+}
+
+UINT SpineChar::GetScale() const
+{
+    return (UINT)this->scale;
 }

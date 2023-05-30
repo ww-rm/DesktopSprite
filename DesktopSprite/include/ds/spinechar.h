@@ -70,11 +70,11 @@ public:
     Spine();
     ~Spine();
 
-    BOOL CreateResources(PCSTR atlasPath, PCSTR skelPath);
+    BOOL CreateResources(PCWSTR atlasPath, PCWSTR skelPath);
     void DisposeResources();
 
     // 获取所有存在的动画名字
-    std::list<std::wstring>& GetAnimeNames();
+    const std::list<std::wstring>* GetAnimeNames();
 
     // 获得纹理
     Gdiplus::Bitmap* GetTexture();
@@ -87,7 +87,7 @@ public:
     BOOL Update(FLOAT elapseTime);
 
     // 获得要渲染的基元
-    BOOL GetMeshTriangles(std::vector<VERTEX>& vertexBuffer, std::vector<int>& vertexIndexBuffer);
+    BOOL GetMeshTriangles(std::vector<VERTEX>* vertexBuffer, std::vector<int>* vertexIndexBuffer);
 };
 
 class SpineChar
@@ -97,6 +97,7 @@ private:
     HWND targetWnd = NULL;
     HDC hdcScreen = NULL;
     HDC hdcMem = NULL;
+    RECT rcTarget = { 0 };
     Gdiplus::Graphics* graphics = NULL;
 
     // 渲染数据缓冲
@@ -104,10 +105,12 @@ private:
     std::vector<VERTEX> vertexBuffer;
 
     // spine 数据
-    Spine* spine = NULL;
+    Spine* spine = NULL; // 加载失败的时候是空指针
     Gdiplus::Bitmap* texture = NULL;
+    INT texWidth = 0;
+    INT texHeight = 0;
     Gdiplus::TextureBrush* textureBrush = NULL;
-    BOOL flipX = TRUE;
+    // BOOL flipX = FALSE; TODO?
     SpineState state = SpineState::IDLE;
     std::map<SpineAnime, std::wstring> animeToName;
 
@@ -116,8 +119,12 @@ private:
     HANDLE threadEvent = NULL;
     HANDLE thread = NULL;
     HighResolutionTimer timer;
+
+    // 渲染参数
     INT maxFps = 30; // 最大帧率
     FLOAT frameInterval = 1000.0f / 30.0f + 0.5f; // 帧间间隔, 毫秒数
+    BYTE transparency = 0xFF;
+    FLOAT scale = 100.0f;
 
 
 public:
@@ -129,7 +136,7 @@ public:
     void ReleaseTargetResources();
 
     // 加载与卸载 spine 数据
-    BOOL LoadSpine(PCSTR atlasPath, PCSTR skelPath);
+    BOOL LoadSpine(PCWSTR atlasPath, PCWSTR skelPath);
     void UnloadSpine();
 
     void DrawTriangles();
@@ -165,6 +172,12 @@ public:
     // 设置帧率
     void SetMaxFps(INT fps);
     INT GetMaxFps() const;
+
+    void SetTransparency(UINT transparency);
+    UINT GetTransparency() const;
+
+    BOOL SetScale(UINT scale);
+    UINT GetScale() const;
 };
 
 

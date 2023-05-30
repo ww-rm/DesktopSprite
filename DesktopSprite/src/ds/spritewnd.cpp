@@ -125,6 +125,11 @@ BOOL SpriteWindow::SaveFlipXFromReg()
     return TRUE;
 }
 
+BOOL SpriteWindow::ApplyConfig(const AppConfig::AppConfig* newConfig)
+{
+    return TRUE;
+}
+
 
 ///////////////////////////// Message Process ////////////////////////////////
 
@@ -171,8 +176,8 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     this->spinechar = new SpineChar(this->hWnd);
     this->spinechar->CreateTargetResourcse();
     this->spinechar->LoadSpine(
-        "D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.atlas",
-        "D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.skel"
+        L"D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.atlas",
+        L"D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.skel"
     );
 
     SetWindowPos(this->hWnd, HWND_TOPMOST, 1000, 600, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
