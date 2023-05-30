@@ -848,7 +848,7 @@ LRESULT MainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
             {
                 this->isDragging = TRUE;
             }
-            if (this->isDragging = TRUE)
+            if (this->isDragging)
             {
                 RECT rcWnd = { 0 };
                 GetWindowRect(this->hWnd, &rcWnd);
