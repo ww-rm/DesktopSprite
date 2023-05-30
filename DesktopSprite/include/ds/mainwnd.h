@@ -48,6 +48,7 @@ public:
 
     PCWSTR GetClassName_() const;
     PCWSTR GetFontPath() const;
+    SpriteWindow* GetSpriteWnd();
 
     // 应用更改, 只修改发生变化的设置项, 空参数则应用全局设置
     BOOL ApplyConfig(const AppConfig::AppConfig* newConfig = NULL);

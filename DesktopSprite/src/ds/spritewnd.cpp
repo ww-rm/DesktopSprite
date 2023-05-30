@@ -1,7 +1,19 @@
-#include <ds/spritewnd.h>
 #include <ds/framework.h>
-
 #include <ds/utils.h>
+
+#include <ds/spritewnd.h>
+
+SpriteWindow::SpriteWindow() {}
+
+PCWSTR SpriteWindow::GetClassName_() const
+{
+    return L"DesktopSpriteSpriteWndClass";
+}
+
+SpineChar* SpriteWindow::GetSpineChar()
+{
+    return this->spinechar;
+}
 
 ///////////////////////////// Message Process ////////////////////////////////
 

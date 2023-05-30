@@ -56,6 +56,7 @@ class Spine
 private:
     spAtlas* atlas = NULL;
     spSkeletonBinary* skeletonBinary = NULL;
+    spSkeletonJson* skeletonJson = NULL;
     spSkeletonData* skeletonData = NULL;
     spAnimationStateData* animationStateData = NULL;
     spSkeleton* skeleton = NULL;
@@ -159,7 +160,7 @@ public:
     PCWSTR GetAnimeName(SpineAnime anime);
 
     // 获取当前加载的 spine 的所有动画名字, 如果 spine 加载失败则返回 NULL
-    const std::list<std::string>* GetAnimeNames();
+    const std::list<std::wstring>* GetAnimeNames();
 
     // 设置帧率
     void SetMaxFps(INT fps);

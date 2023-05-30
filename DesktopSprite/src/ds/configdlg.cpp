@@ -9,7 +9,10 @@ PCWSTR ConfigDlg::GetTemplateName() const
     return MAKEINTRESOURCEW(IDD_CONFIG);
 }
 
-ConfigDlg::ConfigDlg(MainWindow* mainwnd) : mainwnd(mainwnd) {}
+ConfigDlg::ConfigDlg(MainWindow* mainwnd) : mainwnd(mainwnd) 
+{
+    this->animeNames = mainwnd->GetSpriteWnd()->GetSpineChar()->GetAnimeNames();
+}
 
 void ConfigDlg::SetFormData(const AppConfig::AppConfig* config)
 {
@@ -111,12 +114,27 @@ BOOL ConfigDlg::SetSpinePngPath(PCWSTR atlasPath)
     return FALSE;
 }
 
-BOOL ConfigDlg::InitTrackBar(INT trackBarID, INT range1, INT range2, INT pageSize, INT freq, INT pos)
+BOOL ConfigDlg::InitTrackBar(INT tbID, INT range1, INT range2, INT pageSize, INT freq, INT pos)
 {
-    SendDlgItemMessageW(this->hDlg, trackBarID, TBM_SETRANGE, TRUE, MAKELPARAM(range1, range2)); // 范围
-    SendDlgItemMessageW(this->hDlg, trackBarID, TBM_SETPAGESIZE, 0, pageSize); // 单击一下的跳动范围
-    SendDlgItemMessageW(this->hDlg, trackBarID, TBM_SETTICFREQ, freq, 0); // 刻度线频率
-    SendDlgItemMessageW(this->hDlg, trackBarID, TBM_SETPOS, TRUE, pos); // 当前位置
+    SendDlgItemMessageW(this->hDlg, tbID, TBM_SETRANGE, TRUE, MAKELPARAM(range1, range2)); // 范围
+    SendDlgItemMessageW(this->hDlg, tbID, TBM_SETPAGESIZE, 0, pageSize); // 单击一下的跳动范围
+    SendDlgItemMessageW(this->hDlg, tbID, TBM_SETTICFREQ, freq, 0); // 刻度线频率
+    SendDlgItemMessageW(this->hDlg, tbID, TBM_SETPOS, TRUE, pos); // 当前位置
+    return TRUE;
+}
+
+BOOL ConfigDlg::InitComboBox(INT cbID, PCWSTR curName, INT minVisible)
+{
+    SendDlgItemMessageW(this->hDlg, cbID, CB_SETMINVISIBLE, minVisible, 0);
+    // 在 spine 加载失败的情况下, 不会填充内容
+    if (this->animeNames)
+    {
+        for (auto it = this->animeNames->begin(); it != this->animeNames->end(); it++)
+        {
+            SendDlgItemMessageW(this->hDlg, cbID, CB_ADDSTRING, 0, (LPARAM)(*it).c_str());
+        }
+        SendDlgItemMessageW(this->hDlg, cbID, CB_SELECTSTRING, -1, (LPARAM)curName);
+    }
     return TRUE;
 }
 
@@ -165,8 +183,17 @@ INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
     this->InitTrackBar(IDC_SLIDER_SPSCALE, 10, 200, 5, 10, this->form.spScale);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPSCALE, this->form.spScale, FALSE);
 
-    // TODO: Spine 设置
-
+    // Spine 设置
+    this->InitComboBox(IDC_CB_SPIDLE, this->form.spAnimeIdle, 6);
+    this->InitComboBox(IDC_CB_SPDRAG, this->form.spAnimeDrag, 6);
+    this->InitComboBox(IDC_CB_SPWORK, this->form.spAnimeWork, 6);
+    this->InitComboBox(IDC_CB_SPSLEEP, this->form.spAnimeSleep, 6);
+    this->InitComboBox(IDC_CB_SPSTAND, this->form.spAnimeStand, 6);
+    this->InitComboBox(IDC_CB_SPTOUCH, this->form.spAnimeTouch, 6);
+    this->InitComboBox(IDC_CB_SPWINK, this->form.spAnimeWink, 6);
+    this->InitComboBox(IDC_CB_SPVICTORY, this->form.spAnimeVictory, 6);
+    this->InitComboBox(IDC_CB_SPDANCE, this->form.spAnimeDance, 6);
+    this->InitComboBox(IDC_CB_SPDIZZY, this->form.spAnimeDizzy, 6);
 
     return TRUE;
 }
@@ -179,14 +206,14 @@ INT_PTR ConfigDlg::OnCommand(WPARAM wParam, LPARAM lParam)
     switch (LOWORD(wParam))
     {
     case IDC_BTN_BALLOONICONPATH:
-        this->ShowPathSelectDlg(IDC_EDIT_BALLOONICONPATH, L"选择气泡图标文件", L"图像文件 (*.jpg;*.jpeg;*.png;*.bmp;*.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0所有文件 (*.*)\0*.*\0");
+        this->ShowPathSelectDlg(IDC_EDIT_BALLOONICONPATH, L"选择气泡图标文件", L"图像文件 (*.jpg; *.jpeg; *.png; *.bmp; *.ico)\0*.jpg;*.jpeg;*.png;*.bmp;*.ico\0所有文件 (*.*)\0*.*\0");
         return TRUE;
     case IDC_BTN_SPATLASPATH:
         this->ShowPathSelectDlg(IDC_EDIT_SPATLASPATH, L"选择 Atlas 文件", L"Atlas 文件 (*.atlas)\0*.atlas\0");
         this->SetSpinePngPath();
         return TRUE;
     case IDC_BTN_SPSKELPATH:
-        this->ShowPathSelectDlg(IDC_EDIT_SPSKELPATH, L"选择 Skel 文件", L"Skel 文件 (*.skel)\0*.skel\0");
+        this->ShowPathSelectDlg(IDC_EDIT_SPSKELPATH, L"选择 Skel 文件", L"Skel 文件 (*.skel; *.json)\0*.skel;*.json\0");
         return TRUE;
     case IDOK:
         if (this->CheckValidFormData())

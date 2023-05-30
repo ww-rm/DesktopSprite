@@ -19,10 +19,9 @@ private:
     SpineChar* spinechar = NULL;
 
 public:
-    PCWSTR GetClassName_() const { return L"DesktopSpriteSpriteWndClass"; }
-
-public:
-    SpriteWindow() {}
+    SpriteWindow();
+    PCWSTR GetClassName_() const;
+    SpineChar* GetSpineChar();
 
 private:
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);

@@ -16,6 +16,7 @@ public:
 private:
     MainWindow* mainwnd = NULL;
     AppConfig::AppConfig form;
+    const std::list<std::wstring>* animeNames = NULL;
 
 public:
     ConfigDlg(MainWindow* mainwnd);
@@ -32,7 +33,8 @@ private:
 
     BOOL SetSpinePngPath(PCWSTR atlasPath = NULL);
 
-    BOOL InitTrackBar(INT trackBarID, INT range1, INT range2, INT pageSize, INT freq, INT pos);
+    BOOL InitTrackBar(INT tbID, INT range1, INT range2, INT pageSize, INT freq, INT pos);
+    BOOL InitComboBox(INT cbID, PCWSTR curName, INT minVisible);
 
 private:
     INT_PTR HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);

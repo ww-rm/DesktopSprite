@@ -634,6 +634,12 @@ PCWSTR SpineChar::GetAnimeName(SpineAnime anime)
     return this->animeToName[anime].c_str();
 }
 
+const std::list<std::wstring>* SpineChar::GetAnimeNames()
+{
+    if (!this->spine) return NULL;
+    return &this->spine->GetAnimeNames();
+}
+
 void SpineChar::SetMaxFps(INT fps)
 {
     this->maxFps = fps; 

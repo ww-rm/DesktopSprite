@@ -88,6 +88,11 @@ PCWSTR MainWindow::GetFontPath() const
     return this->fontPath;
 }
 
+SpriteWindow* MainWindow::GetSpriteWnd()
+{
+    return this->spritewnd;
+}
+
 BOOL MainWindow::ShowContextMenu(INT x, INT y)
 {
     // º”‘ÿContextMenu
