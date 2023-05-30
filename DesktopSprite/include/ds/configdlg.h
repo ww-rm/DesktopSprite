@@ -36,6 +36,8 @@ private:
     BOOL InitTrackBar(INT tbID, INT range1, INT range2, INT pageSize, INT freq, INT pos);
     BOOL InitComboBox(INT cbID, PCWSTR curName, INT minVisible);
 
+    BOOL GetComboBoxSelText(INT cbID, PWSTR curName, INT maxLen);
+
 private:
     INT_PTR HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
     INT_PTR OnInitDialog(WPARAM wParam, LPARAM lParam);

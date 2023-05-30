@@ -26,10 +26,20 @@ void ConfigDlg::GetFormData(AppConfig::AppConfig* config) const
 
 BOOL ConfigDlg::CheckValidFormData()
 {
+    WCHAR pathBuffer[MAX_PATH] = { 0 };
+    WCHAR nameBuffer[MAX_PATH] = { 0 };
+
     // check
     if (!IsDlgButtonChecked(this->hDlg, IDC_CHECK_SHOWUSAGE) && !IsDlgButtonChecked(this->hDlg, IDC_CHECK_SHOWNETSPEED))
     {
         this->mainwnd->ShowNoConentWarningMsg();
+        return FALSE;
+    }
+
+    GetDlgItemTextW(this->hDlg, IDC_EDIT_SPPNGPATH, pathBuffer, MAX_PATH);
+    if (!PathFileExistsW(pathBuffer))
+    {
+        MessageBoxW(this->hDlg, L"png 文件不存在！", L"设置错误", MB_ICONINFORMATION);
         return FALSE;
     }
 
@@ -66,8 +76,27 @@ BOOL ConfigDlg::CheckValidFormData()
     this->form.transparencyPercent = GetDlgItemInt(this->hDlg, IDC_STATIC_TRANSPARENCY, NULL, FALSE);
 
     // 精灵设置
+    GetDlgItemTextW(this->hDlg, IDC_EDIT_SPATLASPATH, this->form.szSpineAtlasPath, MAX_PATH);
+    GetDlgItemTextW(this->hDlg, IDC_EDIT_SPSKELPATH, this->form.szSpineSkelPath, MAX_PATH);
+    this->form.bShowSprite = IsDlgButtonChecked(this->hDlg, IDC_CHECK_SHOWSPRITE);
+    this->form.bSpriteMousePass = IsDlgButtonChecked(this->hDlg, IDC_CHECK_MOUSEPASS);
+    this->form.bAlwaysBottom = IsDlgButtonChecked(this->hDlg, IDC_CHECK_ALWAYSBOTTOM);
+    this->form.maxFps = GetDlgItemInt(this->hDlg, IDC_STATIC_SPMAXFPS, NULL, FALSE);
+    this->form.spTransparencyPercent = GetDlgItemInt(this->hDlg, IDC_STATIC_SPTRANSPARENCY, NULL, FALSE);
+    this->form.spScale = GetDlgItemInt(this->hDlg, IDC_STATIC_SPSCALE, NULL, FALSE);
 
     // spine 设置
+    this->GetComboBoxSelText(IDC_CB_SPIDLE, this->form.spAnimeIdle, MAX_PATH);
+    this->GetComboBoxSelText(IDC_CB_SPDRAG, this->form.spAnimeDrag, MAX_PATH);
+    this->GetComboBoxSelText(IDC_CB_SPWORK, this->form.spAnimeWork, MAX_PATH);
+    this->GetComboBoxSelText(IDC_CB_SPSLEEP, this->form.spAnimeSleep, MAX_PATH);
+    this->GetComboBoxSelText(IDC_CB_SPSTAND, this->form.spAnimeStand, MAX_PATH);
+    this->GetComboBoxSelText(IDC_CB_SPTOUCH, this->form.spAnimeTouch, MAX_PATH);
+    this->GetComboBoxSelText(IDC_CB_SPWINK, this->form.spAnimeWink, MAX_PATH);
+    this->GetComboBoxSelText(IDC_CB_SPVICTORY, this->form.spAnimeVictory, MAX_PATH);
+    this->GetComboBoxSelText(IDC_CB_SPDANCE, this->form.spAnimeDance, MAX_PATH);
+    this->GetComboBoxSelText(IDC_CB_SPDIZZY, this->form.spAnimeDizzy, MAX_PATH);
+
     return TRUE;
 }
 
@@ -138,6 +167,23 @@ BOOL ConfigDlg::InitComboBox(INT cbID, PCWSTR curName, INT minVisible)
     return TRUE;
 }
 
+BOOL ConfigDlg::GetComboBoxSelText(INT cbID, PWSTR curName, INT maxLen)
+{
+    INT idx = (INT)SendDlgItemMessageW(this->hDlg, cbID, CB_GETCURSEL, 0, 0);
+    if (idx == CB_ERR)
+    {
+        return FALSE;
+    }
+
+    INT itemLen = (INT)SendDlgItemMessageW(this->hDlg, cbID, CB_GETLBTEXTLEN, idx, 0);
+    if (itemLen == CB_ERR || itemLen >= maxLen)
+    {
+        return FALSE;
+    }
+
+    return (BOOL)(SendDlgItemMessageW(this->hDlg, cbID, CB_GETLBTEXT, idx, (LPARAM)curName) != CB_ERR);
+}
+
 INT_PTR ConfigDlg::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
@@ -180,7 +226,7 @@ INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPMAXFPS, this->form.maxFps, FALSE);
     this->InitTrackBar(IDC_SLIDER_SPTRANSPARENCY, 0, 100, 1, 10, this->form.spTransparencyPercent);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPTRANSPARENCY, this->form.spTransparencyPercent, FALSE);
-    this->InitTrackBar(IDC_SLIDER_SPSCALE, 10, 200, 5, 10, this->form.spScale);
+    this->InitTrackBar(IDC_SLIDER_SPSCALE, 20, 300, 5, 10, this->form.spScale);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPSCALE, this->form.spScale, FALSE);
 
     // Spine 设置
