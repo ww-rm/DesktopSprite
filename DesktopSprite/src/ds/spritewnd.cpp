@@ -123,7 +123,7 @@ LRESULT SpriteWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
         if (this->isDragging)
         {
             GetWindowRect(this->hWnd, &rcWnd);
-            SetWindowPos(this->hWnd, 0, rcWnd.left + deltaX, rcWnd.top + deltaY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+            SetWindowPos(this->hWnd, 0, rcWnd.left + deltaX, rcWnd.top + deltaY, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOZORDER);
         }
     }
     return 0;
