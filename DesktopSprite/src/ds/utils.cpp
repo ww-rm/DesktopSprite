@@ -317,12 +317,14 @@ void HighResolutionSleep(DWORD dwMilliseconds)
     timeEndPeriod(1);
 }
 
-BOOL GetDragSize(PSIZE psizeDrag)
+BOOL GetSysDragSize(PSIZE psizeDrag)
 {
     INT cx = GetSystemMetrics(SM_CXDRAG);
     INT cy = GetSystemMetrics(SM_CYDRAG);
     if (cx && cy)
     {
+        cx = (cx < 0) ? -cx : cx;
+        cy = (cy < 0) ? -cy : cy;
         psizeDrag->cx = cx;
         psizeDrag->cy = cy;
         return TRUE;

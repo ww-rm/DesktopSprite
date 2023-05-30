@@ -423,6 +423,8 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 {
+    GetSysDragSize(&this->sysDragSize);
+
     // 设置窗口类样式, 增加阴影边框
     SetClassLongPtrW(this->hWnd, GCL_STYLE, GetClassLongPtrW(this->hWnd, GCL_STYLE) | CS_DROPSHADOW);
 
@@ -839,15 +841,19 @@ LRESULT MainWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
         if (wParam & MK_LBUTTON)
         {
             POINT ptCursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-            RECT rcWnd;
-            GetWindowRect(this->hWnd, &rcWnd);
-            SetWindowPos(
-                this->hWnd, HWND_TOPMOST,
-                rcWnd.left + (ptCursor.x - this->ptDragSrc.x),
-                rcWnd.top + (ptCursor.y - this->ptDragSrc.y),
-                0, 0,
-                SWP_SHOWWINDOW | SWP_NOSIZE
-            );
+            INT deltaX = ptCursor.x - this->ptDragSrc.x;
+            INT deltaY = ptCursor.y - this->ptDragSrc.y;
+
+            if (!this->isDragging && abs(deltaX) >= this->sysDragSize.cx && abs(deltaY) >= this->sysDragSize.cy)
+            {
+                this->isDragging = TRUE;
+            }
+            if (this->isDragging = TRUE)
+            {
+                RECT rcWnd = { 0 };
+                GetWindowRect(this->hWnd, &rcWnd);
+                SetWindowPos(this->hWnd, HWND_TOPMOST, rcWnd.left + deltaX, rcWnd.top + deltaY, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE);
+            }
         }
     }
     return 0;
@@ -869,6 +875,8 @@ LRESULT MainWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 
     if (AppConfig::Get()->bFloatWnd)
     {
+        this->isDragging = FALSE;
+
         // 保存一次现在的窗口位置
         this->SaveCurrentPosToReg();
     }

@@ -35,6 +35,8 @@ private:
     BOOL                                bWndFixed = FALSE;              // 窗口是否通过图标点击长期显示, 用来屏蔽 NIN_POPUP 消息
     BOOL                                bClocked = FALSE;               // 保存整点内是否报过时
     POINT                               ptDragSrc = { 0 };              // 拖动窗口时的源点
+    SIZE                                sysDragSize = { 0 };            // 系统拖动判定大小
+    BOOL                                isDragging = FALSE;
     POINT                               currentFloatPos = { 0 };        // 在显示弹出窗口时临时保存当前浮动窗口位置
     Gdiplus::PrivateFontCollection      fontColl;                       // 文本字体容器
     HICON                               balloonIcon = NULL;             // 气泡消息的图标资源
