@@ -263,20 +263,20 @@ HICON MainWindow::LoadNotifyIconBySysTheme()
     );
 }
 
-BOOL MainWindow::ApplyConfig(const AppConfig::AppConfig* other)
+BOOL MainWindow::ApplyConfig(const AppConfig::AppConfig* newConfig)
 {
     const AppConfig::AppConfig* currentConfig = AppConfig::Get();
-    if (!other)
+    if (!newConfig)
     {
-        other = currentConfig;
+        newConfig = currentConfig;
     }
-    BOOL isNew = (other != currentConfig);
+    BOOL isNew = (newConfig != currentConfig);
 
     // 重设气泡图标
-    if (!isNew || StrCmpW(other->szBalloonIconPath, currentConfig->szBalloonIconPath))
+    if (!isNew || StrCmpW(newConfig->szBalloonIconPath, currentConfig->szBalloonIconPath))
     {
         DestroyIcon(this->balloonIcon);
-        Bitmap(other->szBalloonIconPath).GetHICON(&this->balloonIcon);
+        Bitmap(newConfig->szBalloonIconPath).GetHICON(&this->balloonIcon);
 
         if (isNew)
         {
@@ -285,9 +285,9 @@ BOOL MainWindow::ApplyConfig(const AppConfig::AppConfig* other)
     }
 
     // 设置浮动窗口
-    if (!isNew || other->bFloatWnd != currentConfig->bFloatWnd)
+    if (!isNew || newConfig->bFloatWnd != currentConfig->bFloatWnd)
     {
-        if (other->bFloatWnd)
+        if (newConfig->bFloatWnd)
         {
             ShowWindow(this->hWnd, SW_SHOWNA);
         }
@@ -298,23 +298,23 @@ BOOL MainWindow::ApplyConfig(const AppConfig::AppConfig* other)
     }
 
     // 调整显示内容
-    if (!isNew || other->byShowContent != currentConfig->byShowContent)
+    if (!isNew || newConfig->byShowContent != currentConfig->byShowContent)
     {
         SIZE sizeWnd = { 0 };
-        GetWndSizeByShowContent(&sizeWnd, other->byShowContent);
+        GetWndSizeByShowContent(&sizeWnd, newConfig->byShowContent);
         SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, sizeWnd.cx, sizeWnd.cy, SWP_NOACTIVATE | SWP_NOMOVE);
     }
 
     // 设置透明度
-    if (!isNew || other->transparencyPercent != currentConfig->transparencyPercent)
+    if (!isNew || newConfig->transparencyPercent != currentConfig->transparencyPercent)
     {
-        SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(other->transparencyPercent), LWA_ALPHA);
+        SetLayeredWindowAttributes(this->hWnd, 0, PercentToAlpha(newConfig->transparencyPercent), LWA_ALPHA);
     }
 
     // 设置开机自启
-    if (!isNew || other->bAutoRun != currentConfig->bAutoRun)
+    if (!isNew || newConfig->bAutoRun != currentConfig->bAutoRun)
     {
-        if (other->bAutoRun)
+        if (newConfig->bAutoRun)
         {
             SetAppAutoRun(WinApp::GetName());
         }
@@ -325,9 +325,9 @@ BOOL MainWindow::ApplyConfig(const AppConfig::AppConfig* other)
     }
 
     // 整点报时
-    if (!isNew || other->bTimeAlarm != currentConfig->bTimeAlarm)
+    if (!isNew || newConfig->bTimeAlarm != currentConfig->bTimeAlarm)
     {
-        if (other->bTimeAlarm)
+        if (newConfig->bTimeAlarm)
         {
             SetTimer(this->hWnd, IDT_TIMEALARM, 500, (TIMERPROC)NULL);
         }
