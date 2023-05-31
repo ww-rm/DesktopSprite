@@ -788,7 +788,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     if (configChanged)
     {
         this->ApplyConfig(pcfgdata);
-        // TODO: 对 sprite 窗口应用
+        this->spritewnd->ApplyConfig(pcfgdata);
         AppConfig::Set(pcfgdata);
         AppConfig::SaveToFile(WinApp::GetConfigPath());
     }
