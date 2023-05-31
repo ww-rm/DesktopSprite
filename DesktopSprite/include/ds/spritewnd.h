@@ -16,6 +16,7 @@ class SpriteWindow : public BaseWindow
 private:
     SIZE sysDragSize = { 0 };               // 系统拖动判定大小
     POINT ptDragSrc = { 0 };                // 拖动窗口时的源点
+    POINT ptSpriteDragSrc = { 0 };          // 拖动窗口时精灵的位置
     BOOL isDragging = FALSE;
     SpineChar* spinechar = NULL;
     SpineRenderer* spinerenderer = NULL;
@@ -25,7 +26,7 @@ public:
     PCWSTR GetClassName_() const;
     SpineChar* GetSpineChar();
 
-    BOOL LoadLastPosFromReg(FLOAT* x, FLOAT* y);
+    BOOL LoadLastPosFromReg(POINT* pt);
     BOOL SaveCurrentPosToReg();
 
     BOOL LoadFlipXFromReg(BOOL* flip);

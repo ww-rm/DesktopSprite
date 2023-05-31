@@ -16,11 +16,11 @@ SpineChar* SpriteWindow::GetSpineChar()
     return this->spinechar;
 }
 
-BOOL SpriteWindow::LoadLastPosFromReg(FLOAT* x, FLOAT* y)
+BOOL SpriteWindow::LoadLastPosFromReg(POINT* pt)
 {
     // 默认精灵位置是窗口中心
-    *x = 0;
-    *y = 0;
+    pt->x = 0;
+    pt->y = 0;
 
     // 打开注册表项
     HKEY hkApp = NULL;
@@ -39,10 +39,8 @@ BOOL SpriteWindow::LoadLastPosFromReg(FLOAT* x, FLOAT* y)
         return FALSE;
     }
 
-    cbData = sizeof(FLOAT);
-    RegQueryAnyValue(hkApp, L"LastSpritePosX", (PBYTE)x, &cbData);
-    cbData = sizeof(FLOAT);
-    RegQueryAnyValue(hkApp, L"LastSpritePosY", (PBYTE)y, &cbData);
+    cbData = sizeof(POINT);
+    RegQueryAnyValue(hkApp, L"LastSpritePos", (PBYTE)pt, &cbData);
     RegCloseKey(hkApp);
 
     return TRUE;
@@ -53,6 +51,7 @@ BOOL SpriteWindow::SaveCurrentPosToReg()
     FLOAT x = 0;
     FLOAT y = 0;
     this->spinechar->GetPosition(&x, &y);
+    POINT pt = { (LONG)x, (LONG)y };
 
     // 打开注册表项
     HKEY hkApp = NULL;
@@ -68,8 +67,7 @@ BOOL SpriteWindow::SaveCurrentPosToReg()
         return FALSE;
     }
 
-    RegSetBinValue(hkApp, L"LastSpritePosX", (PBYTE)&x, sizeof(FLOAT));
-    RegSetBinValue(hkApp, L"LastSpritePosY", (PBYTE)&y, sizeof(FLOAT));
+    RegSetBinValue(hkApp, L"LastSpritePos", (PBYTE)&pt, sizeof(POINT));
     RegCloseKey(hkApp);
     return TRUE;
 }
@@ -275,14 +273,13 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     this->ApplyConfig();
 
     // 从注册表初始化 sprite 位置和朝向
-    FLOAT x = 0;
-    FLOAT y = 0;
+    POINT pos = { 0 };
     BOOL flipX = TRUE;
-    this->LoadLastPosFromReg(&x, &y);
+    this->LoadLastPosFromReg(&pos);
     this->LoadFlipXFromReg(&flipX);
 
     this->spinerenderer->Lock();
-    this->spinechar->SetPosition(x, y);
+    this->spinechar->SetPosition((FLOAT)pos.x, (FLOAT)pos.y);
     this->spinechar->SetFlipX(flipX);
     this->spinerenderer->Unlock();
 
