@@ -36,7 +36,7 @@ enum class SpineState {
 };
 
 enum class SpineAction {
-    FLUSH,
+    REFRESH,
 
     DRAGUP,
     DRAGDOWN,
@@ -51,9 +51,10 @@ enum class SpineAction {
     DIZZY,
 };
 
-class Spine
+class SpineChar
 {
 private:
+    // spine 资源
     spAtlas* atlas = NULL;
     spSkeletonBinary* skeletonBinary = NULL;
     spSkeletonJson* skeletonJson = NULL;
@@ -63,34 +64,58 @@ private:
     spAnimationState* animationState = NULL;
     std::list<std::wstring> animationNames;
 
+    // 顶点缓冲区, 在方法里会动态扩容
     int vtPosBufferMaxLen = 0;
     float* vtPosBuffer = NULL;
 
+    // spine 动画数据
+    SpineState state = SpineState::IDLE;
+    std::map<SpineAnime, std::wstring> animeToName;
+
 public:
-    Spine();
-    ~Spine();
+    SpineChar();
+    ~SpineChar();
 
-    BOOL CreateResources(PCWSTR atlasPath, PCWSTR skelPath);
-    void DisposeResources();
-
-    // 获取所有存在的动画名字
-    const std::list<std::wstring>* GetAnimeNames();
+    // 加载与卸载 spine 数据
+    BOOL LoadSpine(PCWSTR atlasPath, PCWSTR skelPath, UINT scale);
+    void UnloadSpine();
+    BOOL Loaded() const;
 
     // 获得纹理
     Gdiplus::Bitmap* GetTexture();
-
-    // 设置动画
-    void SetAnimation(PCWSTR animationName, BOOL loop = TRUE, INT trackIndex = 0);
-    void AddAnimation(PCWSTR animationName, BOOL loop = TRUE, FLOAT delay = 0, INT trackIndex = 0);
 
     // 更新状态
     BOOL Update(FLOAT elapseTime);
 
     // 获得要渲染的基元
     BOOL GetMeshTriangles(std::vector<VERTEX>* vertexBuffer, std::vector<int>* vertexIndexBuffer);
+
+    // 发送一个动作
+    BOOL SendAction(SpineAction action);
+
+    // 设置实时动画
+    BOOL SetAnime(SpineAnime anime, BOOL isOneShot = FALSE, SpineAnime rollin = SpineAnime::IDLE);
+
+    // 获取当前加载的 spine 的所有动画名字, 如果 spine 加载失败则返回 NULL
+    const std::list<std::wstring>* GetAnimeNames();
+
+    // 设置精灵不同动画要使用的 spine 动画
+    void SetAnimeName(SpineAnime anime, PCWSTR name);
+    PCWSTR GetAnimeName(SpineAnime anime);
+
+    BOOL SetFlipX(BOOL flip);
+    BOOL GetFlipX(BOOL* flip) const;
+
+    BOOL SetPosition(FLOAT x, FLOAT y);
+    BOOL GetPosition(FLOAT* x, FLOAT* y) const;
+
+private:
+    // 设置 animationState 动画
+    BOOL SetAnimation(PCWSTR animationName, BOOL loop = TRUE, INT trackIndex = 0);
+    BOOL AddAnimation(PCWSTR animationName, BOOL loop = TRUE, FLOAT delay = 0, INT trackIndex = 0);
 };
 
-class SpineChar
+class SpineRenderer
 {
 private:
     // 渲染设备数据
@@ -104,15 +129,12 @@ private:
     std::vector<int> vertexIndexBuffer;
     std::vector<VERTEX> vertexBuffer;
 
-    // spine 数据
-    Spine* spine = NULL; // 加载失败的时候是空指针
+    // 与 spine 有关的资源
+    SpineChar* spinechar = NULL;
     Gdiplus::Bitmap* texture = NULL;
     INT texWidth = 0;
     INT texHeight = 0;
     Gdiplus::TextureBrush* textureBrush = NULL;
-    // BOOL flipX = FALSE; TODO?
-    SpineState state = SpineState::IDLE;
-    std::map<SpineAnime, std::wstring> animeToName;
 
     // 主循环数据
     HANDLE threadMutex = NULL;
@@ -122,52 +144,26 @@ private:
 
     // 渲染参数
     INT maxFps = 30; // 最大帧率
-    FLOAT frameInterval = 1000.0f / 30.0f + 0.5f; // 帧间间隔, 毫秒数
-    BYTE transparency = 0xFF;
-    FLOAT scale = 100.0f;
-
+    FLOAT frameInterval = 1000.0f / 30.0f; // 帧间间隔, 毫秒数
+    BYTE transparency = 255;
 
 public:
-    SpineChar(HWND targetWnd);
-    ~SpineChar();
+    SpineRenderer(HWND targetWnd, SpineChar* spinechar);
 
     // 创建与释放绘图资源
     BOOL CreateTargetResourcse();
     void ReleaseTargetResources();
 
-    // 加载与卸载 spine 数据
-    BOOL LoadSpine(PCWSTR atlasPath, PCWSTR skelPath);
-    void UnloadSpine();
-
-    void DrawTriangles();
-    BOOL RenderFrame();
+    BOOL CreateSpineResources();
+    void ReleaseSpineResources();
 
     // 多线程锁住数据, caller 自行调用
     BOOL Lock();
     BOOL Unlock();
 
     // 启动/停止运行
-    static DWORD CALLBACK FrameProc(_In_ LPVOID lpParameter);
-    DWORD Mainloop();
-
     BOOL Start();
     BOOL Stop();
-
-    BOOL Update(UINT milliseconds);
-    BOOL Render();
-
-    // 设置动画
-    BOOL SetAnime(SpineAnime anime, BOOL isOneShot = FALSE, SpineAnime rollin = SpineAnime::IDLE);
-
-    // 发送一个动作
-    BOOL SendAction(SpineAction action);
-
-    // 设置精灵不同动画要使用的 spine 动画
-    void SetAnimeName(SpineAnime anime, PCWSTR name);
-    PCWSTR GetAnimeName(SpineAnime anime);
-
-    // 获取当前加载的 spine 的所有动画名字, 如果 spine 加载失败则返回 NULL
-    const std::list<std::wstring>* GetAnimeNames();
 
     // 设置帧率
     void SetMaxFps(INT fps);
@@ -176,9 +172,16 @@ public:
     void SetTransparency(UINT transparency);
     UINT GetTransparency() const;
 
-    BOOL SetScale(UINT scale);
-    UINT GetScale() const;
-};
+private:
+    void DrawTriangles();
+    BOOL RenderFrame();
 
+    static DWORD CALLBACK FrameProc(_In_ LPVOID lpParameter);
+    DWORD Mainloop();
+
+    BOOL Update(UINT milliseconds);
+    BOOL Render();
+
+};
 
 #endif // DS_SPINECHAR_H

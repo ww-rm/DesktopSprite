@@ -18,18 +18,18 @@ private:
     POINT ptDragSrc = { 0 };                // 拖动窗口时的源点
     BOOL isDragging = FALSE;
     SpineChar* spinechar = NULL;
-    BOOL flipX = TRUE;                      // 改变精灵朝向
+    SpineRenderer* spinerenderer = NULL;
 
 public:
     SpriteWindow();
     PCWSTR GetClassName_() const;
     SpineChar* GetSpineChar();
 
-    BOOL LoadLastPosFromReg(POINT* pt);
+    BOOL LoadLastPosFromReg(FLOAT* x, FLOAT* y);
     BOOL SaveCurrentPosToReg();
 
-    BOOL LoadFlipXFromReg();
-    BOOL SaveFlipXFromReg();
+    BOOL LoadFlipXFromReg(BOOL* flip);
+    BOOL SaveFlipXFromReg(BOOL flip);
 
     BOOL ApplyConfig(const AppConfig::AppConfig* newConfig = NULL);
 

@@ -16,12 +16,11 @@ SpineChar* SpriteWindow::GetSpineChar()
     return this->spinechar;
 }
 
-BOOL SpriteWindow::LoadLastPosFromReg(POINT* pt)
+BOOL SpriteWindow::LoadLastPosFromReg(FLOAT* x, FLOAT* y)
 {
-    // 默认主窗口位置是屏幕的左上角处
-    pt->x = 0;
-    pt->y = 0;
-
+    // 默认精灵位置是原点
+    *x = 0;
+    *y = 0;
 
     // 打开注册表项
     HKEY hkApp = NULL;
@@ -40,8 +39,8 @@ BOOL SpriteWindow::LoadLastPosFromReg(POINT* pt)
         return FALSE;
     }
 
-    cbData = sizeof(POINT);
-    RegQueryAnyValue(hkApp, L"LastSpritePos", (PBYTE)pt, &cbData);
+    cbData = sizeof(FLOAT);
+    RegQueryAnyValue(hkApp, L"LastSpritePosX", (PBYTE)x, &cbData);
     RegCloseKey(hkApp);
 
     return TRUE;
@@ -74,11 +73,10 @@ BOOL SpriteWindow::SaveCurrentPosToReg()
     return TRUE;
 }
 
-BOOL SpriteWindow::LoadFlipXFromReg()
+BOOL SpriteWindow::LoadFlipXFromReg(BOOL* flip)
 {
     // 默认翻转, 也就是朝向左侧
-    this->flipX = TRUE;
-
+    *flip = TRUE;
 
     // 打开注册表项
     HKEY hkApp = NULL;
@@ -98,13 +96,13 @@ BOOL SpriteWindow::LoadFlipXFromReg()
     }
 
     cbData = sizeof(BOOL);
-    RegQueryAnyValue(hkApp, L"LastSpriteFlipX", (PBYTE)&this->flipX, &cbData);
+    RegQueryAnyValue(hkApp, L"LastSpriteFlipX", (PBYTE)&flip, &cbData);
     RegCloseKey(hkApp);
 
     return TRUE;
 }
 
-BOOL SpriteWindow::SaveFlipXFromReg()
+BOOL SpriteWindow::SaveFlipXFromReg(BOOL flip)
 {
     // 打开注册表项
     HKEY hkApp = NULL;
@@ -120,13 +118,38 @@ BOOL SpriteWindow::SaveFlipXFromReg()
         return FALSE;
     }
 
-    RegSetBinValue(hkApp, L"LastSpritePos", (PBYTE)&this->flipX, sizeof(BOOL));
+    RegSetBinValue(hkApp, L"LastSpritePos", (PBYTE)&flip, sizeof(BOOL));
     RegCloseKey(hkApp);
     return TRUE;
 }
 
 BOOL SpriteWindow::ApplyConfig(const AppConfig::AppConfig* newConfig)
 {
+    const AppConfig::AppConfig* currentConfig = AppConfig::Get();
+    if (!newConfig)
+    {
+        newConfig = currentConfig;
+    }
+    BOOL isNew = (newConfig != currentConfig);
+
+    // 窗口设置
+    if (!isNew || newConfig->bShowSprite != currentConfig->bShowSprite)
+    {
+        ShowWindow(this->hWnd, newConfig->bShowSprite ? SW_SHOWNA : SW_HIDE);
+    }
+    // TODO here
+
+    // spine 相关, 每个都需要上锁进行操作
+    if (!isNew || StrCmpW(newConfig->szBalloonIconPath, currentConfig->szBalloonIconPath))
+    {
+        //DestroyIcon(this->balloonIcon);
+        //Bitmap(newConfig->szBalloonIconPath).GetHICON(&this->balloonIcon);
+
+        //if (isNew)
+        //{
+        //    this->pNotifyIcon->PopupIconInfo(L"图标修改成功", L"来看看效果吧~", this->balloonIcon, TRUE);
+        //}
+    }
     return TRUE;
 }
 
@@ -172,25 +195,42 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 {
     GetSysDragSize(&this->sysDragSize);
 
+    // 初始化大小, 位置, Z 序, 但是还不显示
+    SIZE wndSize = { 1920, 1080 };
+    GetScreenResolution(&wndSize);
+    SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, wndSize.cx, wndSize.cy, SWP_HIDEWINDOW);
+
+    // 应用全局设置
+    this->ApplyConfig();
+
     // 加载 spine
-    this->spinechar = new SpineChar(this->hWnd);
-    this->spinechar->CreateTargetResourcse();
+    this->spinechar = new SpineChar();
+    this->spinerenderer = new SpineRenderer(this->hWnd, this->spinechar);
     this->spinechar->LoadSpine(
         L"D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.atlas",
-        L"D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.skel"
+        L"D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.skel",
+        100
     );
 
-    SetWindowPos(this->hWnd, HWND_TOPMOST, 1000, 600, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+    FLOAT spX = 0;
+    FLOAT spY = 0;
+    this->LoadLastPosFromReg(&spX, &spY);
+    //this->spinechar->SetPosition(spX, spY);
 
-    this->spinechar->Start();
+    this->spinerenderer->CreateTargetResourcse();
+    this->spinerenderer->CreateSpineResources();
+    this->spinerenderer->Start();
     return 0;
 }
 
 LRESULT SpriteWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
-    this->spinechar->Stop();
+    this->spinerenderer->Stop();
+    this->spinerenderer->ReleaseSpineResources();
+    this->spinerenderer->ReleaseTargetResources();
     this->spinechar->UnloadSpine();
-    this->spinechar->ReleaseTargetResources();
+    delete this->spinerenderer;
+    this->spinerenderer = NULL;
     delete this->spinechar;
     this->spinechar = NULL;
     return 0;
@@ -243,9 +283,9 @@ LRESULT SpriteWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
         if (!this->isDragging && (abs(deltaX) >= this->sysDragSize.cx || abs(deltaY) >= this->sysDragSize.cy))
         {
             this->isDragging = TRUE;
-            this->spinechar->Lock();
+            this->spinerenderer->Lock();
             this->spinechar->SendAction(SpineAction::DRAGUP);
-            this->spinechar->Unlock();
+            this->spinerenderer->Unlock();
         }
 
         if (this->isDragging)
@@ -274,18 +314,18 @@ LRESULT SpriteWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
     if (this->isDragging)
     {
         this->isDragging = FALSE;
-        this->spinechar->Lock();
+        this->spinerenderer->Lock();
         this->spinechar->SendAction(SpineAction::DRAGDOWN);
-        this->spinechar->Unlock();
+        this->spinerenderer->Unlock();
 
         // 保存一次现在的窗口位置
         this->SaveCurrentPosToReg();
     }
     else
     {
-        this->spinechar->Lock();
+        this->spinerenderer->Lock();
         this->spinechar->SendAction(SpineAction::TOUCH);
-        this->spinechar->Unlock();
+        this->spinerenderer->Unlock();
     }
 
     return 0;
@@ -311,15 +351,15 @@ LRESULT SpriteWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
 
     if (zDelta >= 0)
     {
-        this->spinechar->Lock();
+        this->spinerenderer->Lock();
         this->spinechar->SendAction(SpineAction::WINK);
-        this->spinechar->Unlock();
+        this->spinerenderer->Unlock();
     }
     else
     {
-        this->spinechar->Lock();
+        this->spinerenderer->Lock();
         this->spinechar->SendAction(SpineAction::DANCE);
-        this->spinechar->Unlock();
+        this->spinerenderer->Unlock();
     }
 
     return 0;
