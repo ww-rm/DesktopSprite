@@ -126,10 +126,10 @@ BOOL SpineChar::LoadSpine(PCWSTR atlasPath, PCWSTR skelPath, UINT scale)
     }
     OutputDebugStringW(L"\n");
 
-    this->skeleton->x = 1920 / 2.f;
-    this->skeleton->y = 1080 / 2.f;
+    this->skeleton->x = 0;
+    this->skeleton->y = 0;
     this->skeleton->flipX = 1;
-    this->skeleton->flipY = 1;
+    this->skeleton->flipY = 0;
 
     this->SetAnime(SpineAnime::IDLE);
     return TRUE;
@@ -537,14 +537,20 @@ BOOL SpineRenderer::CreateTargetResourcse()
         return FALSE;
 
     GetWindowRect(this->targetWnd, &this->rcTarget);
+    INT W = this->rcTarget.right - this->rcTarget.left;
+    INT H = this->rcTarget.bottom - this->rcTarget.top;
     DeleteObject(
         SelectObject(
             this->hdcMem,
-            CreateCompatibleBitmap(this->hdcScreen, this->rcTarget.right - this->rcTarget.left, this->rcTarget.bottom - this->rcTarget.top)
+            CreateCompatibleBitmap(this->hdcScreen, W, H)
         )
     );
 
     this->graphics = new Gdiplus::Graphics(this->hdcMem);
+
+    // 把坐标系原点设置在窗口中心, 并且规范化正方向
+    Gdiplus::Matrix originTrans(1, 0, 0, -1, (float)W / 2.0f, (float)H / 2.0f); 
+    this->graphics->SetTransform(&originTrans);
     return TRUE;
 }
 
