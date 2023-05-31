@@ -408,7 +408,13 @@ LRESULT SpriteWindow::OnLButtonDBClick(WPARAM wParam, LPARAM lParam)
     this->ptDragSrc.x = GET_X_LPARAM(lParam);
     this->ptDragSrc.y = GET_Y_LPARAM(lParam);
 
-    // TODO: ×ªÏò
+    this->spinerenderer->Lock();
+    BOOL flipX = TRUE;
+    this->spinechar->GetFlipX(&flipX);
+    flipX = (BOOL)!flipX;
+    this->spinechar->SetFlipX(flipX);
+    this->SaveFlipXToReg();
+    this->spinerenderer->Unlock();
 
     return 0;
 }
