@@ -29,7 +29,7 @@ public:
     BOOL SaveCurrentPosToReg();
 
     BOOL LoadFlipXFromReg(BOOL* flip);
-    BOOL SaveFlipXFromReg(BOOL flip);
+    BOOL SaveFlipXToReg();
 
     BOOL ApplyConfig(const AppConfig::AppConfig* newConfig = NULL);
 

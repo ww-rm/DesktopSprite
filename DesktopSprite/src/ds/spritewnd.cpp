@@ -18,7 +18,7 @@ SpineChar* SpriteWindow::GetSpineChar()
 
 BOOL SpriteWindow::LoadLastPosFromReg(FLOAT* x, FLOAT* y)
 {
-    // 默认精灵位置是原点
+    // 默认精灵位置是窗口中心
     *x = 0;
     *y = 0;
 
@@ -41,6 +41,8 @@ BOOL SpriteWindow::LoadLastPosFromReg(FLOAT* x, FLOAT* y)
 
     cbData = sizeof(FLOAT);
     RegQueryAnyValue(hkApp, L"LastSpritePosX", (PBYTE)x, &cbData);
+    cbData = sizeof(FLOAT);
+    RegQueryAnyValue(hkApp, L"LastSpritePosY", (PBYTE)y, &cbData);
     RegCloseKey(hkApp);
 
     return TRUE;
@@ -48,11 +50,9 @@ BOOL SpriteWindow::LoadLastPosFromReg(FLOAT* x, FLOAT* y)
 
 BOOL SpriteWindow::SaveCurrentPosToReg()
 {
-    RECT currentWndRc = { 0 };
-    if (!GetWindowRect(this->hWnd, &currentWndRc))
-    {
-        return FALSE;
-    }
+    FLOAT x = 0;
+    FLOAT y = 0;
+    this->spinechar->GetPosition(&x, &y);
 
     // 打开注册表项
     HKEY hkApp = NULL;
@@ -68,7 +68,8 @@ BOOL SpriteWindow::SaveCurrentPosToReg()
         return FALSE;
     }
 
-    RegSetBinValue(hkApp, L"LastSpritePos", (PBYTE)&currentWndRc, sizeof(POINT));
+    RegSetBinValue(hkApp, L"LastSpritePosX", (PBYTE)&x, sizeof(FLOAT));
+    RegSetBinValue(hkApp, L"LastSpritePosY", (PBYTE)&y, sizeof(FLOAT));
     RegCloseKey(hkApp);
     return TRUE;
 }
@@ -102,8 +103,11 @@ BOOL SpriteWindow::LoadFlipXFromReg(BOOL* flip)
     return TRUE;
 }
 
-BOOL SpriteWindow::SaveFlipXFromReg(BOOL flip)
+BOOL SpriteWindow::SaveFlipXToReg()
 {
+    BOOL flip = TRUE;
+    this->spinechar->GetFlipX(&flip);
+
     // 打开注册表项
     HKEY hkApp = NULL;
     DWORD dwDisposition = 0;
@@ -137,18 +141,75 @@ BOOL SpriteWindow::ApplyConfig(const AppConfig::AppConfig* newConfig)
     {
         ShowWindow(this->hWnd, newConfig->bShowSprite ? SW_SHOWNA : SW_HIDE);
     }
-    // TODO here
+    if (!isNew || newConfig->bSpriteMousePass != currentConfig->bSpriteMousePass)
+    {
+        LONG_PTR exStyle = GetWindowLongPtrW(this->hWnd, GWL_EXSTYLE);
+        if (newConfig->bSpriteMousePass)
+        {
+            exStyle |= WS_EX_TRANSPARENT;
+        }
+        else
+        {
+            exStyle &= ~WS_EX_TRANSPARENT;
+        }
+        SetWindowLongPtrW(this->hWnd, GWL_EXSTYLE, exStyle);
+    }
 
     // spine 相关, 每个都需要上锁进行操作
-    if (!isNew || StrCmpW(newConfig->szBalloonIconPath, currentConfig->szBalloonIconPath))
+    if (!isNew || 
+        StrCmpW(newConfig->szSpineAtlasPath, currentConfig->szSpineAtlasPath) || 
+        StrCmpW(newConfig->szSpineSkelPath, currentConfig->szSpineSkelPath) ||
+        newConfig->spScale != currentConfig->spScale)
     {
-        //DestroyIcon(this->balloonIcon);
-        //Bitmap(newConfig->szBalloonIconPath).GetHICON(&this->balloonIcon);
+        if (!this->spinechar->LoadSpine(newConfig->szSpineAtlasPath, newConfig->szSpineSkelPath, newConfig->spScale) ||
+            !this->spinerenderer->CreateSpineResources() ||
+            !this->spinerenderer->Start())
+        {
+            this->spinerenderer->Stop();
+            this->spinerenderer->ReleaseSpineResources();
+            this->spinechar->UnloadSpine();
+            MessageBoxW(this->hWnd, L"spine 资源加载失败！", L"设置错误", MB_ICONINFORMATION);
+        }
 
-        //if (isNew)
-        //{
-        //    this->pNotifyIcon->PopupIconInfo(L"图标修改成功", L"来看看效果吧~", this->balloonIcon, TRUE);
-        //}
+    }
+    if (!isNew || newConfig->maxFps != currentConfig->maxFps)
+    {
+        this->spinerenderer->Lock();
+        this->spinerenderer->SetMaxFps(newConfig->maxFps);
+        this->spinerenderer->Unlock();
+    }
+    if (!isNew || newConfig->spTransparencyPercent != currentConfig->spTransparencyPercent)
+    {
+        this->spinerenderer->Lock();
+        this->spinerenderer->SetTransparency(newConfig->spTransparencyPercent);
+        this->spinerenderer->Unlock();
+    }
+    if (!isNew ||
+        StrCmpW(newConfig->spAnimeIdle, currentConfig->spAnimeIdle) ||
+        StrCmpW(newConfig->spAnimeDrag, currentConfig->spAnimeDrag) ||
+        StrCmpW(newConfig->spAnimeWork, currentConfig->spAnimeWork) ||
+        StrCmpW(newConfig->spAnimeSleep, currentConfig->spAnimeSleep) ||
+        StrCmpW(newConfig->spAnimeStand, currentConfig->spAnimeStand) ||
+        StrCmpW(newConfig->spAnimeTouch, currentConfig->spAnimeTouch) ||
+        StrCmpW(newConfig->spAnimeWink, currentConfig->spAnimeWink) ||
+        StrCmpW(newConfig->spAnimeVictory, currentConfig->spAnimeVictory) ||
+        StrCmpW(newConfig->spAnimeDance, currentConfig->spAnimeDance) ||
+        StrCmpW(newConfig->spAnimeDizzy, currentConfig->spAnimeDizzy))
+    {
+        this->spinerenderer->Lock();
+        this->spinechar->SetAnimeName(SpineAnime::IDLE, newConfig->spAnimeIdle);
+        this->spinechar->SetAnimeName(SpineAnime::DRAG, newConfig->spAnimeDrag);
+        this->spinechar->SetAnimeName(SpineAnime::WORK, newConfig->spAnimeWork);
+        this->spinechar->SetAnimeName(SpineAnime::SLEEP, newConfig->spAnimeSleep);
+
+        this->spinechar->SetAnimeName(SpineAnime::STAND, newConfig->spAnimeStand);
+        this->spinechar->SetAnimeName(SpineAnime::TOUCH, newConfig->spAnimeTouch);
+        this->spinechar->SetAnimeName(SpineAnime::WINK, newConfig->spAnimeWink);
+        this->spinechar->SetAnimeName(SpineAnime::VICTORY, newConfig->spAnimeVictory);
+        this->spinechar->SetAnimeName(SpineAnime::DANCE, newConfig->spAnimeDance);
+        this->spinechar->SetAnimeName(SpineAnime::DIZZY, newConfig->spAnimeDizzy);
+        this->spinechar->SendAction(SpineAction::REFRESH); // refresh to show the new anime
+        this->spinerenderer->Unlock();
     }
     return TRUE;
 }
@@ -200,31 +261,39 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     GetScreenResolution(&wndSize);
     SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, wndSize.cx, wndSize.cy, SWP_HIDEWINDOW);
 
-    // 应用全局设置
-    this->ApplyConfig();
-
     // 加载 spine
     this->spinechar = new SpineChar();
     this->spinerenderer = new SpineRenderer(this->hWnd, this->spinechar);
-    this->spinechar->LoadSpine(
-        L"D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.atlas",
-        L"D:\\ACGN\\AzurLane_Export\\spines\\lafei_4\\lafei_4.skel",
-        100
-    );
 
-    FLOAT spX = 0;
-    FLOAT spY = 0;
-    this->LoadLastPosFromReg(&spX, &spY);
-    //this->spinechar->SetPosition(spX, spY);
+    // 绘图基础资源必须创建成功
+    if (!this->spinerenderer->CreateTargetResourcse())
+    {
+        return -1;
+    }
 
-    this->spinerenderer->CreateTargetResourcse();
-    this->spinerenderer->CreateSpineResources();
-    this->spinerenderer->Start();
+    // 应用全局设置
+    this->ApplyConfig();
+
+    // 从注册表初始化 sprite 位置和朝向
+    FLOAT x = 0;
+    FLOAT y = 0;
+    BOOL flipX = TRUE;
+    this->LoadLastPosFromReg(&x, &y);
+    this->LoadFlipXFromReg(&flipX);
+
+    this->spinerenderer->Lock();
+    this->spinechar->SetPosition(x, y);
+    this->spinechar->SetFlipX(flipX);
+    this->spinerenderer->Unlock();
+
     return 0;
 }
 
 LRESULT SpriteWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
+    this->SaveCurrentPosToReg();
+    this->SaveFlipXToReg();
+
     this->spinerenderer->Stop();
     this->spinerenderer->ReleaseSpineResources();
     this->spinerenderer->ReleaseTargetResources();
