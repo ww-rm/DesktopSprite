@@ -55,12 +55,14 @@ BEGIN
     POPUP ""
     BEGIN
         MENUITEM "显示浮窗",                        IDM_FLOATWND
-        MENUITEM SEPARATOR
         MENUITEM "显示占用",                        IDM_SHOWCPUMEM
         MENUITEM "显示网速",                        IDM_SHOWNETSPEED
         MENUITEM SEPARATOR
         MENUITEM "整点报时",                        IDM_TIMEALARM
         MENUITEM "提示声音",                        IDM_INFOSOUND
+        MENUITEM SEPARATOR
+        MENUITEM "显示精灵",                        IDM_SHOWSPRITE
+        MENUITEM "鼠标穿透",                        IDM_SPMOUSEPASS
         MENUITEM SEPARATOR
         MENUITEM "设置(&C)",                      IDM_CONFIG
         MENUITEM "关于(&A)",                      IDM_ABOUT

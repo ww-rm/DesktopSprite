@@ -758,6 +758,14 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         pcfgdata->bInfoSound = (BOOL)!pcfgdata->bInfoSound;
         configChanged = TRUE;
         break;
+    case IDM_SHOWSPRITE:
+        pcfgdata->bShowSprite = (BOOL)!pcfgdata->bShowSprite;
+        configChanged = TRUE;
+        break;
+    case IDM_SPMOUSEPASS:
+        pcfgdata->bSpriteMousePass = (BOOL)!pcfgdata->bSpriteMousePass;
+        configChanged = TRUE;
+        break;
     case IDM_CONFIG:
     {
         ConfigDlg* dlg = new ConfigDlg(this);
@@ -817,15 +825,14 @@ LRESULT MainWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
 
     // 设置菜单状态
     SetMenuItemState(hMenu, IDM_FLOATWND, FALSE, (AppConfig::Get()->bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
-
-    // 子菜单
     SetMenuItemState(hMenu, IDM_SHOWCPUMEM, FALSE, ((AppConfig::Get()->byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
     SetMenuItemState(hMenu, IDM_SHOWNETSPEED, FALSE, ((AppConfig::Get()->byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
 
-    // 子菜单
     SetMenuItemState(hMenu, IDM_TIMEALARM, FALSE, AppConfig::Get()->bTimeAlarm ? MFS_CHECKED : MFS_UNCHECKED);
     SetMenuItemState(hMenu, IDM_INFOSOUND, FALSE, AppConfig::Get()->bInfoSound ? MFS_CHECKED : MFS_UNCHECKED);
 
+    SetMenuItemState(hMenu, IDM_SHOWSPRITE, FALSE, AppConfig::Get()->bShowSprite ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_SPMOUSEPASS, FALSE, AppConfig::Get()->bSpriteMousePass ? MFS_CHECKED : MFS_UNCHECKED);
 
     return 0;
 }

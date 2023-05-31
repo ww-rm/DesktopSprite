@@ -54,13 +54,15 @@
 #define IDM_TRANSPARENCY                40028
 #define IDM_ABOUT                       40036
 #define IDM_CONFIG                      40037
+#define IDM_SHOWSPRITE                  40038
+#define IDM_SPMOUSEPASS                 40039
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
-#define _APS_NEXT_COMMAND_VALUE         40038
+#define _APS_NEXT_COMMAND_VALUE         40042
 #define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
