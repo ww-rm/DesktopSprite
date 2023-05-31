@@ -95,7 +95,7 @@ BOOL SpriteWindow::LoadFlipXFromReg(BOOL* flip)
     }
 
     cbData = sizeof(BOOL);
-    RegQueryAnyValue(hkApp, L"LastSpriteFlipX", (PBYTE)&flip, &cbData);
+    RegQueryAnyValue(hkApp, L"LastSpriteFlipX", (PBYTE)flip, &cbData);
     RegCloseKey(hkApp);
 
     return TRUE;
@@ -120,7 +120,7 @@ BOOL SpriteWindow::SaveFlipXToReg()
         return FALSE;
     }
 
-    RegSetBinValue(hkApp, L"LastSpritePos", (PBYTE)&flip, sizeof(BOOL));
+    RegSetBinValue(hkApp, L"LastSpriteFlipX", (PBYTE)&flip, sizeof(BOOL));
     RegCloseKey(hkApp);
     return TRUE;
 }
@@ -159,9 +159,19 @@ BOOL SpriteWindow::ApplyConfig(const AppConfig::AppConfig* newConfig)
         StrCmpW(newConfig->szSpineSkelPath, currentConfig->szSpineSkelPath) ||
         newConfig->spScale != currentConfig->spScale)
     {
-        if (!this->spinechar->LoadSpine(newConfig->szSpineAtlasPath, newConfig->szSpineSkelPath, newConfig->spScale) ||
-            !this->spinerenderer->CreateSpineResources() ||
-            !this->spinerenderer->Start())
+        if (this->spinechar->LoadSpine(newConfig->szSpineAtlasPath, newConfig->szSpineSkelPath, newConfig->spScale) &&
+            this->spinerenderer->CreateSpineResources())
+        {
+            // 从注册表初始化 sprite 位置和朝向
+            POINT pos = { 0 };
+            BOOL flipX = TRUE;
+            this->LoadLastPosFromReg(&pos);
+            this->LoadFlipXFromReg(&flipX);
+            this->spinechar->SetPosition((FLOAT)pos.x, (FLOAT)pos.y);
+            this->spinechar->SetFlipX(flipX);
+            this->spinerenderer->Start();
+        }
+        else
         {
             this->spinerenderer->Stop();
             this->spinerenderer->ReleaseSpineResources();
@@ -272,17 +282,6 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     // 应用全局设置
     this->ApplyConfig();
 
-    // 从注册表初始化 sprite 位置和朝向
-    POINT pos = { 0 };
-    BOOL flipX = TRUE;
-    this->LoadLastPosFromReg(&pos);
-    this->LoadFlipXFromReg(&flipX);
-
-    this->spinerenderer->Lock();
-    this->spinechar->SetPosition((FLOAT)pos.x, (FLOAT)pos.y);
-    this->spinechar->SetFlipX(flipX);
-    this->spinerenderer->Unlock();
-
     return 0;
 }
 
@@ -340,8 +339,7 @@ LRESULT SpriteWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 {
     POINT ptCursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
     INT deltaX = ptCursor.x - this->ptDragSrc.x;
-    INT deltaY = ptCursor.y - this->ptDragSrc.y;
-    RECT rcWnd = { 0 };
+    INT deltaY = -(ptCursor.y - this->ptDragSrc.y); // 因为按 y 轴对称了
 
     if (wParam & MK_LBUTTON)
     {
@@ -356,8 +354,8 @@ LRESULT SpriteWindow::OnMouseMove(WPARAM wParam, LPARAM lParam)
 
         if (this->isDragging)
         {
-            GetWindowRect(this->hWnd, &rcWnd);
-            SetWindowPos(this->hWnd, 0, rcWnd.left + deltaX, rcWnd.top + deltaY, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOZORDER);
+            // NOTE: 此处不用 Lock/Unlock, 因为实测有点卡
+            this->spinechar->SetPosition((FLOAT)(this->ptSpriteDragSrc.x + deltaX), (FLOAT)(this->ptSpriteDragSrc.y + deltaY));
         }
     }
     return 0;
@@ -370,6 +368,13 @@ LRESULT SpriteWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam)
     // 保存点击位置
     this->ptDragSrc.x = GET_X_LPARAM(lParam);
     this->ptDragSrc.y = GET_Y_LPARAM(lParam);
+
+    // 保存精灵位置
+    FLOAT x = 0;
+    FLOAT y = 0;
+    this->spinechar->GetPosition(&x, &y);
+    this->ptSpriteDragSrc.x = (LONG)x;
+    this->ptSpriteDragSrc.y = (LONG)y;
     return 0;
 }
 
@@ -384,7 +389,7 @@ LRESULT SpriteWindow::OnLButtonUp(WPARAM wParam, LPARAM lParam)
         this->spinechar->SendAction(SpineAction::DRAGDOWN);
         this->spinerenderer->Unlock();
 
-        // 保存一次现在的窗口位置
+        // 保存一次现在的精灵位置
         this->SaveCurrentPosToReg();
     }
     else
@@ -405,6 +410,14 @@ LRESULT SpriteWindow::OnLButtonDBClick(WPARAM wParam, LPARAM lParam)
     this->ptDragSrc.x = GET_X_LPARAM(lParam);
     this->ptDragSrc.y = GET_Y_LPARAM(lParam);
 
+    // 保存精灵位置
+    FLOAT x = 0;
+    FLOAT y = 0;
+    this->spinechar->GetPosition(&x, &y);
+    this->ptSpriteDragSrc.x = (LONG)x;
+    this->ptSpriteDragSrc.y = (LONG)y;
+
+    // 转向
     this->spinerenderer->Lock();
     BOOL flipX = TRUE;
     this->spinechar->GetFlipX(&flipX);
