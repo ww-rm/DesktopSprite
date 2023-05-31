@@ -766,6 +766,10 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         pcfgdata->bSpriteMousePass = (BOOL)!pcfgdata->bSpriteMousePass;
         configChanged = TRUE;
         break;
+    case IDM_RESETSPRITEPOS:
+        this->spritewnd->GetSpineChar()->SetPosition(0, 0);
+        this->spritewnd->SaveCurrentPosToReg();
+        break;
     case IDM_CONFIG:
     {
         ConfigDlg* dlg = new ConfigDlg(this);
