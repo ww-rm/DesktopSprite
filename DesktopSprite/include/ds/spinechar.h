@@ -164,6 +164,7 @@ public:
     // 启动/停止运行
     BOOL Start();
     BOOL Stop();
+    BOOL IsRendering() const;
 
     // 设置帧率
     void SetMaxFps(INT fps);

@@ -359,6 +359,7 @@ BOOL SpineChar::SendAction(SpineAction action)
         default:
             break;
         }
+        break;
     case SpineState::DRAG:
         switch (action)
         {
@@ -372,6 +373,7 @@ BOOL SpineChar::SendAction(SpineAction action)
         default:
             break;
         }
+        break;
     case SpineState::WORK:
         switch (action)
         {
@@ -392,6 +394,7 @@ BOOL SpineChar::SendAction(SpineAction action)
         default:
             break;
         }
+        break;
     case SpineState::SLEEP:
         switch (action)
         {
@@ -413,6 +416,7 @@ BOOL SpineChar::SendAction(SpineAction action)
         default:
             break;
         }
+        break;
     default:
         break;
     }
@@ -531,10 +535,11 @@ SpineRenderer::SpineRenderer(HWND targetWnd, SpineChar* spinechar) :targetWnd(ta
 
 BOOL SpineRenderer::CreateTargetResourcse()
 {
-    if (!(this->hdcScreen = GetDC(NULL)))
+    if (!(this->hdcScreen = GetDC(NULL)) || !(this->hdcMem = CreateCompatibleDC(this->hdcScreen)))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
         return FALSE;
-    if (!(this->hdcMem = CreateCompatibleDC(this->hdcScreen)))
-        return FALSE;
+    }
 
     GetWindowRect(this->targetWnd, &this->rcTarget);
     INT W = this->rcTarget.right - this->rcTarget.left;
@@ -651,6 +656,11 @@ BOOL SpineRenderer::Stop()
     return TRUE;
 }
 
+BOOL SpineRenderer::IsRendering() const
+{
+    return this->thread != NULL;
+}
+
 void SpineRenderer::SetMaxFps(INT fps)
 {
     this->maxFps = fps;
@@ -765,6 +775,10 @@ BOOL SpineRenderer::Render()
 {
     if (!this->spinechar->Loaded())
         return FALSE;
+
+    // 如果窗口不可见则跳过渲染
+    if (!IsWindowVisible(this->targetWnd))
+        return TRUE;
 
     this->graphics->Clear(Gdiplus::Color::Transparent);
     this->vertexBuffer.clear();
