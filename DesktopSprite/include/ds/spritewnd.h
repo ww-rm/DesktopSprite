@@ -34,6 +34,8 @@ public:
 
     BOOL ApplyConfig(const AppConfig::AppConfig* newConfig = NULL);
 
+    BOOL ShowContextMenu(INT x, INT y);
+
 private:
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnCreate(WPARAM wParam, LPARAM lParam);

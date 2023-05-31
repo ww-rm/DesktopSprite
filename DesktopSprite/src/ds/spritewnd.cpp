@@ -1,6 +1,7 @@
 #include <ds/framework.h>
 #include <ds/utils.h>
 #include <ds/winapp.h>
+#include <resource.h>
 
 #include <ds/spritewnd.h>
 
@@ -222,6 +223,22 @@ BOOL SpriteWindow::ApplyConfig(const AppConfig::AppConfig* newConfig)
     return TRUE;
 }
 
+BOOL SpriteWindow::ShowContextMenu(INT x, INT y)
+{
+    // 加载ContextMenu
+    HMENU hContextMenuBar = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDR_SPCONTEXTMENU));
+    HMENU hContextMenu = GetSubMenu(hContextMenuBar, 0);
+
+    // 解决在菜单外单击左键菜单不消失的问题
+    SetForegroundWindow(this->hWnd);
+
+    // 显示菜单
+    TrackPopupMenuEx(hContextMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON, x, y, this->hWnd, NULL);
+
+    DestroyMenu(hContextMenuBar);
+
+    return TRUE;;
+}
 
 ///////////////////////////// Message Process ////////////////////////////////
 
@@ -317,11 +334,28 @@ LRESULT SpriteWindow::OnPaint(WPARAM wParam, LPARAM lParam)
 
 LRESULT SpriteWindow::OnContextMenu(WPARAM wParam, LPARAM lParam)
 {
+    this->ShowContextMenu(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
     return 0;
 }
 
 LRESULT SpriteWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 {
+    AppConfig::AppConfig* pcfgdata = new AppConfig::AppConfig(*AppConfig::Get());
+    switch (LOWORD(wParam))
+    {
+    case IDM_SHOWSPRITE:
+        pcfgdata->bShowSprite = (BOOL)!pcfgdata->bShowSprite;
+        break;
+    case IDM_SPMOUSEPASS:
+        pcfgdata->bSpriteMousePass = (BOOL)!pcfgdata->bSpriteMousePass;
+        break;
+    default:
+        break;
+    }
+    this->ApplyConfig(pcfgdata);
+    AppConfig::Set(pcfgdata);
+    AppConfig::SaveToFile(WinApp::GetConfigPath());
+    delete pcfgdata;
     return 0;
 }
 
@@ -332,6 +366,10 @@ LRESULT SpriteWindow::OnTimer(WPARAM wParam, LPARAM lParam)
 
 LRESULT SpriteWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
 {
+    // 获取菜单句柄
+    HMENU hMenu = (HMENU)wParam;
+    SetMenuItemState(hMenu, IDM_SHOWSPRITE, FALSE, AppConfig::Get()->bShowSprite ? MFS_CHECKED : MFS_UNCHECKED);
+    SetMenuItemState(hMenu, IDM_SPMOUSEPASS, FALSE, AppConfig::Get()->bSpriteMousePass ? MFS_CHECKED : MFS_UNCHECKED);
     return 0;
 }
 
