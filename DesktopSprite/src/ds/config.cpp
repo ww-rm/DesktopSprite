@@ -29,7 +29,6 @@ namespace AppConfig {
         // sprite ÉèÖÃ
         this->bShowSprite = other.bShowSprite;
         this->bSpriteMousePass = other.bSpriteMousePass;
-        this->bAlwaysBottom = other.bAlwaysBottom;
         this->maxFps = other.maxFps;
         this->spScale = other.spScale;
         this->spTransparencyPercent = other.spTransparencyPercent;
@@ -80,7 +79,6 @@ namespace AppConfig {
 
         this->bShowSprite = (BOOL)sprite.get("IsSpriteShow", (bool)this->bShowSprite).asBool();
         this->bSpriteMousePass = (BOOL)sprite.get("IsMousePass", (bool)this->bSpriteMousePass).asBool();
-        this->bAlwaysBottom = (BOOL)sprite.get("IsAlwaysBottom", (bool)this->bAlwaysBottom).asBool();
         this->maxFps = (UINT)sprite.get("MaxFPS", (UINT)this->maxFps).asUInt();
         this->spScale = (UINT)sprite.get("Scale", (UINT)this->spScale).asUInt();
         this->spTransparencyPercent = (UINT)sprite.get("Transparency", (UINT)this->spTransparencyPercent).asUInt();
@@ -124,7 +122,6 @@ namespace AppConfig {
 
         sprite["IsSpriteShow"] = (bool)this->bShowSprite;
         sprite["IsMousePass"] = (bool)this->bSpriteMousePass;
-        sprite["IsAlwaysBottom"] = (bool)this->bAlwaysBottom;
         sprite["MaxFPS"] = (UINT)this->maxFps;
         sprite["Scale"] = (UINT)this->spScale;
         sprite["Transparency"] = (UINT)this->spTransparencyPercent;

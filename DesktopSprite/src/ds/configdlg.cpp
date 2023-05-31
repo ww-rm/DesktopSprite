@@ -80,7 +80,6 @@ BOOL ConfigDlg::CheckValidFormData()
     GetDlgItemTextW(this->hDlg, IDC_EDIT_SPSKELPATH, this->form.szSpineSkelPath, MAX_PATH);
     this->form.bShowSprite = IsDlgButtonChecked(this->hDlg, IDC_CHECK_SHOWSPRITE);
     this->form.bSpriteMousePass = IsDlgButtonChecked(this->hDlg, IDC_CHECK_MOUSEPASS);
-    this->form.bAlwaysBottom = IsDlgButtonChecked(this->hDlg, IDC_CHECK_ALWAYSBOTTOM);
     this->form.maxFps = GetDlgItemInt(this->hDlg, IDC_STATIC_SPMAXFPS, NULL, FALSE);
     this->form.spTransparencyPercent = GetDlgItemInt(this->hDlg, IDC_STATIC_SPTRANSPARENCY, NULL, FALSE);
     this->form.spScale = GetDlgItemInt(this->hDlg, IDC_STATIC_SPSCALE, NULL, FALSE);
@@ -221,12 +220,11 @@ INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
     this->SetSpinePngPath(this->form.szSpineAtlasPath);
     CheckDlgButton(this->hDlg, IDC_CHECK_SHOWSPRITE, this->form.bShowSprite ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(this->hDlg, IDC_CHECK_MOUSEPASS, this->form.bSpriteMousePass ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(this->hDlg, IDC_CHECK_ALWAYSBOTTOM, this->form.bAlwaysBottom ? BST_CHECKED : BST_UNCHECKED);
     this->InitTrackBar(IDC_SLIDER_SPMAXFPS, 12, 60, 1, 6, this->form.maxFps);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPMAXFPS, this->form.maxFps, FALSE);
     this->InitTrackBar(IDC_SLIDER_SPTRANSPARENCY, 0, 100, 1, 10, this->form.spTransparencyPercent);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPTRANSPARENCY, this->form.spTransparencyPercent, FALSE);
-    this->InitTrackBar(IDC_SLIDER_SPSCALE, 20, 300, 5, 10, this->form.spScale);
+    this->InitTrackBar(IDC_SLIDER_SPSCALE, 20, 300, 1, 10, this->form.spScale);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPSCALE, this->form.spScale, FALSE);
 
     // Spine ÉèÖÃ
@@ -274,6 +272,8 @@ INT_PTR ConfigDlg::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             mainwnd->ApplyConfig(&this->form);
             mainwnd->GetSpriteWnd()->ApplyConfig(&this->form);
+            AppConfig::Set(&this->form);
+            AppConfig::SaveToFile(WinApp::GetConfigPath());
         }
         return TRUE;
     default:

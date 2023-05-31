@@ -45,7 +45,6 @@
 #define IDC_CB_SPVICTORY                1038
 #define IDC_CB_SPDANCE                  1039
 #define IDC_CB_SPDIZZY                  1040
-#define IDC_CHECK_ALWAYSBOTTOM          1041
 #define IDM_FLOATWND                    40001
 #define IDM_EXIT                        40002
 #define IDM_TIMEALARM                   40004
