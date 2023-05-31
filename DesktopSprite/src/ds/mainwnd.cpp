@@ -287,14 +287,7 @@ BOOL MainWindow::ApplyConfig(const AppConfig::AppConfig* newConfig)
     // 设置浮动窗口
     if (!isNew || newConfig->bFloatWnd != currentConfig->bFloatWnd)
     {
-        if (newConfig->bFloatWnd)
-        {
-            ShowWindow(this->hWnd, SW_SHOWNA);
-        }
-        else
-        {
-            ShowWindow(this->hWnd, SW_HIDE);
-        }
+        ShowWindow(this->hWnd, newConfig->bFloatWnd ? SW_SHOWNA : SW_HIDE);
     }
 
     // 调整显示内容
