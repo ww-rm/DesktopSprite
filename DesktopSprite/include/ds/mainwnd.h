@@ -11,19 +11,6 @@
 #include <ds/spritewnd.h>
 #include <resource.h>
 
-
-// 窗口消息相关宏定义
-
-#define IDT_TIMEALARM                   1
-
-using namespace Gdiplus;
-
-// 辅助函数画圆
-BOOL DrawCircle(Graphics& graphics, Pen& pen, PointF& ptCenter, REAL nOuterRadius, REAL sweepPercent);
-
-// 辅助函数画网速图
-BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT nLevel, INT nMaxLevel = 6);
-
 class MainWindow :public BaseWindow
 {
 private:

@@ -10,7 +10,7 @@
 
 #include <ds/mainwnd.h>
 
-using namespace Gdiplus;
+static const INT IDT_TIMEALARM = 1;
 
 // 状态颜色
 static Gdiplus::Color const STATUSCOLOR_GOOD = 0xff00ff00;
@@ -22,28 +22,41 @@ static UINT     const   ID_NIDMAIN = 1;                        // 图标 ID
 static UINT     const   BASE_WNDSIZE_PIXELS = 20;              // 主窗口的基本单元格像素大小
 
 
-BOOL DrawCircle(Graphics& graphics, Pen& pen, PointF& ptCenter, REAL nOuterRadius, REAL sweepPercent)
+static BOOL DrawCircle(
+    Gdiplus::Graphics& graphics, 
+    Gdiplus::Pen& pen, 
+    Gdiplus::PointF& ptCenter, 
+    Gdiplus::REAL nOuterRadius, 
+    Gdiplus::REAL sweepPercent
+)
 {
-    REAL nr = nOuterRadius - pen.GetWidth() / 2;
+    Gdiplus::REAL nr = nOuterRadius - pen.GetWidth() / 2;
     graphics.DrawArc(&pen, ptCenter.X - nr, ptCenter.Y - nr, 2 * nr, 2 * nr, 270, -360 * sweepPercent);
     return TRUE;
 }
 
-BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT nLevel, INT nMaxLevel)
+static BOOL DrawSpeedStair(
+    Gdiplus::Graphics& graphics,
+    Gdiplus::Color& color,
+    Gdiplus::RectF& rect,
+    BOOL bUp, 
+    INT nLevel, 
+    INT nMaxLevel = 6
+)
 {
-    REAL whiteGap = 1;
-    REAL height = rect.Height / nMaxLevel;
-    REAL width = (rect.Width - whiteGap * nMaxLevel) / (nMaxLevel + 1);
-    Pen pen(color, 2);
+    Gdiplus::REAL whiteGap = 1;
+    Gdiplus::REAL height = rect.Height / nMaxLevel;
+    Gdiplus::REAL width = (rect.Width - whiteGap * nMaxLevel) / (nMaxLevel + 1);
+    Gdiplus::Pen pen(color, 2);
 
     // 绘制箭头
-    PointF pt1(rect.GetLeft() + width / 2, rect.GetTop());
-    PointF pt2(rect.GetLeft(), rect.GetTop() + rect.Height / 3);
-    PointF pt3(rect.GetLeft() + width, rect.GetTop() + rect.Height / 3);
-    PointF pt4(rect.GetLeft() + width / 2, rect.GetBottom());
+    Gdiplus::PointF pt1(rect.GetLeft() + width / 2, rect.GetTop());
+    Gdiplus::PointF pt2(rect.GetLeft(), rect.GetTop() + rect.Height / 3);
+    Gdiplus::PointF pt3(rect.GetLeft() + width, rect.GetTop() + rect.Height / 3);
+    Gdiplus::PointF pt4(rect.GetLeft() + width / 2, rect.GetBottom());
     if (!bUp)
     {
-        REAL ymirror = rect.GetTop() + rect.Height / 2;
+        Gdiplus::REAL ymirror = rect.GetTop() + rect.Height / 2;
         pt1.Y += 2 * (ymirror - pt1.Y);
         pt2.Y += 2 * (ymirror - pt2.Y);
         pt3.Y += 2 * (ymirror - pt3.Y);
@@ -55,8 +68,8 @@ BOOL DrawSpeedStair(Graphics& graphics, Color& color, RectF& rect, BOOL bUp, INT
 
     // 绘制梯图
     pen.SetWidth(width);
-    PointF pt5(rect.GetLeft() + 1.5f * width + whiteGap, rect.GetBottom());
-    PointF pt6(rect.GetLeft() + 1.5f * width + whiteGap, rect.GetBottom() - height);
+    Gdiplus::PointF pt5(rect.GetLeft() + 1.5f * width + whiteGap, rect.GetBottom());
+    Gdiplus::PointF pt6(rect.GetLeft() + 1.5f * width + whiteGap, rect.GetBottom() - height);
     for (INT i = 1; i <= (nLevel < nMaxLevel ? nLevel : nMaxLevel); i++)
     {
         graphics.DrawLine(&pen, pt5, pt6);
@@ -276,7 +289,7 @@ BOOL MainWindow::ApplyConfig(const AppConfig::AppConfig* newConfig)
     if (!isNew || StrCmpW(newConfig->szBalloonIconPath, currentConfig->szBalloonIconPath))
     {
         DestroyIcon(this->balloonIcon);
-        Bitmap(newConfig->szBalloonIconPath).GetHICON(&this->balloonIcon);
+        Gdiplus::Bitmap(newConfig->szBalloonIconPath).GetHICON(&this->balloonIcon);
 
         if (isNew)
         {
@@ -504,48 +517,48 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
     const INT dataBufferLen = 16;
     WCHAR szDataBuffer[dataBufferLen] = { 0 };     // 字符串缓冲区
     INT nLevel = 0;
-    Color statusColor;
+    Gdiplus::Color statusColor;
 
     // 开始绘图
     PAINTSTRUCT ps = { 0 };
     HDC hdc = BeginPaint(this->hWnd, &ps);
 
-    REAL sizeUnit = (REAL)this->wndSizeUnit;
+    Gdiplus::REAL sizeUnit = (FLOAT)this->wndSizeUnit;
 
     // 得到绘图窗体大小
     RECT rcClient;
     GetClientRect(this->hWnd, &rcClient);
-    SizeF sizeClient(REAL(rcClient.right - rcClient.left), REAL(rcClient.bottom - rcClient.top));
+    Gdiplus::SizeF sizeClient((FLOAT)(rcClient.right - rcClient.left), (FLOAT)(rcClient.bottom - rcClient.top));
 
     // 使用缓冲区绘图
-    Bitmap* pBmpMem = new Bitmap((INT)sizeClient.Width, (INT)sizeClient.Height);
-    Graphics graphicsMem(pBmpMem);
+    Gdiplus::Bitmap* pBmpMem = new Gdiplus::Bitmap((INT)sizeClient.Width, (INT)sizeClient.Height);
+    Gdiplus::Graphics graphicsMem(pBmpMem);
 
     // 设置绘图模式
-    graphicsMem.SetSmoothingMode(SmoothingModeAntiAlias);                       // 图形渲染抗锯齿
-    graphicsMem.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);        // 文字渲染抗锯齿
+    graphicsMem.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);                       // 图形渲染抗锯齿
+    graphicsMem.SetTextRenderingHint(Gdiplus::TextRenderingHintClearTypeGridFit);        // 文字渲染抗锯齿
 
     // 绘图属性对象
-    SizeF drawSize(sizeUnit * 3, sizeUnit * 3);                 // 绘制矩形
-    Pen pen(Color::Green, sizeUnit / 6);                                                   // 图形颜色
-    SolidBrush textbrush(AppConfig::Get()->bDarkTheme ? Color::White : Color::Black);   // 文本颜色
-    SolidBrush bgbrush(AppConfig::Get()->bDarkTheme ? Color::Black : Color::White);     // 背景颜色
+    Gdiplus::SizeF drawSize(sizeUnit * 3, sizeUnit * 3);                 // 绘制矩形
+    Gdiplus::Pen pen(Gdiplus::Color::Green, sizeUnit / 6);                                                   // 图形颜色
+    Gdiplus::SolidBrush textbrush(AppConfig::Get()->bDarkTheme ? Gdiplus::Color::White : Gdiplus::Color::Black);   // 文本颜色
+    Gdiplus::SolidBrush bgbrush(AppConfig::Get()->bDarkTheme ? Gdiplus::Color::Black : Gdiplus::Color::White);     // 背景颜色
 
     // 从容器中创建要使用的字体
-    FontFamily fontFamily;
+    Gdiplus::FontFamily fontFamily;
     INT found = 0;
     this->fontColl.GetFamilies(1, &fontFamily, &found);
-    Font textFont(&fontFamily, sizeUnit * 2 / 3, FontStyleRegular, UnitPixel);             // 字体大小用像素值衡量
+    Gdiplus::Font textFont(&fontFamily, sizeUnit * 2 / 3, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);             // 字体大小用像素值衡量
 
-    StringFormat strformat(StringFormatFlagsNoClip);                            // 文字居于矩形中心
-    strformat.SetAlignment(StringAlignmentCenter);
-    strformat.SetLineAlignment(StringAlignmentCenter);
+    Gdiplus::StringFormat strformat(Gdiplus::StringFormatFlagsNoClip);                            // 文字居于矩形中心
+    strformat.SetAlignment(Gdiplus::StringAlignmentCenter);
+    strformat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
 
     // 刷黑背景
     graphicsMem.FillRectangle(&bgbrush, 0., 0., sizeClient.Width, sizeClient.Height);
 
     // 绘制CPU与MEM
-    PointF circleCenter;
+    Gdiplus::PointF circleCenter;
     if (AppConfig::Get()->byShowContent & SHOWCONTENT_CPUMEM)
     {
         drawSize.Width = sizeUnit * 3;
@@ -568,7 +581,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         }
         graphicsMem.DrawString(
             szDataBuffer, -1, &textFont,
-            RectF(PointF(0, 0), drawSize),
+            Gdiplus::RectF(Gdiplus::PointF(0, 0), drawSize),
             &strformat, &textbrush
         );
 
@@ -577,7 +590,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
             graphicsMem, pen,
             circleCenter,
             drawSize.Height / 2 - sizeUnit * 0.3f,
-            REAL(this->perfData.cpuPercent / 100)
+            (FLOAT)(this->perfData.cpuPercent / 100)
         );
 
         // 绘制内存
@@ -596,7 +609,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         }
         graphicsMem.DrawString(
             szDataBuffer, -1, &textFont,
-            RectF(PointF(sizeUnit * 3, 0), drawSize),
+            Gdiplus::RectF(Gdiplus::PointF(sizeUnit * 3, 0), drawSize),
             &strformat, &textbrush
         );
 
@@ -605,12 +618,12 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
             graphicsMem, pen,
             circleCenter,
             drawSize.Height / 2 - sizeUnit * 0.3f,
-            REAL(this->perfData.memPercent / 100)
+            (FLOAT)(this->perfData.memPercent / 100)
         );
     }
 
     // 绘制网速
-    RectF rectSpeed;
+    Gdiplus::RectF rectSpeed;
     if (AppConfig::Get()->byShowContent & SHOWCONTENT_NETSPEED)
     {
         drawSize.Width = sizeUnit * 3;
@@ -638,7 +651,7 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         }
         graphicsMem.DrawString(
             szDataBuffer, -1, &textFont,
-            RectF(PointF(0, sizeUnit), drawSize),
+            Gdiplus::RectF(Gdiplus::PointF(0, sizeUnit), drawSize),
             &strformat, &textbrush
         );
 
@@ -659,15 +672,15 @@ LRESULT MainWindow::OnPaint(WPARAM wParam, LPARAM lParam)
         {
             statusColor = STATUSCOLOR_GOOD;
         }
-        graphicsMem.DrawString(szDataBuffer, -1, &textFont, RectF(PointF(sizeUnit * 3, sizeUnit), drawSize), &strformat, &textbrush);
+        graphicsMem.DrawString(szDataBuffer, -1, &textFont, Gdiplus::RectF(Gdiplus::PointF(sizeUnit * 3, sizeUnit), drawSize), &strformat, &textbrush);
 
         rectSpeed = { sizeUnit * 3.4f, sizeUnit * 0.08f, drawSize.Width - sizeUnit * 0.8f, drawSize.Height - sizeUnit * 0.16f };
         DrawSpeedStair(graphicsMem, statusColor, rectSpeed, FALSE, nLevel);
     }
 
     // 拷贝缓存图, 结束绘图
-    Graphics graphics(hdc);
-    CachedBitmap* pCachedBmp = new CachedBitmap(pBmpMem, &graphics);
+    Gdiplus::Graphics graphics(hdc);
+    Gdiplus::CachedBitmap* pCachedBmp = new Gdiplus::CachedBitmap(pBmpMem, &graphics);
     graphics.DrawCachedBitmap(pCachedBmp, 0, 0);
     delete pCachedBmp;
     delete pBmpMem;
