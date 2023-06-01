@@ -270,14 +270,14 @@ BOOL SpriteWindow::ShowContextMenu(INT x, INT y)
 
 BOOL SpriteWindow::SendFreeOrBusy()
 {
-    if (this->cpuHealthState >= ANIME_STAND_R)
+    if (this->cpuHealthState >= (INT)ANIME_STAND_R)
     {
         this->spinerenderer->Lock();
         this->spinechar->SendAction(SpineAction::STAND);
         this->spinerenderer->Unlock();
         this->cpuHealthState = 0;
     }
-    else if (this->cpuHealthState >= ANIME_STAND_L)
+    else if (this->cpuHealthState >= (INT)ANIME_STAND_L)
     {
         if ((*this->uniformRnd)(*this->rndEng) <= (ANIME_STAND_K * this->cpuHealthState + ANIME_STAND_B))
         {
@@ -287,11 +287,11 @@ BOOL SpriteWindow::SendFreeOrBusy()
             this->cpuHealthState = 0;
         }
     }
-    else if (this->cpuHealthState > -ANIME_DIZZY_L)
+    else if (this->cpuHealthState > -(INT)ANIME_DIZZY_L)
     {
         return TRUE;
     }
-    else if (this->cpuHealthState > -ANIME_DIZZY_R)
+    else if (this->cpuHealthState > -(INT)ANIME_DIZZY_R)
     {
         if ((*this->uniformRnd)(*this->rndEng) <= (ANIME_DIZZY_K * (-this->cpuHealthState) + ANIME_DIZZY_B))
         {
