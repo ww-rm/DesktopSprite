@@ -64,7 +64,10 @@ public:
     HICON LoadNotifyIconBySysTheme();
 
     void GetWndSizeByShowContent(PSIZE psizeWnd, BYTE byShowContent);
+
     BOOL TimeAlarm();
+    BOOL CheckAndTimeAlarm();
+
     INT ShowNoConentWarningMsg();
 
 private:

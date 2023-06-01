@@ -5,8 +5,7 @@
 #include <ds/framework.h>
 
 #define WM_NOTIFYICON                   (WM_USER + 1)           // 通知区域消息
-#define WM_TIMEALARM                    (WM_USER + 2)           // 报时消息
-#define WM_PERFDATAUPDATED              (WM_USER + 3)           // 性能监视器数据更新, lParam: (PerfMonitor::PerfMonitor*)
+#define WM_PERFDATAUPDATED              (WM_USER + 2)           // 性能监视器数据更新, lParam: (PerfMonitor::PerfMonitor*)
 
 class BaseWindow
 {

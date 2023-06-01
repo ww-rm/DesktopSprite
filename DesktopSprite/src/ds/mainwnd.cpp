@@ -374,6 +374,26 @@ BOOL MainWindow::TimeAlarm()
     return this->pNotifyIcon->PopupIconInfo(L"Take a break~", szInfo, this->balloonIcon, AppConfig::Get()->bInfoSound);
 }
 
+BOOL MainWindow::CheckAndTimeAlarm()
+{
+    // 是否整点内
+    if (IsOnTheHour())
+    {
+        // 是否已报过时
+        if (!this->bClocked)
+        {
+            this->bClocked = TRUE;
+            this->TimeAlarm();
+        }
+    }
+    else
+    {
+        // 非整点清空报时记录
+        this->bClocked = FALSE;
+    }
+    return TRUE;
+}
+
 INT MainWindow::ShowNoConentWarningMsg()
 {
     return MessageBoxW(this->hWnd, L"至少保留一项显示内容！", L"提示信息", MB_ICONINFORMATION);
@@ -417,8 +437,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return this->OnDpiChanged(wParam, lParam);
     case WM_NOTIFYICON:
         return this->OnNotifyIcon(wParam, lParam);
-    case WM_TIMEALARM:
-        return this->OnTimeAlarm(wParam, lParam);
     case WM_PERFDATAUPDATED:
         return this->OnPerfDataUpdated(wParam, lParam);
     default:
@@ -827,7 +845,7 @@ LRESULT MainWindow::OnTimer(WPARAM wParam, LPARAM lParam)
     switch (wParam)
     {
     case IDT_TIMEALARM:
-        PostMessageW(this->hWnd, WM_TIMEALARM, 0, 0);
+        this->CheckAndTimeAlarm();
         break;
     default:
         return DefWindowProcW(this->hWnd, WM_TIMER, wParam, lParam);
@@ -977,25 +995,7 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-LRESULT MainWindow::OnTimeAlarm(WPARAM wParam, LPARAM lParam)
-{
-    // 是否整点内
-    if (IsOnTheHour())
-    {
-        // 是否已报过时
-        if (!this->bClocked)
-        {
-            this->bClocked = TRUE;
-            this->TimeAlarm();
-        }
-    }
-    else
-    {
-        // 非整点清空报时记录
-        this->bClocked = FALSE;
-    }
-    return 0;
-}
+
 
 LRESULT MainWindow::OnPerfDataUpdated(WPARAM wParam, LPARAM lParam)
 {
