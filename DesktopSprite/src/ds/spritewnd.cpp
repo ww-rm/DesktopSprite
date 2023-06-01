@@ -7,6 +7,7 @@
 #include <ds/spritewnd.h>
 
 static const INT IDT_CHECKCPUHEALTH = 1;
+static const UINT CHECKCPUHEALTH_INTERVAL = 1000;
 static const FLOAT ANIME_STAND_L = 20;
 static const FLOAT ANIME_STAND_R = 60;
 static const FLOAT ANIME_STAND_K = 0.8f / (ANIME_STAND_R - ANIME_STAND_L);
@@ -374,7 +375,7 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     // 应用全局设置
     this->ApplyConfig();
 
-    SetTimer(this->hWnd, IDT_CHECKCPUHEALTH, 1000, NULL);
+    SetTimer(this->hWnd, IDT_CHECKCPUHEALTH, CHECKCPUHEALTH_INTERVAL, NULL);
 
     return 0;
 }
