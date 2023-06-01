@@ -7,6 +7,14 @@
 #include <ds/spritewnd.h>
 
 static const INT IDT_CHECKCPUHEALTH = 1;
+static const FLOAT ANIME_STAND_L = 20;
+static const FLOAT ANIME_STAND_R = 60;
+static const FLOAT ANIME_STAND_K = 0.8f / (ANIME_STAND_R - ANIME_STAND_L);
+static const FLOAT ANIME_STAND_B = 0.1f - ANIME_STAND_K * ANIME_STAND_L;
+static const FLOAT ANIME_DIZZY_L = 5;
+static const FLOAT ANIME_DIZZY_R = 10;
+static const FLOAT ANIME_DIZZY_K = 0.8f / (ANIME_DIZZY_R - ANIME_DIZZY_L);
+static const FLOAT ANIME_DIZZY_B = 0.1f - ANIME_DIZZY_K * ANIME_DIZZY_L;
 
 SpriteWindow::SpriteWindow() 
 {
@@ -262,16 +270,16 @@ BOOL SpriteWindow::ShowContextMenu(INT x, INT y)
 
 BOOL SpriteWindow::SendFreeOrBusy()
 {
-    if (this->cpuHealthState >= 60)
+    if (this->cpuHealthState >= ANIME_STAND_R)
     {
         this->spinerenderer->Lock();
         this->spinechar->SendAction(SpineAction::STAND);
         this->spinerenderer->Unlock();
         this->cpuHealthState = 0;
     }
-    else if (this->cpuHealthState >= 30)
+    else if (this->cpuHealthState >= ANIME_STAND_L)
     {
-        if ((*this->uniformRnd)(*this->rndEng) <= (0.02f * this->cpuHealthState - 0.1f))
+        if ((*this->uniformRnd)(*this->rndEng) <= (ANIME_STAND_K * this->cpuHealthState + ANIME_STAND_B))
         {
             this->spinerenderer->Lock();
             this->spinechar->SendAction(SpineAction::STAND);
@@ -279,13 +287,13 @@ BOOL SpriteWindow::SendFreeOrBusy()
             this->cpuHealthState = 0;
         }
     }
-    else if (this->cpuHealthState > -5)
+    else if (this->cpuHealthState > -ANIME_DIZZY_L)
     {
         return TRUE;
     }
-    else if (this->cpuHealthState > -10)
+    else if (this->cpuHealthState > -ANIME_DIZZY_R)
     {
-        if ((*this->uniformRnd)(*this->rndEng) <= (0.16f * (-this->cpuHealthState) - 0.7f))
+        if ((*this->uniformRnd)(*this->rndEng) <= (ANIME_DIZZY_K * (-this->cpuHealthState) + ANIME_DIZZY_B))
         {
             this->spinerenderer->Lock();
             this->spinechar->SendAction(SpineAction::DIZZY);
