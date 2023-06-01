@@ -9,7 +9,7 @@
 // | x1, y1 |   | u1, v1, 1 |   | m11, m12 |
 // | x2, y2 | = | u2, v2, 1 | @ | m21, m22 |
 // | x3, y3 |   | u3, v3, 1 |   | dx,  dy  |
-void GetAffineMatrix(
+static void GetAffineMatrix(
     float x1, float y1,
     float x2, float y2,
     float x3, float y3,
