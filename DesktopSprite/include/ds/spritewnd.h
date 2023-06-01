@@ -43,6 +43,7 @@ private:
     LRESULT OnClose(WPARAM wParam, LPARAM lParam);
     LRESULT OnPaint(WPARAM wParam, LPARAM lParam);
     LRESULT OnContextMenu(WPARAM wParam, LPARAM lParam);
+    LRESULT OnDisplayChange(WPARAM wParam, LPARAM lParam);
     LRESULT OnCommand(WPARAM wParam, LPARAM lParam);
     LRESULT OnTimer(WPARAM wParam, LPARAM lParam);
     LRESULT OnInitMenuPopup(WPARAM wParam, LPARAM lParam);
@@ -51,6 +52,7 @@ private:
     LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
     LRESULT OnLButtonDBClick(WPARAM wParam, LPARAM lParam);
     LRESULT OnMouseWheel(WPARAM wParam, LPARAM lParam);
+    LRESULT OnPerfDataUpdated(WPARAM wParam, LPARAM lParam);
 };
 
 

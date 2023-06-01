@@ -533,7 +533,7 @@ SpineRenderer::SpineRenderer(HWND targetWnd, SpineChar* spinechar) :targetWnd(ta
     this->vertexIndexBuffer.reserve(2048);
 }
 
-BOOL SpineRenderer::CreateTargetResourcse()
+BOOL SpineRenderer::CreateTargetResources()
 {
     if (!(this->hdcScreen = GetDC(NULL)) || !(this->hdcMem = CreateCompatibleDC(this->hdcScreen)))
     {
@@ -544,12 +544,7 @@ BOOL SpineRenderer::CreateTargetResourcse()
     GetWindowRect(this->targetWnd, &this->rcTarget);
     INT W = this->rcTarget.right - this->rcTarget.left;
     INT H = this->rcTarget.bottom - this->rcTarget.top;
-    DeleteObject(
-        SelectObject(
-            this->hdcMem,
-            CreateCompatibleBitmap(this->hdcScreen, W, H)
-        )
-    );
+    DeleteObject(SelectObject(this->hdcMem, CreateCompatibleBitmap(this->hdcScreen, W, H)));
 
     this->graphics = new Gdiplus::Graphics(this->hdcMem);
 
@@ -576,6 +571,7 @@ void SpineRenderer::ReleaseTargetResources()
         ReleaseDC(NULL, this->hdcScreen);
         this->hdcScreen = NULL;
     }
+    this->rcTarget = { 0 };
 }
 
 BOOL SpineRenderer::CreateSpineResources()

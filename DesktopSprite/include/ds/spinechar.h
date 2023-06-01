@@ -151,7 +151,7 @@ public:
     SpineRenderer(HWND targetWnd, SpineChar* spinechar);
 
     // 创建与释放绘图资源
-    BOOL CreateTargetResourcse();
+    BOOL CreateTargetResources();
     void ReleaseTargetResources();
 
     BOOL CreateSpineResources();

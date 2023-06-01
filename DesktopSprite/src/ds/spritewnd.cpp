@@ -261,6 +261,8 @@ LRESULT SpriteWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return this->OnPaint(wParam, lParam);
     case WM_CONTEXTMENU:
         return this->OnContextMenu(wParam, lParam);
+    case WM_DISPLAYCHANGE:
+        return this->OnDisplayChange(wParam, lParam);
     case WM_COMMAND:
         return this->OnCommand(wParam, lParam);
     case WM_TIMER:
@@ -296,7 +298,7 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     this->spinerenderer = new SpineRenderer(this->hWnd, this->spinechar);
 
     // 绘图基础资源必须创建成功
-    if (!this->spinerenderer->CreateTargetResourcse())
+    if (!this->spinerenderer->CreateTargetResources())
     {
         return -1;
     }
@@ -340,6 +342,49 @@ LRESULT SpriteWindow::OnPaint(WPARAM wParam, LPARAM lParam)
 LRESULT SpriteWindow::OnContextMenu(WPARAM wParam, LPARAM lParam)
 {
     this->ShowContextMenu(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+    return 0;
+}
+
+LRESULT SpriteWindow::OnDisplayChange(WPARAM wParam, LPARAM lParam)
+{
+    SIZE newResolution = { LOWORD(lParam), HIWORD(lParam) };
+    
+    // 重设窗口大小
+    RECT rc = { 0 };
+    GetWindowRect(this->hWnd, &rc);
+    SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, newResolution.cx, newResolution.cy, SWP_SHOWWINDOW);
+    GetWindowRect(this->hWnd, &rc);
+
+    // 重新创建 spine 和渲染资源
+    const AppConfig::AppConfig* config = AppConfig::Get();
+
+    this->spinerenderer->Stop();
+    this->spinerenderer->ReleaseSpineResources();
+    this->spinechar->UnloadSpine();
+    this->spinerenderer->ReleaseTargetResources();
+
+    if (this->spinerenderer->CreateTargetResources() &&
+        this->spinechar->LoadSpine(config->szSpineAtlasPath, config->szSpineSkelPath, config->spScale) &&
+        this->spinerenderer->CreateSpineResources())
+    {
+        // 从注册表初始化 sprite 位置和朝向
+        GetWindowRect(this->hWnd, &rc);
+        POINT pos = { 0 };
+        BOOL flipX = TRUE;
+        this->LoadLastPosFromReg(&pos);
+        this->LoadFlipXFromReg(&flipX);
+        this->spinechar->SetPosition((FLOAT)pos.x, (FLOAT)pos.y);
+        this->spinechar->SetFlipX(flipX);
+        this->spinerenderer->Start();
+    }
+    else
+    {
+        this->spinerenderer->Stop();
+        this->spinerenderer->ReleaseSpineResources();
+        this->spinechar->UnloadSpine();
+        this->spinerenderer->ReleaseTargetResources();
+        MessageBoxW(this->hWnd, L"渲染或 spine 资源加载失败！", L"发生错误", MB_ICONINFORMATION);
+    }
     return 0;
 }
 
