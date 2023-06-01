@@ -2,10 +2,26 @@
 #include <ds/utils.h>
 #include <ds/winapp.h>
 #include <resource.h>
+#include <ds/perfmonitor.h>
 
 #include <ds/spritewnd.h>
 
-SpriteWindow::SpriteWindow() {}
+static const INT IDT_CHECKCPUHEALTH = 1;
+static const INT MIN_ANIMEINTERVAL = 10;
+
+SpriteWindow::SpriteWindow() 
+{
+    this->rndDev = new std::random_device();
+    this->rndEng = new std::mt19937((*this->rndDev)());
+    this->uniformRnd = new std::uniform_real_distribution<float>(0, 1);
+}
+
+SpriteWindow::~SpriteWindow() 
+{
+    delete this->uniformRnd;
+    delete this->rndEng;
+    delete this->rndDev;
+}
 
 PCWSTR SpriteWindow::GetClassName_() const
 {
@@ -279,6 +295,8 @@ LRESULT SpriteWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return this->OnLButtonDBClick(wParam, lParam);
     case WM_MOUSEWHEEL:
         return this->OnMouseWheel(wParam, lParam);
+    case WM_PERFDATAUPDATED:
+        return this->OnPerfDataUpdated(wParam, lParam);
     default:
         return DefWindowProcW(this->hWnd, uMsg, wParam, lParam);
     }
@@ -305,6 +323,8 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
     // 应用全局设置
     this->ApplyConfig();
+
+    SetTimer(this->hWnd, IDT_CHECKCPUHEALTH, 1000, NULL);
 
     return 0;
 }
@@ -408,6 +428,37 @@ LRESULT SpriteWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 
 LRESULT SpriteWindow::OnTimer(WPARAM wParam, LPARAM lParam)
 {
+    switch (wParam)
+    {
+    case IDT_CHECKCPUHEALTH:
+        if (this->perfData.cpuPercent <= 50)
+        {
+            this->cpuHealthState += 1;
+        }
+        else
+        {
+            this->cpuHealthState -= 1;
+        }
+        if (this->cpuHealthState >= 5 && 
+            (*this->uniformRnd)(*this->rndEng) <= Sigmoid((FLOAT)(this->cpuHealthState - MIN_ANIMEINTERVAL * 2)))
+        {
+            this->spinerenderer->Lock();
+            this->spinechar->SendAction(SpineAction::STAND);
+            this->spinerenderer->Unlock();
+            this->cpuHealthState = 0;
+        }
+        else if (this->cpuHealthState <= -5 &&
+            (*this->uniformRnd)(*this->rndEng) <= Sigmoid((FLOAT)(-this->cpuHealthState - MIN_ANIMEINTERVAL * 2)))
+        {
+            this->spinerenderer->Lock();
+            this->spinechar->SendAction(SpineAction::DIZZY);
+            this->spinerenderer->Unlock();
+            this->cpuHealthState = 0;
+        }
+        break;
+    default:
+        return DefWindowProcW(this->hWnd, WM_TIMER, wParam, lParam);
+    }
     return 0;
 }
 
@@ -532,5 +583,11 @@ LRESULT SpriteWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
         this->spinerenderer->Unlock();
     }
 
+    return 0;
+}
+
+LRESULT SpriteWindow::OnPerfDataUpdated(WPARAM wParam, LPARAM lParam)
+{
+    ((PerfMonitor::PerfMonitor*)lParam)->GetPerfData(&this->perfData);
     return 0;
 }

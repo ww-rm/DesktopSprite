@@ -5,11 +5,9 @@
 #include <ds/framework.h>
 #include <ds/spinechar.h>
 #include <ds/config.h>
+#include <ds/perfmonitor.h>
 
 #include <ds/basewindow.h>
-
-using namespace Gdiplus;
-
 
 class SpriteWindow : public BaseWindow
 {
@@ -20,9 +18,19 @@ private:
     BOOL isDragging = FALSE;
     SpineChar* spinechar = NULL;
     SpineRenderer* spinerenderer = NULL;
+    PerfMonitor::PERFDATA perfData = { 0 };
+    INT cpuHealthState = 0;                 // ´æ´¢ CPU Õ¼ÓÃ×´¿ö
+
+    std::random_device* rndDev;
+    std::mt19937* rndEng;
+    std::uniform_real_distribution<float>* uniformRnd;
+
+
 
 public:
     SpriteWindow();
+    ~SpriteWindow();
+
     PCWSTR GetClassName_() const;
     SpineChar* GetSpineChar();
 

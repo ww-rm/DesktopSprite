@@ -75,7 +75,7 @@ namespace WinApp {
     {
         PerfMonitor::Uninit();
         AppConfig::SaveToFile(this->GetConfigPath());
-        GdiplusShutdown(this->gdiplusToken);
+        Gdiplus::GdiplusShutdown(this->gdiplusToken);
         CoUninitialize();
         CloseHandle(this->hAppMutex);
         return TRUE;
