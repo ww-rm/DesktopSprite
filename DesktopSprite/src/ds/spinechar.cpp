@@ -278,7 +278,7 @@ BOOL SpineChar::GetMeshTriangles(std::vector<VERTEX>* vertexBuffer, std::vector<
                 this->vtPosBufferMaxLen = largerLen;
             }
 
-            spVertexAttachment_computeWorldVertices(SUPER(mesh), slot, 0, mesh->super.worldVerticesLength, this->vtPosBuffer, 0, 2);
+            spVertexAttachment_computeWorldVertices(&mesh->super, slot, 0, mesh->super.worldVerticesLength, this->vtPosBuffer, 0, 2);
 
             // add vertex
             for (int j = 0; j < mesh->super.worldVerticesLength; j += 2)
