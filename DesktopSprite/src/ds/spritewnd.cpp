@@ -160,6 +160,11 @@ BOOL SpriteWindow::ApplyConfig(const AppConfig::AppConfig* newConfig)
         StrCmpW(newConfig->szSpineSkelPath, currentConfig->szSpineSkelPath) ||
         newConfig->spScale != currentConfig->spScale)
     {
+        // 先卸载所有 spine 资源
+        this->spinerenderer->Stop();
+        this->spinerenderer->ReleaseSpineResources();
+        this->spinechar->UnloadSpine();
+
         if (this->spinechar->LoadSpine(newConfig->szSpineAtlasPath, newConfig->szSpineSkelPath, newConfig->spScale) &&
             this->spinerenderer->CreateSpineResources())
         {
@@ -472,7 +477,7 @@ LRESULT SpriteWindow::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     WORD fwKeys = GET_KEYSTATE_WPARAM(wParam);
     SHORT zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 
-    if (zDelta >= 0)
+    if (zDelta <= 0)
     {
         this->spinerenderer->Lock();
         this->spinechar->SendAction(SpineAction::WINK);
