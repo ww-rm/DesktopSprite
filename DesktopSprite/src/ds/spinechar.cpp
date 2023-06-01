@@ -553,8 +553,8 @@ BOOL SpineRenderer::CreateTargetResourcse()
 
     this->graphics = new Gdiplus::Graphics(this->hdcMem);
 
-    // 把坐标系原点设置在窗口中心, 并且规范化正方向
-    Gdiplus::Matrix originTrans(1, 0, 0, -1, (float)W / 2.0f, (float)H / 2.0f); 
+    // 把坐标系原点设置在窗口中心下方, 并且规范化正方向
+    Gdiplus::Matrix originTrans(1, 0, 0, -1, (float)W / 2.0f, (float)H - 100.0f); 
     this->graphics->SetTransform(&originTrans);
     return TRUE;
 }
