@@ -7,7 +7,6 @@
 #include <ds/spritewnd.h>
 
 static const INT IDT_CHECKCPUHEALTH = 1;
-static const INT MIN_ANIMEINTERVAL = 10;
 
 SpriteWindow::SpriteWindow() 
 {
@@ -261,6 +260,49 @@ BOOL SpriteWindow::ShowContextMenu(INT x, INT y)
     return TRUE;;
 }
 
+BOOL SpriteWindow::SendFreeOrBusy()
+{
+    if (this->cpuHealthState >= 60)
+    {
+        this->spinerenderer->Lock();
+        this->spinechar->SendAction(SpineAction::STAND);
+        this->spinerenderer->Unlock();
+        this->cpuHealthState = 0;
+    }
+    else if (this->cpuHealthState >= 30)
+    {
+        if ((*this->uniformRnd)(*this->rndEng) <= (0.02f * this->cpuHealthState - 0.1f))
+        {
+            this->spinerenderer->Lock();
+            this->spinechar->SendAction(SpineAction::STAND);
+            this->spinerenderer->Unlock();
+            this->cpuHealthState = 0;
+        }
+    }
+    else if (this->cpuHealthState > -5)
+    {
+        return TRUE;
+    }
+    else if (this->cpuHealthState > -10)
+    {
+        if ((*this->uniformRnd)(*this->rndEng) <= (0.16f * (-this->cpuHealthState) - 0.7f))
+        {
+            this->spinerenderer->Lock();
+            this->spinechar->SendAction(SpineAction::DIZZY);
+            this->spinerenderer->Unlock();
+            this->cpuHealthState = 0;
+        }
+    }
+    else
+    {
+        this->spinerenderer->Lock();
+        this->spinechar->SendAction(SpineAction::DIZZY);
+        this->spinerenderer->Unlock();
+        this->cpuHealthState = 0;
+    }
+    return TRUE;
+}
+
 ///////////////////////////// Message Process ////////////////////////////////
 
 LRESULT SpriteWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -331,6 +373,8 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
 LRESULT SpriteWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
+    KillTimer(this->hWnd, IDT_CHECKCPUHEALTH);
+
     this->SaveCurrentPosToReg();
     this->SaveFlipXToReg();
 
@@ -439,22 +483,7 @@ LRESULT SpriteWindow::OnTimer(WPARAM wParam, LPARAM lParam)
         {
             this->cpuHealthState -= 1;
         }
-        if (this->cpuHealthState >= 5 && 
-            (*this->uniformRnd)(*this->rndEng) <= Sigmoid((FLOAT)(this->cpuHealthState - MIN_ANIMEINTERVAL * 2)))
-        {
-            this->spinerenderer->Lock();
-            this->spinechar->SendAction(SpineAction::STAND);
-            this->spinerenderer->Unlock();
-            this->cpuHealthState = 0;
-        }
-        else if (this->cpuHealthState <= -5 &&
-            (*this->uniformRnd)(*this->rndEng) <= Sigmoid((FLOAT)(-this->cpuHealthState - MIN_ANIMEINTERVAL * 2)))
-        {
-            this->spinerenderer->Lock();
-            this->spinechar->SendAction(SpineAction::DIZZY);
-            this->spinerenderer->Unlock();
-            this->cpuHealthState = 0;
-        }
+        this->SendFreeOrBusy();
         break;
     default:
         return DefWindowProcW(this->hWnd, WM_TIMER, wParam, lParam);

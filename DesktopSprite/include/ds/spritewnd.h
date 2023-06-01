@@ -44,6 +44,8 @@ public:
 
     BOOL ShowContextMenu(INT x, INT y);
 
+    BOOL SendFreeOrBusy();
+
 private:
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnCreate(WPARAM wParam, LPARAM lParam);
