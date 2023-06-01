@@ -349,26 +349,23 @@ LRESULT SpriteWindow::OnDisplayChange(WPARAM wParam, LPARAM lParam)
 {
     SIZE newResolution = { LOWORD(lParam), HIWORD(lParam) };
     
-    // 重设窗口大小
-    RECT rc = { 0 };
-    GetWindowRect(this->hWnd, &rc);
-    SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, newResolution.cx, newResolution.cy, SWP_SHOWWINDOW);
-    GetWindowRect(this->hWnd, &rc);
-
-    // 重新创建 spine 和渲染资源
-    const AppConfig::AppConfig* config = AppConfig::Get();
-
+    // 要先停掉渲染, 因为渲染的时候会调整窗口大小
     this->spinerenderer->Stop();
     this->spinerenderer->ReleaseSpineResources();
     this->spinechar->UnloadSpine();
     this->spinerenderer->ReleaseTargetResources();
+
+    // 重设窗口大小
+    SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, newResolution.cx, newResolution.cy, 0);
+
+    // 重新创建 spine 和渲染资源
+    const AppConfig::AppConfig* config = AppConfig::Get();
 
     if (this->spinerenderer->CreateTargetResources() &&
         this->spinechar->LoadSpine(config->szSpineAtlasPath, config->szSpineSkelPath, config->spScale) &&
         this->spinerenderer->CreateSpineResources())
     {
         // 从注册表初始化 sprite 位置和朝向
-        GetWindowRect(this->hWnd, &rc);
         POINT pos = { 0 };
         BOOL flipX = TRUE;
         this->LoadLastPosFromReg(&pos);
