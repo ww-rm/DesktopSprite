@@ -4,6 +4,18 @@
 
 #include <ds/configdlg.h>
 
+const INT MAX_TIPLEN = 80;
+static WCHAR tipInfoSound[MAX_TIPLEN] = L"整点报时的提示声音";
+static WCHAR tipBalloniconPath[MAX_TIPLEN] = L"整点报时的提示气泡图标";
+static WCHAR tipShowUsage[MAX_TIPLEN] = L"显示处理器与内存的占用";
+static WCHAR tipSpriteMousePass[MAX_TIPLEN] = L"让精灵忽略所有键鼠输入";
+static WCHAR tipAnimeWork[MAX_TIPLEN] = L"还没想好怎么触发";
+static WCHAR tipAnimeStand[MAX_TIPLEN] = L"待机情况下定时随机触发";
+static WCHAR tipAnimeTouch[MAX_TIPLEN] = L"左键单击";
+static WCHAR tipAnimeWink[MAX_TIPLEN] = L"鼠标滚轮下滚";
+static WCHAR tipAnimeDance[MAX_TIPLEN] = L"鼠标滚轮上滚";
+static WCHAR tipAnimeDizzy[MAX_TIPLEN] = L"处理器高占用时随机触发";
+
 PCWSTR ConfigDlg::GetTemplateName() const
 {
     return MAKEINTRESOURCEW(IDD_CONFIG);
@@ -183,10 +195,51 @@ BOOL ConfigDlg::GetComboBoxSelText(INT cbID, PWSTR curName, INT maxLen)
     return (BOOL)(SendDlgItemMessageW(this->hDlg, cbID, CB_GETLBTEXT, idx, (LPARAM)curName) != CB_ERR);
 }
 
+BOOL ConfigDlg::AddToolTip(INT toolID, PWSTR tip)
+{
+    if (!toolID || !tip)
+    {
+        return FALSE;
+    }
+
+    // Get the window of the tool.
+    HWND hWndTool = GetDlgItem(this->hDlg, toolID);
+
+    // Create the tooltip. g_hInst is the global instance handle.
+    HWND hWndTip = CreateWindowExW(
+        NULL, TOOLTIPS_CLASS, NULL,
+        WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        this->hDlg, NULL,
+        GetModuleHandleW(NULL), NULL
+    );
+
+    if (!hWndTip)
+    {
+        return FALSE;
+    }
+
+    // Associate the tooltip with the tool.
+    TTTOOLINFOW toolInfo = { 0 };
+    toolInfo.cbSize = sizeof(toolInfo);
+    toolInfo.hwnd = this->hDlg;
+    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    toolInfo.uId = (UINT_PTR)hWndTool;
+    toolInfo.lpszText = tip;
+
+    SendMessageW(hWndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+    this->tooltips[toolID] = hWndTip;
+
+    return TRUE;
+}
+
 INT_PTR ConfigDlg::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
+    case WM_DESTROY:
+        return this->OnDestroy(wParam, lParam);
     case WM_INITDIALOG:
         return this->OnInitDialog(wParam, lParam);
     case WM_COMMAND:
@@ -196,6 +249,21 @@ INT_PTR ConfigDlg::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
     default:
         return FALSE;
     }
+}
+
+INT_PTR ConfigDlg::OnDestroy(WPARAM wParam, LPARAM lParam)
+{
+    HWND hWndTip = NULL;
+    for (auto it = this->tooltips.begin(); it != tooltips.end(); it++)
+    {
+        hWndTip = (*it).second;
+        if (IsWindow(hWndTip))
+        {
+            DestroyWindow(hWndTip);
+        }
+    }
+    this->tooltips.clear();
+    return TRUE;
 }
 
 INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
@@ -239,6 +307,17 @@ INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
     this->InitComboBox(IDC_CB_SPDANCE, this->form.spAnimeDance, 6);
     this->InitComboBox(IDC_CB_SPDIZZY, this->form.spAnimeDizzy, 6);
 
+    // 添加工具提示
+    this->AddToolTip(IDC_CHECK_INFOSOUND, tipInfoSound);
+    this->AddToolTip(IDC_EDIT_BALLOONICONPATH, tipBalloniconPath);
+    this->AddToolTip(IDC_CHECK_SHOWUSAGE, tipShowUsage);
+    this->AddToolTip(IDC_CHECK_MOUSEPASS, tipSpriteMousePass);
+    this->AddToolTip(IDC_CB_SPWORK, tipAnimeWork);
+    this->AddToolTip(IDC_CB_SPSTAND, tipAnimeStand);
+    this->AddToolTip(IDC_CB_SPTOUCH, tipAnimeTouch);
+    this->AddToolTip(IDC_CB_SPWINK, tipAnimeWink);
+    this->AddToolTip(IDC_CB_SPDANCE, tipAnimeDance);
+    this->AddToolTip(IDC_CB_SPDIZZY, tipAnimeDizzy);
     return TRUE;
 }
 

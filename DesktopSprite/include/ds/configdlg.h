@@ -10,16 +10,15 @@
 
 class ConfigDlg : public BaseDialog
 {
-public:
-    PCWSTR GetTemplateName() const;
-
 private:
     MainWindow* mainwnd = NULL;
     AppConfig::AppConfig form;
     const std::list<std::wstring>* animeNames = NULL;
+    std::map<INT, HWND> tooltips;
 
 public:
     ConfigDlg(MainWindow* mainwnd);
+    PCWSTR GetTemplateName() const;
 
     void SetFormData(const AppConfig::AppConfig* config);
     void GetFormData(AppConfig::AppConfig* config) const;
@@ -38,8 +37,11 @@ private:
 
     BOOL GetComboBoxSelText(INT cbID, PWSTR curName, INT maxLen);
 
+    BOOL AddToolTip(INT toolID, PWSTR tip);
+
 private:
     INT_PTR HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    INT_PTR OnDestroy(WPARAM wParam, LPARAM lParam);
     INT_PTR OnInitDialog(WPARAM wParam, LPARAM lParam);
     INT_PTR OnCommand(WPARAM wParam, LPARAM lParam);
     INT_PTR OnHScroll(WPARAM wParam, LPARAM lParam);
