@@ -125,6 +125,8 @@ void HighResolutionSleep(DWORD dwMilliseconds);
 // 获取系统当前拖动判定范围, 自动取正
 BOOL GetSysDragSize(PSIZE psizeDrag);
 
+FLOAT Sigmoid(FLOAT x);
+
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line = -1);
 

@@ -333,6 +333,11 @@ BOOL GetSysDragSize(PSIZE psizeDrag)
     return FALSE;
 }
 
+FLOAT Sigmoid(FLOAT x)
+{
+    return 1.0f / (1.0f + exp(-x));
+}
+
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line)
 {
