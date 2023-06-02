@@ -12,8 +12,8 @@ static const FLOAT ANIME_STAND_L = 20;
 static const FLOAT ANIME_STAND_R = 60;
 static const FLOAT ANIME_STAND_K = 0.8f / (ANIME_STAND_R - ANIME_STAND_L);
 static const FLOAT ANIME_STAND_B = 0.1f - ANIME_STAND_K * ANIME_STAND_L;
-static const FLOAT ANIME_DIZZY_L = 5;
-static const FLOAT ANIME_DIZZY_R = 10;
+static const FLOAT ANIME_DIZZY_L = 10;
+static const FLOAT ANIME_DIZZY_R = 60;
 static const FLOAT ANIME_DIZZY_K = 0.8f / (ANIME_DIZZY_R - ANIME_DIZZY_L);
 static const FLOAT ANIME_DIZZY_B = 0.1f - ANIME_DIZZY_K * ANIME_DIZZY_L;
 
@@ -356,6 +356,9 @@ LRESULT SpriteWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 {
     GetSysDragSize(&this->sysDragSize);
+
+    // 注册监视器
+    PerfMonitor::RegisterMessage(this->hWnd, WM_PERFDATAUPDATED);
 
     // 初始化大小, 位置, Z 序, 但是还不显示
     SIZE wndSize = { 1920, 1080 };

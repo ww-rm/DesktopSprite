@@ -995,8 +995,6 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-
-
 LRESULT MainWindow::OnPerfDataUpdated(WPARAM wParam, LPARAM lParam)
 {
     ((PerfMonitor::PerfMonitor*)lParam)->GetPerfData(&this->perfData);
