@@ -118,7 +118,7 @@ BOOL ConfigDlg::ShowPathSelectDlg(INT pathEditID, PCWSTR lpstrTitle, PCWSTR lpst
     GetDlgItemTextW(this->hDlg, pathEditID, path, MAX_PATH);
 
     OPENFILENAMEW ofn = { 0 };
-    ofn.lStructSize = sizeof(OPENFILENAMEW);
+    ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = this->hDlg;
     ofn.lpstrFile = path;
     ofn.nMaxFile = MAX_PATH;

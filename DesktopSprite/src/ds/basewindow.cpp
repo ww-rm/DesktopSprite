@@ -38,7 +38,7 @@ BOOL BaseWindow::CreateWindow_(HINSTANCE hInst)
 
     // ×¢²á´°¿ÚÀà
     WNDCLASSEXW wcex = { 0 };
-    wcex.cbSize = sizeof(WNDCLASSEXW);
+    wcex.cbSize = sizeof(wcex);
     wcex.lpszClassName = this->GetClassName_();
     wcex.lpfnWndProc = BaseWindow::WindowProc;
     wcex.hInstance = hInst;

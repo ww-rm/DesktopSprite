@@ -17,6 +17,8 @@ static const FLOAT ANIME_DIZZY_R = 60;
 static const FLOAT ANIME_DIZZY_K = 0.8f / (ANIME_DIZZY_R - ANIME_DIZZY_L);
 static const FLOAT ANIME_DIZZY_B = 0.1f - ANIME_DIZZY_K * ANIME_DIZZY_L;
 
+static const INT IDT_CHECKLASTINPUT = 2;
+
 SpriteWindow::SpriteWindow() 
 {
     this->rndDev = new std::random_device();

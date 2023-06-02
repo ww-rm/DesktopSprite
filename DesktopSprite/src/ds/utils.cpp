@@ -170,7 +170,7 @@ BOOL IsOnTheHour()
 BOOL SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState)
 {
     MENUITEMINFOW mii = { 0 };
-    mii.cbSize = sizeof(MENUITEMINFOW);
+    mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_STATE;
     mii.fState = uState;
     return SetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
@@ -179,7 +179,7 @@ BOOL SetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uState)
 UINT GetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition)
 {
     MENUITEMINFOW mii = { 0 };
-    mii.cbSize = sizeof(MENUITEMINFOW);
+    mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_STATE;
     GetMenuItemInfoW(hMenu, uItem, bByPosition, &mii);
     return mii.fState;
@@ -188,7 +188,7 @@ UINT GetMenuItemState(HMENU hMenu, UINT uItem, BOOL bByPosition)
 BOOL SetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uType)
 {
     MENUITEMINFOW mii = { 0 };
-    mii.cbSize = sizeof(MENUITEMINFOW);
+    mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_FTYPE;
     mii.fType = uType;
     return SetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
@@ -197,7 +197,7 @@ BOOL SetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition, UINT uType)
 UINT GetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition)
 {
     MENUITEMINFOW mii = { 0 };
-    mii.cbSize = sizeof(MENUITEMINFOW);
+    mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_FTYPE;
     GetMenuItemInfoW(hMenu, uItem, bByPosition, &mii); // ERROR_MENU_ITEM_NOT_FOUND
     return mii.fType;
@@ -206,7 +206,7 @@ UINT GetMenuItemType(HMENU hMenu, UINT uItem, BOOL bByPosition)
 BOOL GetSystemCapitalFont(PLOGFONTW pLogFont)
 {
     NONCLIENTMETRICSW ncMetrics = { 0 };
-    ncMetrics.cbSize = sizeof(NONCLIENTMETRICSW);
+    ncMetrics.cbSize = sizeof(ncMetrics);
 
     // 获取当前系统标题栏的字体
     return (BOOL)(SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, 0, &ncMetrics, 0) &&
@@ -254,7 +254,7 @@ UINT GetShellTrayDirection()
 {
     UINT uDirection = ABE_BOTTOM;
     APPBARDATA abData = { 0 };
-    abData.cbSize = sizeof(APPBARDATA);
+    abData.cbSize = sizeof(abData);
     if (SHAppBarMessage(ABM_GETTASKBARPOS, &abData))
     {
         uDirection = abData.uEdge;
@@ -331,6 +331,13 @@ BOOL GetSysDragSize(PSIZE psizeDrag)
     }
 
     return FALSE;
+}
+
+DWORD GetLastInputInterval()
+{
+    LASTINPUTINFO info = { sizeof(info), 0 };
+    GetLastInputInfo(&info);
+    return info.dwTime;
 }
 
 // Show error Line and GetLastError

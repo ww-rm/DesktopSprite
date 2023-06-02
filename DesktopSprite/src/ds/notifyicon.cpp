@@ -6,7 +6,7 @@ NotifyIcon::NotifyIcon(HWND hWnd, UINT uID) : hWnd(hWnd), uID(uID) {}
 BOOL NotifyIcon::Add(UINT uCallbackMessage, HICON hIcon, PCWSTR szTip)
 {
     NOTIFYICONDATAW nid = { 0 };
-    nid.cbSize = sizeof(NOTIFYICONDATAW);
+    nid.cbSize = sizeof(nid);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
     nid.uVersion = NOTIFYICON_VERSION_4;
@@ -32,7 +32,7 @@ BOOL NotifyIcon::Add(UINT uCallbackMessage, HICON hIcon, PCWSTR szTip)
 BOOL NotifyIcon::Delete()
 {
     NOTIFYICONDATAW nid = { 0 };
-    nid.cbSize = sizeof(NOTIFYICONDATAW);
+    nid.cbSize = sizeof(nid);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
     return Shell_NotifyIconW(NIM_DELETE, &nid);
@@ -41,7 +41,7 @@ BOOL NotifyIcon::Delete()
 BOOL NotifyIcon::ModifyCallbackMessage(UINT uCallbackMessage)
 {
     NOTIFYICONDATAW nid = { 0 };
-    nid.cbSize = sizeof(NOTIFYICONDATAW);
+    nid.cbSize = sizeof(nid);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
     nid.uFlags = NIF_MESSAGE;
@@ -52,7 +52,7 @@ BOOL NotifyIcon::ModifyCallbackMessage(UINT uCallbackMessage)
 BOOL NotifyIcon::ModifyIcon(HICON hIcon)
 {
     NOTIFYICONDATAW nid = { 0 };
-    nid.cbSize = sizeof(NOTIFYICONDATAW);
+    nid.cbSize = sizeof(nid);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
     nid.uFlags = NIF_ICON;
@@ -63,7 +63,7 @@ BOOL NotifyIcon::ModifyIcon(HICON hIcon)
 BOOL NotifyIcon::ModifyTip(PCWSTR szTip)
 {
     NOTIFYICONDATAW nid = { 0 };
-    nid.cbSize = sizeof(NOTIFYICONDATAW);
+    nid.cbSize = sizeof(nid);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
     nid.uFlags = NIF_TIP;
@@ -74,7 +74,7 @@ BOOL NotifyIcon::ModifyTip(PCWSTR szTip)
 BOOL NotifyIcon::PopupIconInfo(PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloonIcon, BOOL bSound)
 {
     NOTIFYICONDATAW nid = { 0 };
-    nid.cbSize = sizeof(NOTIFYICONDATAW);
+    nid.cbSize = sizeof(nid);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
     nid.uFlags = NIF_INFO | NIF_REALTIME;
@@ -88,7 +88,7 @@ BOOL NotifyIcon::PopupIconInfo(PCWSTR szInfoTitle, PCWSTR szInfo, HICON hBalloon
 BOOL NotifyIcon::SetFocus()
 {
     NOTIFYICONDATAW nid = { 0 };
-    nid.cbSize = sizeof(NOTIFYICONDATAW);
+    nid.cbSize = sizeof(nid);
     nid.hWnd = this->hWnd;
     nid.uID = this->uID;
     return Shell_NotifyIconW(NIM_SETFOCUS, &nid);
@@ -97,7 +97,7 @@ BOOL NotifyIcon::SetFocus()
 BOOL NotifyIcon::GetRect(PRECT pRect)
 {
     NOTIFYICONIDENTIFIER niid = { 0 };
-    niid.cbSize = sizeof(NOTIFYICONIDENTIFIER);
+    niid.cbSize = sizeof(niid);
     niid.hWnd = this->hWnd;
     niid.uID = this->uID;
     return SUCCEEDED(Shell_NotifyIconGetRect(&niid, pRect));

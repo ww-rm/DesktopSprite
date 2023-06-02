@@ -125,6 +125,9 @@ void HighResolutionSleep(DWORD dwMilliseconds);
 // 获取系统当前拖动判定范围, 自动取正
 BOOL GetSysDragSize(PSIZE psizeDrag);
 
+// 获取距离最后一次输入的时间间隔
+DWORD GetLastInputInterval();
+
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line = -1);
 
