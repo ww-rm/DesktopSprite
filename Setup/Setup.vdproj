@@ -569,7 +569,7 @@
             {
             "DefaultLocation" = "8:[ProgramFiles64Folder][ProductName]"
             "Name" = "8:#1925"
-            "AlwaysCreate" = "11:FALSE"
+            "AlwaysCreate" = "11:TRUE"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Property" = "8:TARGETDIR"
@@ -649,7 +649,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DesktopSprite"
         "ProductCode" = "8:{B9B827A3-97D3-498D-8D6D-D950BF7F1146}"
-        "PackageCode" = "8:{458A79AC-6BC5-45C8-87E2-CE06E4E1389D}"
+        "PackageCode" = "8:{C5FD92F9-F05E-45C8-B242-CDFF29503917}"
         "UpgradeCode" = "8:{D42E3F16-6883-400A-84C0-221705B85235}"
         "AspNetVersion" = "8:"
         "RestartWWWService" = "11:FALSE"

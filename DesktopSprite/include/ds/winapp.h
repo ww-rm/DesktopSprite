@@ -13,6 +13,7 @@ namespace WinApp {
         ULONG_PTR gdiplusToken = 0;
         WCHAR szExeFullDir[MAX_PATH] = { 0 };
         WCHAR szExeFullPath[MAX_PATH] = { 0 };
+        WCHAR szAppDataPath[MAX_PATH] = { 0 };  // %APPDATA%/WinApp::GetName()
         WCHAR szConfigFullPath[MAX_PATH] = { 0 };
 
     public:

@@ -14,8 +14,15 @@ namespace WinApp {
         PathCchRemoveFileSpec(this->szExeFullDir, MAX_PATH);
         GetModuleFileNameW(NULL, this->szExeFullPath, MAX_PATH);
 
-        // 获得配置路径
-        PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szExeFullDir, L"config.json");
+        // 获取 %APPDATA% 路径
+        WCHAR appDataPath[MAX_PATH] = { 0 };
+        SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, appDataPath);
+
+        // 获取程序的用户数据文件夹
+        PathCchCombine(this->szAppDataPath, MAX_PATH, appDataPath, this->GetName());
+
+        // 获得配置路径, 这里要放在用户数据文件夹下面, 否则 C 盘有写入权限问题
+        PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szAppDataPath, L"config.json");
     }
 
     BOOL WinApp::Initialize()
