@@ -18,7 +18,7 @@ static const FLOAT ANIME_DIZZY_K = 0.8f / (ANIME_DIZZY_R - ANIME_DIZZY_L);
 static const FLOAT ANIME_DIZZY_B = 0.1f - ANIME_DIZZY_K * ANIME_DIZZY_L;
 
 static const INT IDT_CHECKLASTINPUT = 2;
-static const UINT MAX_LASTINPUTINTERVAL = 10 * 60 * 1000; // 10 minutes
+static const INT MAX_LASTINPUTINTERVAL = 10 * 60 * 1000; // 10 minutes
 
 SpriteWindow::SpriteWindow() 
 {

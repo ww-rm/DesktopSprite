@@ -126,7 +126,7 @@ void HighResolutionSleep(DWORD dwMilliseconds);
 BOOL GetSysDragSize(PSIZE psizeDrag);
 
 // 获取距离最后一次输入的时间间隔
-DWORD GetLastInputInterval();
+INT GetLastInputInterval();
 
 // Show error Line and GetLastError
 void ShowLastError(PCWSTR func, INT line = -1);

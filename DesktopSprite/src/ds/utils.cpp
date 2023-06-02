@@ -333,11 +333,11 @@ BOOL GetSysDragSize(PSIZE psizeDrag)
     return FALSE;
 }
 
-DWORD GetLastInputInterval()
+INT GetLastInputInterval()
 {
     LASTINPUTINFO info = { sizeof(info), 0 };
     GetLastInputInfo(&info);
-    return info.dwTime;
+    return (INT)GetTickCount64() - (INT)info.dwTime;
 }
 
 // Show error Line and GetLastError
