@@ -1,7 +1,7 @@
 #include <ds/framework.h>
-#include <ds/utils.h>
-#include <ds/version.h>
 #include <resource.h>
+#include <ds/version.h>
+#include <ds/utils.h>
 
 #include <ds/aboutdlg.h>
 

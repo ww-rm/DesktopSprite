@@ -3,9 +3,9 @@
 #define DS_SPRITEWND_H
 
 #include <ds/framework.h>
-#include <ds/spinechar.h>
-#include <ds/config.h>
 #include <ds/perfmonitor.h>
+#include <ds/config.h>
+#include <ds/spinechar.h>
 
 #include <ds/basewindow.h>
 

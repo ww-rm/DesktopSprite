@@ -3,9 +3,8 @@
 #define DS_CONFIGDLG_H
 
 #include <ds/framework.h>
-#include <resource.h>
-#include <ds/basewindow.h>
 #include <ds/config.h>
+#include <ds/basewindow.h>
 #include <ds/mainwnd.h>
 
 class ConfigDlg : public BaseDialog

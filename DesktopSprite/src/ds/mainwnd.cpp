@@ -1,12 +1,12 @@
 #include <ds/framework.h>
 #include <resource.h>
 #include <ds/utils.h>
-#include <ds/config.h>
-#include <ds/notifyicon.h>
 #include <ds/perfmonitor.h>
+#include <ds/notifyicon.h>
+#include <ds/config.h>
+#include <ds/winapp.h>
 #include <ds/aboutdlg.h>
 #include <ds/configdlg.h>
-#include <ds/winapp.h>
 
 #include <ds/mainwnd.h>
 
@@ -803,14 +803,18 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         break;
     case IDM_CONFIG:
     {
-        ConfigDlg* dlg = new ConfigDlg(this);
-        dlg->SetFormData(AppConfig::Get());
-        if (dlg->ShowDialogBox(GetModuleHandleW(NULL), NULL))
+        if (!this->configDlg)
         {
-            dlg->GetFormData(pcfgdata);
-            configChanged = TRUE;
+            this->configDlg = new ConfigDlg(this);
+            this->configDlg->SetFormData(AppConfig::Get());
+            if (this->configDlg->ShowDialogBox(GetModuleHandleW(NULL), NULL))
+            {
+                this->configDlg->GetFormData(pcfgdata);
+                configChanged = TRUE;
+            }
+            delete this->configDlg;
+            this->configDlg = NULL;
         }
-        delete dlg;
         break;
     }
     case IDM_ABOUT:

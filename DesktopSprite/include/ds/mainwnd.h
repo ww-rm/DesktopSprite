@@ -6,10 +6,12 @@
 #include <ds/perfmonitor.h>
 #include <ds/notifyicon.h>
 #include <ds/config.h>
-#include <ds/basewindow.h>
 #include <ds/winapp.h>
+#include <ds/basewindow.h>
 #include <ds/spritewnd.h>
-#include <resource.h>
+
+class ConfigDlg;
+class AboutDlg;
 
 class MainWindow :public BaseWindow
 {
@@ -29,6 +31,8 @@ private:
     HICON                               balloonIcon = NULL;             // 气泡消息的图标资源
     WCHAR                               fontPath[MAX_PATH] = { 0 };     // 字体路径
     PerfMonitor::PERFDATA               perfData = { 0 };               // 性能数据缓冲
+    ConfigDlg*                          configDlg = NULL;
+    AboutDlg*                           aboutDlg = NULL;
 
 public:
     MainWindow();

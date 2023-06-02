@@ -1,8 +1,8 @@
 #include <ds/framework.h>
-#include <ds/utils.h>
-#include <ds/winapp.h>
 #include <resource.h>
+#include <ds/utils.h>
 #include <ds/perfmonitor.h>
+#include <ds/winapp.h>
 
 #include <ds/spritewnd.h>
 

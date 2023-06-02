@@ -1,8 +1,7 @@
 #include <ds/framework.h>
-
 #include <ds/utils.h>
-#include <spine/spine.h>
 
+#include <spine/spine.h>
 #include <ds/spinechar.h>
 
 // [XY](3, 2) = [UV](3, 3) @ M(3, 2)
