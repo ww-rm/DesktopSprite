@@ -340,6 +340,9 @@ INT_PTR ConfigDlg::OnCommand(WPARAM wParam, LPARAM lParam)
     case IDC_BTN_SPSKELPATH:
         this->ShowPathSelectDlg(IDC_EDIT_SPSKELPATH, L"选择 Skel 文件", L"Skel 文件 (*.skel; *.json)\0*.skel;*.json\0");
         return TRUE;
+    case IDC_BTN_OPENDATADIR:
+        ShellExecuteW(NULL, L"explore", WinApp::GetAppDataDir(), NULL, NULL, SW_SHOWDEFAULT);
+        return TRUE;
     case IDOK:
         if (this->CheckValidFormData())
         {

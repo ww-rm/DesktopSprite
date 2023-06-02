@@ -13,7 +13,7 @@ namespace WinApp {
         ULONG_PTR gdiplusToken = 0;
         WCHAR szExeFullDir[MAX_PATH] = { 0 };
         WCHAR szExeFullPath[MAX_PATH] = { 0 };
-        WCHAR szAppDataPath[MAX_PATH] = { 0 };  // %APPDATA%/WinApp::GetName()
+        WCHAR szAppDataDir[MAX_PATH] = { 0 };  // %APPDATA%/WinApp::GetName()
         WCHAR szConfigFullPath[MAX_PATH] = { 0 };
 
     public:
@@ -27,6 +27,7 @@ namespace WinApp {
         PCWSTR GetName() const;
         PCWSTR GetPath() const;
         PCWSTR GetDir() const;
+        PCWSTR GetAppDataDir() const;
         PCWSTR GetConfigPath() const;
     };
 
@@ -38,6 +39,7 @@ namespace WinApp {
     PCWSTR GetName();
     PCWSTR GetPath();
     PCWSTR GetDir();
+    PCWSTR GetAppDataDir();
     PCWSTR GetConfigPath();
 }
 

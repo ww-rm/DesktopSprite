@@ -19,15 +19,15 @@ namespace WinApp {
         SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, appDataPath);
 
         // 获取程序的用户数据文件夹
-        PathCchCombine(this->szAppDataPath, MAX_PATH, appDataPath, this->GetName());
-        if (!CreateDirectoryW(this->szAppDataPath, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
+        PathCchCombine(this->szAppDataDir, MAX_PATH, appDataPath, this->GetName());
+        if (!CreateDirectoryW(this->szAppDataDir, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
         {
             ShowLastError(__FUNCTIONW__, __LINE__);
             MessageBoxW(NULL, L"数据文件夹创建失败，将无法保存配置信息！", L"错误信息", MB_ICONINFORMATION);
         }
 
         // 获得配置路径, 这里要放在用户数据文件夹下面, 否则 C 盘有写入权限问题
-        PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szAppDataPath, L"config.json");
+        PathCchCombine(this->szConfigFullPath, MAX_PATH, this->szAppDataDir, L"config.json");
     }
 
     BOOL WinApp::Initialize()
@@ -140,6 +140,11 @@ namespace WinApp {
         return this->szExeFullDir;
     }
 
+    PCWSTR WinApp::GetAppDataDir() const
+    {
+        return this->szAppDataDir;
+    }
+
     PCWSTR WinApp::GetConfigPath() const
     {
         return this->szConfigFullPath;
@@ -191,6 +196,12 @@ namespace WinApp {
     {
         if (!g_winApp) return NULL;
         return g_winApp->GetDir();
+    }
+
+    PCWSTR GetAppDataDir()
+    {
+        if (!g_winApp) return NULL;
+        return g_winApp->GetAppDataDir();
     }
 
     PCWSTR GetConfigPath()

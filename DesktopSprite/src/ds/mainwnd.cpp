@@ -805,7 +805,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         ConfigDlg* dlg = new ConfigDlg(this);
         dlg->SetFormData(AppConfig::Get());
-        if (dlg->ShowDialogBox(GetModuleHandleW(NULL), this->hWnd))
+        if (dlg->ShowDialogBox(GetModuleHandleW(NULL), NULL))
         {
             dlg->GetFormData(pcfgdata);
             configChanged = TRUE;
