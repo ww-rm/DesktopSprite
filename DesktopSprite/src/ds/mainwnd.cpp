@@ -807,7 +807,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             this->configDlg = new ConfigDlg(this);
             this->configDlg->SetFormData(AppConfig::Get());
-            if (this->configDlg->ShowDialogBox(GetModuleHandleW(NULL), NULL))
+            if (this->configDlg->ShowDialogBox(GetModuleHandleW(NULL)))
             {
                 this->configDlg->GetFormData(pcfgdata);
                 configChanged = TRUE;
@@ -826,7 +826,7 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         if (!this->aboutDlg)
         {
             this->aboutDlg = new AboutDlg();
-            this->aboutDlg->ShowDialogBox(GetModuleHandleW(NULL), NULL);
+            this->aboutDlg->ShowDialogBox(GetModuleHandleW(NULL));
             delete this->aboutDlg;
             this->aboutDlg = NULL;
         }
