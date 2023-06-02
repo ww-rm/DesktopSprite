@@ -815,12 +815,25 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
             delete this->configDlg;
             this->configDlg = NULL;
         }
+        else
+        {
+            this->configDlg->FlashAndBeep();
+        }
         break;
     }
     case IDM_ABOUT:
     {
-        AboutDlg dlg;
-        dlg.ShowDialogBox(GetModuleHandleW(NULL), this->hWnd);
+        if (!this->aboutDlg)
+        {
+            this->aboutDlg = new AboutDlg();
+            this->aboutDlg->ShowDialogBox(GetModuleHandleW(NULL), NULL);
+            delete this->aboutDlg;
+            this->aboutDlg = NULL;
+        }
+        else
+        {
+            this->aboutDlg->FlashAndBeep();
+        }
         break;
     }
     case IDM_EXIT:

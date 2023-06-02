@@ -37,6 +37,9 @@ protected:
 public:
     HWND GetDialogHandle() const;
     INT_PTR ShowDialogBox(HINSTANCE hInst, HWND hWndParent = NULL);
+
+    // 还原窗口, 闪烁任务栏图标, 提示声音
+    BOOL FlashAndBeep();
 };
 
 #endif // !DS_BASEWINDOW_H

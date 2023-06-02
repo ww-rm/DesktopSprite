@@ -104,3 +104,15 @@ INT_PTR BaseDialog::ShowDialogBox(HINSTANCE hInst, HWND hWndParent)
 {
     return DialogBoxParamW(hInst, this->GetTemplateName(), hWndParent, BaseDialog::DialogProc, (LPARAM)this);
 }
+
+BOOL BaseDialog::FlashAndBeep()
+{
+    if (this->hDlg)
+    {
+        ShowWindow(this->hDlg, SW_RESTORE);
+        SetWindowPos(this->hDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        FlashWindow(this->hDlg, TRUE);
+        MessageBeep(MB_ICONINFORMATION);
+    }
+    return FALSE;
+}
