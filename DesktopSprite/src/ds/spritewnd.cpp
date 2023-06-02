@@ -18,6 +18,7 @@ static const FLOAT ANIME_DIZZY_K = 0.8f / (ANIME_DIZZY_R - ANIME_DIZZY_L);
 static const FLOAT ANIME_DIZZY_B = 0.1f - ANIME_DIZZY_K * ANIME_DIZZY_L;
 
 static const INT IDT_CHECKLASTINPUT = 2;
+static const UINT MAX_LASTINPUTINTERVAL = 10 * 60 * 1000; // 10 minutes
 
 SpriteWindow::SpriteWindow() 
 {
@@ -381,12 +382,14 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     this->ApplyConfig();
 
     SetTimer(this->hWnd, IDT_CHECKCPUHEALTH, CHECKCPUHEALTH_INTERVAL, NULL);
+    SetTimer(this->hWnd, IDT_CHECKLASTINPUT, 5000, NULL);
 
     return 0;
 }
 
 LRESULT SpriteWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
 {
+    KillTimer(this->hWnd, IDT_CHECKLASTINPUT);
     KillTimer(this->hWnd, IDT_CHECKCPUHEALTH);
 
     this->SaveCurrentPosToReg();
@@ -498,6 +501,14 @@ LRESULT SpriteWindow::OnTimer(WPARAM wParam, LPARAM lParam)
             this->cpuHealthState -= 1;
         }
         this->SendFreeOrBusy();
+        break;
+    case IDT_CHECKLASTINPUT:
+        if (GetLastInputInterval() >= MAX_LASTINPUTINTERVAL)
+        {
+            this->spinerenderer->Lock();
+            this->spinechar->SendAction(SpineAction::SLEEP);
+            this->spinerenderer->Unlock();
+        }
         break;
     default:
         return DefWindowProcW(this->hWnd, WM_TIMER, wParam, lParam);

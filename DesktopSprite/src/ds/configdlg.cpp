@@ -10,6 +10,7 @@ static WCHAR tipBalloniconPath[MAX_TIPLEN] = L"整点报时的提示气泡图标";
 static WCHAR tipShowUsage[MAX_TIPLEN] = L"显示处理器与内存的占用";
 static WCHAR tipSpriteMousePass[MAX_TIPLEN] = L"让精灵忽略所有键鼠输入";
 static WCHAR tipAnimeWork[MAX_TIPLEN] = L"还没想好怎么触发";
+static WCHAR tipAnimeSleep[MAX_TIPLEN] = L"电脑待机无输入一段时间后进入";
 static WCHAR tipAnimeStand[MAX_TIPLEN] = L"待机情况下定时随机触发";
 static WCHAR tipAnimeTouch[MAX_TIPLEN] = L"左键单击";
 static WCHAR tipAnimeWink[MAX_TIPLEN] = L"鼠标滚轮下滚";
@@ -313,6 +314,7 @@ INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
     this->AddToolTip(IDC_CHECK_SHOWUSAGE, tipShowUsage);
     this->AddToolTip(IDC_CHECK_MOUSEPASS, tipSpriteMousePass);
     this->AddToolTip(IDC_CB_SPWORK, tipAnimeWork);
+    this->AddToolTip(IDC_CB_SPSLEEP, tipAnimeSleep);
     this->AddToolTip(IDC_CB_SPSTAND, tipAnimeStand);
     this->AddToolTip(IDC_CB_SPTOUCH, tipAnimeTouch);
     this->AddToolTip(IDC_CB_SPWINK, tipAnimeWink);
