@@ -1,4 +1,5 @@
 #include <ds/framework.h>
+#include <resource.h>
 #include <ds/utils.h>
 #include <ds/basewindow.h>
 
@@ -86,6 +87,10 @@ INT_PTR CALLBACK BaseDialog::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         this_ = (BaseDialog*)lParam;
         this_->hDlg = hDlg;
         SetDlgData(hDlg, (LONG_PTR)this_);
+
+        HICON icon = LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDI_APPICON_DARK));
+        SendMessageW(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+        SendMessageW(hDlg, WM_SETICON, ICON_BIG, (LPARAM)icon);
     }
 
     if (this_)
@@ -110,7 +115,7 @@ BOOL BaseDialog::FlashAndBeep()
     if (this->hDlg)
     {
         ShowWindow(this->hDlg, SW_RESTORE);
-        SetWindowPos(this->hDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        SetWindowPos(this->hDlg, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         FlashWindow(this->hDlg, TRUE);
         MessageBeep(MB_ICONINFORMATION);
     }
