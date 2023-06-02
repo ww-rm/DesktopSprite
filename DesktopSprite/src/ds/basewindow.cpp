@@ -118,6 +118,7 @@ BOOL BaseDialog::FlashAndBeep()
         SetWindowPos(this->hDlg, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         FlashWindow(this->hDlg, TRUE);
         MessageBeep(MB_ICONINFORMATION);
+        return TRUE;
     }
     return FALSE;
 }
