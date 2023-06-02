@@ -42,7 +42,7 @@ BOOL BaseWindow::CreateWindow_(HINSTANCE hInst)
     wcex.lpszClassName = this->GetClassName_();
     wcex.lpfnWndProc = BaseWindow::WindowProc;
     wcex.hInstance = hInst;
-    wcex.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+    wcex.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hIcon = NULL;
