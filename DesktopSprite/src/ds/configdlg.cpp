@@ -290,11 +290,11 @@ INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
     this->SetSpinePngPath(this->form.szSpineAtlasPath);
     CheckDlgButton(this->hDlg, IDC_CHECK_SHOWSPRITE, this->form.bShowSprite ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(this->hDlg, IDC_CHECK_MOUSEPASS, this->form.bSpriteMousePass ? BST_CHECKED : BST_UNCHECKED);
-    this->InitTrackBar(IDC_SLIDER_SPMAXFPS, 12, 60, 1, 6, this->form.maxFps);
+    this->InitTrackBar(IDC_SLIDER_SPMAXFPS, 1, 60, 1, 6, this->form.maxFps);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPMAXFPS, this->form.maxFps, FALSE);
     this->InitTrackBar(IDC_SLIDER_SPTRANSPARENCY, 0, 100, 1, 10, this->form.spTransparencyPercent);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPTRANSPARENCY, this->form.spTransparencyPercent, FALSE);
-    this->InitTrackBar(IDC_SLIDER_SPSCALE, 20, 300, 1, 10, this->form.spScale);
+    this->InitTrackBar(IDC_SLIDER_SPSCALE, 10, 300, 1, 10, this->form.spScale);
     SetDlgItemInt(this->hDlg, IDC_STATIC_SPSCALE, this->form.spScale, FALSE);
 
     // Spine …Ë÷√
