@@ -9,9 +9,8 @@
 #include <ds/winapp.h>
 #include <ds/basewindow.h>
 #include <ds/spritewnd.h>
-
-class ConfigDlg;
-class AboutDlg;
+#include <ds/configdlg.h>
+#include <ds/aboutdlg.h>
 
 class MainWindow :public BaseWindow
 {

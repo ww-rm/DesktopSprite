@@ -5,7 +5,8 @@
 #include <ds/framework.h>
 #include <ds/config.h>
 #include <ds/basewindow.h>
-#include <ds/mainwnd.h>
+
+class MainWindow;
 
 class ConfigDlg : public BaseDialog
 {

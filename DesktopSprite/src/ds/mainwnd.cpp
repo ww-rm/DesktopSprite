@@ -23,10 +23,10 @@ static UINT     const   BASE_WNDSIZE_PIXELS = 20;              // 主窗口的基本单
 
 
 static BOOL DrawCircle(
-    Gdiplus::Graphics& graphics, 
-    Gdiplus::Pen& pen, 
-    Gdiplus::PointF& ptCenter, 
-    Gdiplus::REAL nOuterRadius, 
+    Gdiplus::Graphics& graphics,
+    Gdiplus::Pen& pen,
+    Gdiplus::PointF& ptCenter,
+    Gdiplus::REAL nOuterRadius,
     Gdiplus::REAL sweepPercent
 )
 {
@@ -39,8 +39,8 @@ static BOOL DrawSpeedStair(
     Gdiplus::Graphics& graphics,
     Gdiplus::Color& color,
     Gdiplus::RectF& rect,
-    BOOL bUp, 
-    INT nLevel, 
+    BOOL bUp,
+    INT nLevel,
     INT nMaxLevel = 6
 )
 {
@@ -271,7 +271,7 @@ BOOL MainWindow::SaveCurrentPosToReg()
 HICON MainWindow::LoadNotifyIconBySysTheme()
 {
     return LoadIconW(
-        GetModuleHandleW(NULL), 
+        GetModuleHandleW(NULL),
         MAKEINTRESOURCEW(IsSystemDarkTheme() ? IDI_APPICON_LIGHT : IDI_APPICON_DARK)
     );
 }
@@ -753,12 +753,12 @@ LRESULT MainWindow::OnCommand(WPARAM wParam, LPARAM lParam)
 
     switch (LOWORD(wParam))
     {
-    // 浮动窗口
+        // 浮动窗口
     case IDM_FLOATWND:
         pcfgdata->bFloatWnd = (BOOL)!pcfgdata->bFloatWnd;
         configChanged = TRUE;
         break;
-    // 显示子菜单
+        // 显示子菜单
     case IDM_SHOWCPUMEM:
         if (pcfgdata->byShowContent == SHOWCONTENT_CPUMEM)
         {
@@ -979,7 +979,7 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
     }
 #endif // !_DEBUG
-        break;
+    break;
     case WM_CONTEXTMENU:
         this->ShowContextMenu(GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam)); // 右键通知区域图标始终弹出右键菜单
         break;
