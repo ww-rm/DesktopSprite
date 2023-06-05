@@ -366,7 +366,7 @@ LRESULT SpriteWindow::OnCreate(WPARAM wParam, LPARAM lParam)
     // 初始化大小, 位置, Z 序, 但是还不显示
     SIZE wndSize = { 1920, 1080 };
     GetScreenResolution(&wndSize);
-    SetWindowPos(this->hWnd, HWND_TOPMOST, 0, 0, wndSize.cx, wndSize.cy, SWP_HIDEWINDOW);
+    SetWindowPos(this->hWnd, HWND_TOPMOST, 1, 1, wndSize.cx - 1, wndSize.cy - 1, SWP_HIDEWINDOW); // 防止全屏检测, 边缘都少一个像素
 
     // 加载 spine
     this->spinechar = new SpineChar();
