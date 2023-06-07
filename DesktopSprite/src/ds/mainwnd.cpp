@@ -196,7 +196,6 @@ BOOL MainWindow::PopupOpen()
 BOOL MainWindow::PopupClose()
 {
     // 恢复原本的位置并隐藏
-    ShowWindow(this->hWnd, SW_HIDE); // XXX: win11 上可能闪烁一次
     return SetWindowPos(this->hWnd, HWND_TOPMOST, this->currentFloatPos.x, this->currentFloatPos.y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_HIDEWINDOW);
 }
 
