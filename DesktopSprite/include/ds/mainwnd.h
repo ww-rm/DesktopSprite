@@ -20,7 +20,6 @@ private:
 
 private:
     INT                                 wndSizeUnit = 0;                // 窗口单元格大小, 在运行时随 DPI 进行缩放
-    BOOL                                bWndFixed = FALSE;              // 窗口是否通过图标点击长期显示, 用来屏蔽 NIN_POPUP 消息
     BOOL                                bClocked = FALSE;               // 保存整点内是否报过时
     POINT                               ptDragSrc = { 0 };              // 拖动窗口时的源点
     SIZE                                sysDragSize = { 0 };            // 系统拖动判定大小
@@ -77,7 +76,6 @@ private:
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnCreate(WPARAM wParam, LPARAM lParam);
     LRESULT OnDestroy(WPARAM wParam, LPARAM lParam);
-    LRESULT OnActivate(WPARAM wParam, LPARAM lParam);
     LRESULT OnClose(WPARAM wParam, LPARAM lParam);
     LRESULT OnPaint(WPARAM wParam, LPARAM lParam);
     LRESULT OnSettingChange(WPARAM wParam, LPARAM lParam);
@@ -92,7 +90,6 @@ private:
     LRESULT OnLButtonDBClick(WPARAM wParam, LPARAM lParam);
     LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
     LRESULT OnNotifyIcon(WPARAM wParam, LPARAM lParam);
-    LRESULT OnTimeAlarm(WPARAM wParam, LPARAM lParam);
     LRESULT OnPerfDataUpdated(WPARAM wParam, LPARAM lParam);
     LRESULT OnTaskbarCreated(WPARAM wParam, LPARAM lParam);
 };

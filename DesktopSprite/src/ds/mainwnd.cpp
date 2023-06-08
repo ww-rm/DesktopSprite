@@ -409,8 +409,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return this->OnCreate(wParam, lParam);
     case WM_DESTROY:
         return this->OnDestroy(wParam, lParam);
-    case WM_ACTIVATE:
-        return this->OnActivate(wParam, lParam);
     case WM_CLOSE:
         return this->OnClose(wParam, lParam);
     case WM_PAINT:
@@ -507,19 +505,6 @@ LRESULT MainWindow::OnDestroy(WPARAM wParam, LPARAM lParam)
     PerfMonitor::UnregisterMessage(this->hWnd);
 
     PostQuitMessage(EXIT_SUCCESS);
-    return 0;
-}
-
-LRESULT MainWindow::OnActivate(WPARAM wParam, LPARAM lParam)
-{
-    // 不是浮动且处于固定并失去激活
-    if (!AppConfig::Get()->bFloatWnd && this->bWndFixed && !wParam)
-    {
-        this->bWndFixed = FALSE;
-        // ShowWindow(this->hWnd, SW_HIDE); // 不能在 WM_ACTIVATE 里用这个, 有 bug, 会丢失鼠标按下的消息, 见 http://www.cnblogs.com/cswuyg/archive/2012/08/20/2647445.html
-
-        this->PopupClose();
-    }
     return 0;
 }
 
@@ -876,9 +861,9 @@ LRESULT MainWindow::OnInitMenuPopup(WPARAM wParam, LPARAM lParam)
     HMENU hMenu = (HMENU)wParam;
 
     // 设置菜单状态
-    SetMenuItemState(hMenu, IDM_FLOATWND, FALSE, (AppConfig::Get()->bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
-    SetMenuItemState(hMenu, IDM_SHOWCPUMEM, FALSE, ((AppConfig::Get()->byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
-    SetMenuItemState(hMenu, IDM_SHOWNETSPEED, FALSE, ((AppConfig::Get()->byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED) | (this->bWndFixed ? MFS_DISABLED : MFS_ENABLED));
+    SetMenuItemState(hMenu, IDM_FLOATWND, FALSE, (AppConfig::Get()->bFloatWnd ? MFS_CHECKED : MFS_UNCHECKED));
+    SetMenuItemState(hMenu, IDM_SHOWCPUMEM, FALSE, ((AppConfig::Get()->byShowContent & SHOWCONTENT_CPUMEM) ? MFS_CHECKED : MFS_UNCHECKED));
+    SetMenuItemState(hMenu, IDM_SHOWNETSPEED, FALSE, ((AppConfig::Get()->byShowContent & SHOWCONTENT_NETSPEED) ? MFS_CHECKED : MFS_UNCHECKED));
 
     SetMenuItemState(hMenu, IDM_TIMEALARM, FALSE, AppConfig::Get()->bTimeAlarm ? MFS_CHECKED : MFS_UNCHECKED);
     SetMenuItemState(hMenu, IDM_INFOSOUND, FALSE, AppConfig::Get()->bInfoSound ? MFS_CHECKED : MFS_UNCHECKED);
@@ -969,13 +954,17 @@ LRESULT MainWindow::OnDpiChanged(WPARAM wParam, LPARAM lParam)
 
 LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
 {
+    // XXX: Win11 的 POPUPOPEN 和 POPUPCLOSE 行为和 Win10 不一样
+    // Win10 里面是悬停图标触发 OPEN, 悬停超时/离开图标触发 CLOSE
+    // Win11 里面是放上图标立马触发 OPEN, 离开图标才会触发 CLOSE, 不会超时消失
+    // 且 Win10 里面单击图标时会触发 CLOSE, 因此删掉了单击保持的功能
+    // 考虑把单击和双击图标换成别的功能
     switch (LOWORD(lParam))
     {
     case WM_LBUTTONDBLCLK:
 #ifdef _DEBUG
     {
         ShowWindow(this->spritewnd->GetWindowHandle(), SW_SHOW);
-        InvalidateRect(this->spritewnd->GetWindowHandle(), NULL, TRUE);
         OutputDebugStringW(L"Double Click on NotifyIcon!\n");
     }
 #endif // !_DEBUG
@@ -985,23 +974,17 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         break;
     case NIN_SELECT:
     case NIN_KEYSELECT:
-        if (!AppConfig::Get()->bFloatWnd && !this->bWndFixed)
-        {
-            this->bWndFixed = TRUE; // 固定住窗口显示
-            this->PopupOpen();
-            SetForegroundWindow(this->hWnd); // 只有点击了图标才需要设置前景窗口
-        }
         break;
     case NIN_POPUPOPEN:
         // 不是浮动且没有固定则显示弹窗
-        if (!AppConfig::Get()->bFloatWnd && !this->bWndFixed)
+        if (!AppConfig::Get()->bFloatWnd)
         {
             this->PopupOpen();
         }
         break;
     case NIN_POPUPCLOSE:
         // 不是浮动且没有固定则隐藏弹窗
-        if (!AppConfig::Get()->bFloatWnd && !this->bWndFixed)
+        if (!AppConfig::Get()->bFloatWnd)
         {
             this->PopupClose();
         }
