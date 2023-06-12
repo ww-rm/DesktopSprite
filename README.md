@@ -1,55 +1,50 @@
 # DesktopSprite
 
-## What's it ?
+[用户手册](README.user.md) | [开发手册](README.dev.md)
 
-- A small desktop tool used to show your real-time performance data of your PC.
+这是一个适用于 `Windows` 系统下的桌面精灵, 目前已在 `Win10`, `Win11` 下基本测试通过.
 
-![Interface1.png](https://github.com/ww-rm/DesktopSprite/blob/main/img/interface1.png)
+- 轻量的性能监视器: 可以显示电脑占用和网速监视浮窗
 
-![Interface2.png](https://github.com/ww-rm/DesktopSprite/blob/main/img/interface2.png)
+![perfmonitor](img/perfmonitor.gif)
 
-## How to use it ?
+- 可自定义桌宠: 支持基于 `spine v3.6.53` 导出的碧蓝航线全角色小人动画
 
-- Just go to [release page](https://github.com/ww-rm/DesktopSprite/releases) and download the lastest version of it.
-- Choose a appropriate location to store the executable file of this tool.
-- Then double click it, a small icon will be added to your notification area and you can see a small floating window appearing on you desktop.
+![guanghui_2](img/guanghui_2.gif)
+![biaoqiang_h](img/biaoqiang_h.gif)
+![lafei_h](img/lafei_h.gif)
+![z23_h](img/z23_h.gif)
 
-## Config File
+## 安装与使用
 
-The program uses a `config.json` as its config file, the default config contents are shown as below:
+### 安装
 
-```json
-{
-  "BalloonIconPath" : "C:\\Program Files\\DesktopSprite\\res\\image\\timealarm.ico",
-  "IsAutoRun" : false,
-  "IsDarkTheme" : true,
-  "IsFloatWnd" : true,
-  "IsInfoSound" : true,
-  "IsTimeAlarm" : true,
-  "ShowContent" : 3,
-  "Transparency" : 75
-}
-```
+前往 [Release](https://github.com/ww-rm/DesktopSprite/releases) 下载 `Latest` 版本的 `zip` 压缩包, 解压后双击运行里面的 `DesktopSprite.msi` 安装文件进行安装, 可以自定义安装位置.
 
-Most config options can be set within program, some need to edit this config file.
+安装完成后, 开始菜单和桌面都会出现程序启动图标. 双击运行, 通知栏会有程序图标, 首次运行桌面默认会显示自带的碧蓝小人角色, 且有一个性能浮窗.
 
-To make `config.json` take effect, you need to put it under the **program install directory**, and all paths in this config file are absolute path.
+### 更换角色
 
-## FAQ
+右键通知区域程序图标, 可以进入设置界面, 设置对应的 `atlas` 和 `skel/json` 文件, 然后应用/确定设置即可完成更换.
 
-- Why sometimes the performance data is different than in the task manager?
-  - In this small tool, the performance data is collected by [PDH](https://docs.microsoft.com/en-us/windows/win32/perfctrs/performance-counters-portal), there is some difference between their collecting mode. However, the data should be as the same as the data in your [perfmon.msc](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/perfmon) program.
+需要注意 `*.atlas`, `*.png`, `*.skel/*.json` 三份文件需要互相匹配, 且 `*.atlas` 和 `*.png` 文件名必须相同 (选择 `atlas` 的时候会自动填入 `png` 文件).
 
-- Why the memory usage is a little higher than the data in task manager?
-  - In this small tool, the memory usage is refer to committed size not the physical size.
+![atlasconfig](img/atlasconfig.png)
 
-## About
+### 更多功能
 
-- Source of material
-  - [Icon File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/appicon_dark.png): From: [凪白みと](https://www.pixiv.net/artworks/56065927)
-  - [Balloontip Icon File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/timealarm.png) From: [むーらん@お仕事募集中](https://www.pixiv.net/artworks/67763478)
-  - [Font File](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/AGENCYR.TTF): From Internet.
+程序内还有一些附带的小功能和更多细致的调节参数, 详细说明见[用户手册](README.user.md).
+
+此处附一下自己导出的角色小人资源, 日期截止到 `2023-03-29`, [点我获取资源]().
+
+## 关于
+
+- 一些资源的出处
+  - [图标文件](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/image/appicon_dark.png): 来自: [凪白みと](https://www.pixiv.net/artworks/56065927)
+  - [默认气泡图标](https://github.com/ww-rm/DesktopSprite/blob/main/DesktopSprite/res/image/timealarm.png) 来自: [むーらん@お仕事募集中](https://www.pixiv.net/artworks/67763478)
 
 ---
+
+*如果你觉得这个项目不错请给个 Star⭐, 并分享给更多人知道. :)*
 
 *If you think this project is helpful to you, plz star it and let more people see it. :)*
