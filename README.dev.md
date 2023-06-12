@@ -18,9 +18,34 @@
 
 ## 代码结构
 
-TODO
+```mermaid
+flowchart
 
-## 程序配置
+WA(WinApp)
+PM(PerfMonitor)
+AC(AppConfig)
+
+
+MW(MainWnd)
+CD(ConfigDlg)
+SW(SpriteWnd)
+SC(SpineChar)
+SR(SpineRenderer)
+
+WA --> MW
+PM -.- MW
+PM -.- SW
+
+MW --> CD
+CD --> AC
+MW --> SW
+
+SW --> SC
+SW --> SR
+SC --> SR
+```
+
+(仅展示了一部分核心关系)
 
 ## 注意事项
 
@@ -32,4 +57,20 @@ TODO
 
 ### 桌宠部分
 
-## 关于 spine
+桌宠使用 2D 图形库绘制, 具体实现原理参考 [spine-c 运行时文档](http://zh.esotericsoftware.com/spine-c), 标准实现需要使用纹理映射等计算机图形学操作~但是我不会~, 所以渲染的核心实现是通过 2D 库的纹理笔刷来实现的.
+
+创建纹理笔刷之后, 在绘制顶点三角形时, 需要自己手动计算纹理到模型的仿射矩阵, 然后设置笔刷的变换矩阵, 就能完成纹理映射. 关键函数是这个 `GetAffineMatrix`:
+
+```cpp
+void GetAffineMatrix(
+    float x1, float y1, 
+    float x2, float y2, 
+    float x3, float y3, 
+    float u1, float v1, 
+    float u2, float v2, 
+    float u3, float v3, 
+    Matrix* m
+);
+```
+
+能够计算两个平面三角形 `UV` 到 `XY` 的仿射矩阵. 与渲染有关的详细实现见 [`spinechar.cpp`](DesktopSprite/src/ds/spinechar.cpp).
