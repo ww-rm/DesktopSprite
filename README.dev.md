@@ -71,3 +71,7 @@ void GetAffineMatrix(
 ```
 
 能够计算两个平面三角形 `UV` 到 `XY` 的仿射矩阵. 与渲染有关的详细实现见 [`spinechar.cpp`](DesktopSprite/src/ds/spinechar.cpp).
+
+### 多线程
+
+由于开发过程原因, 程序的主窗口其实是性能浮窗, 因此为了避免阻塞窗口消息循环, 渲染的过程是放在子线程里完成的. 因此在跨线程调用的时候, 要视情况考虑调用互斥锁操作 `SpineRenderer::Lock` 和 `SpineRenderer::Unlock` 来避免数据同步错误.
