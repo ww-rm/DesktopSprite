@@ -42,6 +42,7 @@ MW --> SW
 
 SW --> SC
 SW --> SR
+SR --> SW
 SC --> SR
 ```
 
@@ -63,12 +64,8 @@ SC --> SR
 
 ```cpp
 void GetAffineMatrix(
-    float x1, float y1, 
-    float x2, float y2, 
-    float x3, float y3, 
-    float u1, float v1, 
-    float u2, float v2, 
-    float u3, float v3, 
+    float x1, float y1, float x2, float y2, float x3, float y3, 
+    float u1, float v1, float u2, float v2, float u3, float v3, 
     Matrix* m
 );
 ```
