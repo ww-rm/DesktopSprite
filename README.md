@@ -6,14 +6,14 @@
 
 - 轻量的性能监视器: 可以显示电脑占用和网速监视浮窗
 
-![perfmonitor](img/perfmonitor.gif)
+![性能浮窗动图](img/perfmonitor.gif)
 
 - 可自定义桌宠: 支持基于 `spine v3.6.53` 导出的碧蓝航线全角色小人动画
 
-![guanghui_2](img/guanghui_2.gif)
-![biaoqiang_h](img/biaoqiang_h.gif)
-![lafei_h](img/lafei_h.gif)
-![z23_h](img/z23_h.gif)
+![guanghui_2 动图](img/guanghui_2.gif)
+![biaoqiang_h 动图](img/biaoqiang_h.gif)
+![lafei_h 动图](img/lafei_h.gif)
+![z23_h 动图](img/z23_h.gif)
 
 ## 安装与使用
 
