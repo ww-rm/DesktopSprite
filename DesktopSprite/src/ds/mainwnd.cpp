@@ -962,13 +962,16 @@ LRESULT MainWindow::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
     switch (LOWORD(lParam))
     {
     case WM_LBUTTONDBLCLK:
-#ifdef _DEBUG
-    {
-        ShowWindow(this->spritewnd->GetWindowHandle(), SW_SHOW);
-        OutputDebugStringW(L"Double Click on NotifyIcon!\n");
-    }
-#endif // !_DEBUG
-    break;
+        {
+            AppConfig::AppConfig* pcfgdata = new AppConfig::AppConfig(*AppConfig::Get());
+            pcfgdata->bShowSprite = TRUE;
+            this->spritewnd->ApplyConfig(pcfgdata);
+            AppConfig::Set(pcfgdata);
+            AppConfig::SaveToFile(WinApp::GetConfigPath());
+            delete pcfgdata;
+            this->spritewnd->GetSpineChar()->SendAction(SpineAction::TOUCH);
+        }
+        break;
     case WM_CONTEXTMENU:
         this->ShowContextMenu(GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam)); // 右键通知区域图标始终弹出右键菜单
         break;
