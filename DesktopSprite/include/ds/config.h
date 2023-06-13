@@ -26,7 +26,7 @@ namespace AppConfig {
         // sprite …Ë÷√
         BOOL bShowSprite = TRUE;
         BOOL bSpriteMousePass = FALSE;
-        UINT maxFps = 30;
+        UINT maxFps = 12;
         UINT spScale = 100;
         UINT spTransparencyPercent = 100;
         WCHAR szSpineAtlasPath[MAX_PATH] = { 0 };
