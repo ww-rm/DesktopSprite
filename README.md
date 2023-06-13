@@ -35,7 +35,12 @@
 
 程序内还有一些附带的小功能和更多细致的调节参数, 详细说明见[用户手册](README.user.md).
 
-此处附一下自己导出的角色小人资源, 日期截止到 `2023-03-29`, [点我获取资源]().
+此处附一下自己导出的角色小人资源, 不一定包含最新角色, [AzurLaneSD](https://github.com/ww-rm/AzurLaneSD).
+
+如果无法下载则可以试一下下面的链接:
+
+- [单角色下载](https://pan.baidu.com/s/1tSaBzZTWCyvcrgbGh_mgrg?pwd=blhx), 提取码: `blhx`.
+- [全角色下载](https://pan.baidu.com/s/1qpZnJRB4PaC9Eb3tkZdACw?pwd=blhx), 提取码: `blhx`.
 
 ## 关于
 
