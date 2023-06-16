@@ -47,6 +47,7 @@
 #define IDC_CB_SPDANCE                  1036
 #define IDC_CB_SPDIZZY                  1037
 #define IDC_BTN_OPENDATADIR             1038
+#define IDC_CHECK_AUTOSKEL              1039
 #define IDM_FLOATWND                    40001
 #define IDM_EXIT                        40002
 #define IDM_TIMEALARM                   40003
@@ -66,7 +67,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        108
 #define _APS_NEXT_COMMAND_VALUE         40013
-#define _APS_NEXT_CONTROL_VALUE         1039
+#define _APS_NEXT_CONTROL_VALUE         1040
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

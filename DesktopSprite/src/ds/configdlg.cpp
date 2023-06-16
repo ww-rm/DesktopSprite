@@ -9,6 +9,7 @@ const INT MAX_TIPLEN = 80;
 static WCHAR tipInfoSound[MAX_TIPLEN] = L"整点报时的提示声音";
 static WCHAR tipBalloniconPath[MAX_TIPLEN] = L"整点报时的提示气泡图标";
 static WCHAR tipShowUsage[MAX_TIPLEN] = L"显示处理器与内存的占用";
+static WCHAR tipAutoSkel[MAX_TIPLEN] = L"自动填充同目录同名 skel 文件";
 static WCHAR tipSpriteMousePass[MAX_TIPLEN] = L"让精灵忽略所有键鼠输入";
 static WCHAR tipSpriteMaxFPS[MAX_TIPLEN] = L"一帧能动两帧流畅三帧电竞";
 static WCHAR tipAnimeWork[MAX_TIPLEN] = L"还没想好怎么触发";
@@ -51,10 +52,31 @@ BOOL ConfigDlg::CheckValidFormData()
         return FALSE;
     }
 
+    GetDlgItemTextW(this->hDlg, IDC_EDIT_BALLOONICONPATH, pathBuffer, MAX_PATH);
+    if (!PathFileExistsW(pathBuffer))
+    {
+        MessageBoxW(this->hDlg, L"气泡图标文件不存在！", L"设置错误", MB_ICONINFORMATION);
+        return FALSE;
+    }
+
+    GetDlgItemTextW(this->hDlg, IDC_EDIT_SPATLASPATH, pathBuffer, MAX_PATH);
+    if (!PathFileExistsW(pathBuffer))
+    {
+        MessageBoxW(this->hDlg, L"atlas 文件不存在！", L"设置错误", MB_ICONINFORMATION);
+        return FALSE;
+    }
+
     GetDlgItemTextW(this->hDlg, IDC_EDIT_SPPNGPATH, pathBuffer, MAX_PATH);
     if (!PathFileExistsW(pathBuffer))
     {
         MessageBoxW(this->hDlg, L"png 文件不存在！", L"设置错误", MB_ICONINFORMATION);
+        return FALSE;
+    }
+
+    GetDlgItemTextW(this->hDlg, IDC_EDIT_SPSKELPATH, pathBuffer, MAX_PATH);
+    if (!PathFileExistsW(pathBuffer))
+    {
+        MessageBoxW(this->hDlg, L"skel 文件不存在！", L"设置错误", MB_ICONINFORMATION);
         return FALSE;
     }
 
@@ -153,6 +175,23 @@ BOOL ConfigDlg::SetSpinePngPath(PCWSTR atlasPath)
         SUCCEEDED(PathCchRenameExtension(pngPath, MAX_PATH, L".png")))
     {
         return SetDlgItemTextW(this->hDlg, IDC_EDIT_SPPNGPATH, pngPath);
+    }
+    return FALSE;
+}
+
+BOOL ConfigDlg::SetSpineSkelPath(PCWSTR atlasPath)
+{
+    WCHAR skelPath[MAX_PATH] = { 0 };
+    WCHAR currentAtlasPath[MAX_PATH] = { 0 };
+    if (!atlasPath)
+    {
+        GetDlgItemTextW(this->hDlg, IDC_EDIT_SPATLASPATH, currentAtlasPath, MAX_PATH);
+        atlasPath = currentAtlasPath;
+    }
+    if (SUCCEEDED(StringCchCopyW(skelPath, MAX_PATH, atlasPath)) &&
+        SUCCEEDED(PathCchRenameExtension(skelPath, MAX_PATH, L".skel")))
+    {
+        return SetDlgItemTextW(this->hDlg, IDC_EDIT_SPSKELPATH, skelPath);
     }
     return FALSE;
 }
@@ -286,8 +325,9 @@ INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
     SetDlgItemInt(this->hDlg, IDC_STATIC_TRANSPARENCY, this->form.transparencyPercent, FALSE);
 
     // 精灵设置
-    SetDlgItemTextW(this->hDlg, IDC_EDIT_SPSKELPATH, this->form.szSpineSkelPath);
     SetDlgItemTextW(this->hDlg, IDC_EDIT_SPATLASPATH, this->form.szSpineAtlasPath);
+    CheckDlgButton(this->hDlg, IDC_CHECK_AUTOSKEL, BST_CHECKED);
+    SetDlgItemTextW(this->hDlg, IDC_EDIT_SPSKELPATH, this->form.szSpineSkelPath);
     this->SetSpinePngPath(this->form.szSpineAtlasPath);
     CheckDlgButton(this->hDlg, IDC_CHECK_SHOWSPRITE, this->form.bShowSprite ? BST_CHECKED : BST_UNCHECKED);
     CheckDlgButton(this->hDlg, IDC_CHECK_MOUSEPASS, this->form.bSpriteMousePass ? BST_CHECKED : BST_UNCHECKED);
@@ -314,6 +354,7 @@ INT_PTR ConfigDlg::OnInitDialog(WPARAM wParam, LPARAM lParam)
     this->AddToolTip(IDC_CHECK_INFOSOUND, tipInfoSound);
     this->AddToolTip(IDC_EDIT_BALLOONICONPATH, tipBalloniconPath);
     this->AddToolTip(IDC_CHECK_SHOWUSAGE, tipShowUsage);
+    this->AddToolTip(IDC_CHECK_AUTOSKEL, tipAutoSkel);
     this->AddToolTip(IDC_CHECK_MOUSEPASS, tipSpriteMousePass);
     this->AddToolTip(IDC_SLIDER_SPMAXFPS, tipSpriteMaxFPS);
     this->AddToolTip(IDC_CB_SPWORK, tipAnimeWork);
@@ -339,6 +380,10 @@ INT_PTR ConfigDlg::OnCommand(WPARAM wParam, LPARAM lParam)
     case IDC_BTN_SPATLASPATH:
         this->ShowPathSelectDlg(IDC_EDIT_SPATLASPATH, L"选择 Atlas 文件", L"Atlas 文件 (*.atlas)\0*.atlas\0");
         this->SetSpinePngPath();
+        if (IsDlgButtonChecked(this->hDlg, IDC_CHECK_AUTOSKEL))
+        {
+            this->SetSpineSkelPath();
+        }
         return TRUE;
     case IDC_BTN_SPSKELPATH:
         this->ShowPathSelectDlg(IDC_EDIT_SPSKELPATH, L"选择 Skel 文件", L"Skel 文件 (*.skel; *.json)\0*.skel;*.json\0");

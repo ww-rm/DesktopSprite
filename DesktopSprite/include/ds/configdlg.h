@@ -31,6 +31,7 @@ private:
     BOOL ShowPathSelectDlg(INT pathEditID, PCWSTR lpstrTitle, PCWSTR lpstrFilter); 
 
     BOOL SetSpinePngPath(PCWSTR atlasPath = NULL);
+    BOOL SetSpineSkelPath(PCWSTR atlasPath = NULL);
 
     BOOL InitTrackBar(INT tbID, INT range1, INT range2, INT pageSize, INT freq, INT pos);
     BOOL InitComboBox(INT cbID, PCWSTR curName, INT minVisible);
