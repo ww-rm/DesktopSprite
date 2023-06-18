@@ -133,28 +133,29 @@ float _spMath_pow2out_apply(float a) {
 
 /* Implemented by user. */
 void _spAtlasPage_createTexture(spAtlasPage* self, const char* path) {
-    WCHAR wpath[MAX_PATH] = { 0 };
-    MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_PATH);
+    PWSTR bitmapPath = new WCHAR[MAX_PATH];
+    MultiByteToWideChar(CP_UTF8, 0, path, -1, bitmapPath, MAX_PATH);
 
-	Gdiplus::Bitmap* bitmap = new Gdiplus::Bitmap(wpath);
-	if (!bitmap)
+	Gdiplus::Bitmap bitmap(bitmapPath);
+	if (bitmap.GetLastStatus() != Gdiplus::Status::Ok)
 	{
+		delete[] bitmapPath;
 		self->rendererObject = NULL;
 		self->width = 0;
 		self->height = 0;
 	}
 	else
 	{
-		self->rendererObject = bitmap;
-		self->width = bitmap->GetWidth();
-		self->height = bitmap->GetHeight();
+		self->rendererObject = bitmapPath;
+		self->width = bitmap.GetWidth();
+		self->height = bitmap.GetHeight();
 	}
 }
 
 void _spAtlasPage_disposeTexture(spAtlasPage* self) {
 	if (self->rendererObject)
 	{
-		delete (Gdiplus::Bitmap*)self->rendererObject;
+		delete[](PWSTR)self->rendererObject;
 	}
 }
 

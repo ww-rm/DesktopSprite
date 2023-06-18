@@ -82,7 +82,7 @@ public:
     BOOL Loaded() const;
 
     // 获得纹理
-    Gdiplus::Bitmap* GetTexture();
+    PCWSTR GetTexture();
 
     // 更新状态
     BOOL Update(FLOAT elapseTime);
@@ -118,23 +118,27 @@ private:
 class SpineRenderer
 {
 private:
+    ID2D1Factory* pD2DFactory = NULL;
+    IWICImagingFactory* pWICFactory = NULL;
+
     // 渲染设备数据
     HWND targetWnd = NULL;
     HDC hdcScreen = NULL;
     HDC hdcMem = NULL;
     RECT rcTarget = { 0 };
-    Gdiplus::Graphics* graphics = NULL;
+    ID2D1DCRenderTarget* pDCrenderTarget = NULL;
 
     // 渲染数据缓冲
     std::vector<int> vertexIndexBuffer;
     std::vector<VERTEX> vertexBuffer;
+    std::vector<ID2D1PathGeometry*> trianglesBuffer;
 
     // 与 spine 有关的资源
     SpineChar* spinechar = NULL;
-    Gdiplus::Bitmap* texture = NULL;
+    ID2D1Bitmap* texture = NULL;
     INT texWidth = 0;
     INT texHeight = 0;
-    Gdiplus::TextureBrush* textureBrush = NULL;
+    ID2D1BitmapBrush* textureBrush = NULL;
 
     // 主循环数据
     HANDLE threadMutex = NULL;
@@ -149,10 +153,12 @@ private:
 
 public:
     SpineRenderer(HWND targetWnd, SpineChar* spinechar);
+    ~SpineRenderer();
 
     // 创建与释放绘图资源
     BOOL CreateTargetResources();
     void ReleaseTargetResources();
+    ID2D1Bitmap* CreateBitmapFromFile(PCWSTR path);
 
     BOOL CreateSpineResources();
     void ReleaseSpineResources();

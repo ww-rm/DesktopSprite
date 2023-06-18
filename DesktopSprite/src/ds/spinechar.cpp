@@ -9,13 +9,9 @@
 // | x2, y2 | = | u2, v2, 1 | @ | m21, m22 |
 // | x3, y3 |   | u3, v3, 1 |   | dx,  dy  |
 static void GetAffineMatrix(
-    float x1, float y1,
-    float x2, float y2,
-    float x3, float y3,
-    float u1, float v1,
-    float u2, float v2,
-    float u3, float v3,
-    Gdiplus::Matrix* m
+    float x1, float y1, float x2, float y2, float x3, float y3,
+    float u1, float v1, float u2, float v2, float u3, float v3,
+    D2D1::Matrix3x2F* m
 )
 {
     float x12 = x1 - x2;
@@ -35,7 +31,12 @@ static void GetAffineMatrix(
     float dx = x1 - m11 * u1 - m21 * v1;
     float dy = y1 - m12 * u1 - m22 * v1;
 
-    m->SetElements((float)m11, (float)m12, (float)m21, (float)m22, (float)dx, (float)dy);
+    m->m11 = m11;
+    m->m12 = m12;
+    m->m21 = m21;
+    m->m22 = m22;
+    m->dx = dx;
+    m->dy = dy;
 }
 
 SpineChar::SpineChar()
@@ -179,11 +180,11 @@ BOOL SpineChar::Loaded() const
     return this->skeleton && this->animationState;
 }
 
-Gdiplus::Bitmap* SpineChar::GetTexture()
+PCWSTR SpineChar::GetTexture()
 {
     if (!this->Loaded())
         return NULL;
-    return (Gdiplus::Bitmap*)this->atlas->pages->rendererObject;
+    return (PCWSTR)this->atlas->pages->rendererObject;
 }
 
 BOOL SpineChar::Update(FLOAT elapseTime)
@@ -528,8 +529,46 @@ SpineRenderer::SpineRenderer(HWND targetWnd, SpineChar* spinechar) :targetWnd(ta
         exit(-1);
     }
 
+    if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &this->pD2DFactory)))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        exit(-1);
+    }
+
+    if (FAILED(CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (LPVOID*)(&this->pWICFactory))))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        exit(-1);
+    }
+
+
     this->vertexBuffer.reserve(2048);
     this->vertexIndexBuffer.reserve(2048);
+    this->trianglesBuffer.reserve(2048);
+}
+
+SpineRenderer::~SpineRenderer()
+{
+    if (this->pWICFactory)
+    {
+        this->pWICFactory->Release();
+        this->pWICFactory = NULL;
+    }
+    if (this->pD2DFactory)
+    {
+        this->pD2DFactory->Release();
+        this->pD2DFactory = NULL;
+    }
+    if (this->threadMutex)
+    {
+        CloseHandle(this->threadMutex);
+        this->threadMutex = NULL;
+    }
+    if (this->threadEvent)
+    {
+        CloseHandle(this->threadEvent);
+        this->threadEvent = NULL;
+    }
 }
 
 BOOL SpineRenderer::CreateTargetResources()
@@ -545,20 +584,30 @@ BOOL SpineRenderer::CreateTargetResources()
     INT H = this->rcTarget.bottom - this->rcTarget.top;
     DeleteObject(SelectObject(this->hdcMem, CreateCompatibleBitmap(this->hdcScreen, W, H)));
 
-    this->graphics = new Gdiplus::Graphics(this->hdcMem);
+    auto properties = D2D1::RenderTargetProperties(
+        D2D1_RENDER_TARGET_TYPE_DEFAULT,
+        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
+    );
+
+    if (FAILED(this->pD2DFactory->CreateDCRenderTarget(&properties, &this->pDCrenderTarget)) || 
+        FAILED(this->pDCrenderTarget->BindDC(this->hdcMem, &this->rcTarget)))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
 
     // 把坐标系原点设置在窗口中心下方, 并且规范化正方向
-    Gdiplus::Matrix originTrans(1, 0, 0, -1, (float)W / 2.0f, (float)H - 100.0f); 
-    this->graphics->SetTransform(&originTrans);
+    D2D1::Matrix3x2F originTrans(1, 0, 0, -1, (float)W / 2.0f, (float)H - 100.0f);
+    this->pDCrenderTarget->SetTransform(&originTrans);
     return TRUE;
 }
 
 void SpineRenderer::ReleaseTargetResources()
 {
-    if (this->graphics)
+    if (this->pDCrenderTarget)
     {
-        delete this->graphics;
-        this->graphics = NULL;
+        this->pDCrenderTarget->Release();
+        this->pDCrenderTarget = NULL;
     }
     if (this->hdcMem)
     {
@@ -573,6 +622,39 @@ void SpineRenderer::ReleaseTargetResources()
     this->rcTarget = { 0 };
 }
 
+ID2D1Bitmap* SpineRenderer::CreateBitmapFromFile(PCWSTR path)
+{
+    IWICBitmapDecoder* pDecoder = NULL;
+    IWICBitmapFrameDecode* pSource = NULL;
+    IWICStream* pStream = NULL;
+    IWICFormatConverter* pConverter = NULL;
+    IWICBitmapScaler* pScaler = NULL;
+    ID2D1Bitmap* pBitmap = NULL;
+
+    if (FAILED(this->pWICFactory->CreateDecoderFromFilename(path, NULL, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &pDecoder)) ||
+        FAILED(pDecoder->GetFrame(0, &pSource)) ||
+        FAILED(this->pWICFactory->CreateFormatConverter(&pConverter)) ||
+        FAILED(pConverter->Initialize(pSource, GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, NULL, 0, WICBitmapPaletteTypeMedianCut)) ||
+        FAILED(pDCrenderTarget->CreateBitmapFromWicBitmap(pConverter, &pBitmap)))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        pBitmap = NULL;
+    }
+
+    if (pDecoder)
+        pDecoder->Release();
+    if (pSource)
+        pSource->Release();
+    if (pStream)
+        pStream->Release();
+    if (pConverter)
+        pConverter->Release();
+    if (pScaler)
+        pScaler->Release();
+
+    return pBitmap;
+}
+
 BOOL SpineRenderer::CreateSpineResources()
 {
     if (!this->spinechar->Loaded())
@@ -582,10 +664,17 @@ BOOL SpineRenderer::CreateSpineResources()
     if (this->textureBrush)
         return FALSE;
 
-    this->texture = this->spinechar->GetTexture();
-    this->texWidth = this->texture->GetWidth();
-    this->texHeight = this->texture->GetHeight();
-    this->textureBrush = new Gdiplus::TextureBrush(this->texture, Gdiplus::WrapModeClamp);
+    this->texture = this->CreateBitmapFromFile(this->spinechar->GetTexture());
+    if (!this->texture)
+        return FALSE;
+
+    this->texWidth = this->texture->GetPixelSize().width;
+    this->texHeight = this->texture->GetPixelSize().height;
+    if (FAILED(this->pDCrenderTarget->CreateBitmapBrush(this->texture, &this->textureBrush)))
+    {
+        ShowLastError(__FUNCTIONW__, __LINE__);
+        return FALSE;
+    }
 
     return TRUE;
 }
@@ -594,7 +683,7 @@ void SpineRenderer::ReleaseSpineResources()
 {
     if (this->textureBrush)
     {
-        delete this->textureBrush;
+        this->textureBrush->Release();
         this->textureBrush = NULL;
     }
     this->texWidth = 0;
@@ -681,7 +770,7 @@ void SpineRenderer::DrawTriangles()
 {
     int W = this->texWidth;
     int H = this->texHeight;
-    Gdiplus::Matrix transform;
+    D2D1::Matrix3x2F transform;
     VERTEX* vt1 = NULL;
     VERTEX* vt2 = NULL;
     VERTEX* vt3 = NULL;
@@ -692,19 +781,31 @@ void SpineRenderer::DrawTriangles()
         vt2 = &this->vertexBuffer[*(it + 1)];
         vt3 = &this->vertexBuffer[*(it + 2)];
 
-        GetAffineMatrix(
-            vt1->x, vt1->y,
-            vt2->x, vt2->y,
-            vt3->x, vt3->y,
-            vt1->u * W, vt1->v * H,
-            vt2->u * W, vt2->v * H,
-            vt3->u * W, vt3->v * H,
-            &transform
-        );
+        D2D1_POINT_2F pts[3] = { {vt1->x, vt1->y}, {vt2->x, vt2->y}, {vt3->x, vt3->y} };
+        ID2D1PathGeometry* pathGeometry = NULL;
+        ID2D1GeometrySink* geometrySink = NULL;
+        if (SUCCEEDED(this->pD2DFactory->CreatePathGeometry(&pathGeometry)) &&
+            SUCCEEDED(pathGeometry->Open(&geometrySink)))
+        {
+            geometrySink->BeginFigure(pts[0], D2D1_FIGURE_BEGIN_FILLED);
+            geometrySink->AddLine(pts[1]);
+            geometrySink->AddLine(pts[2]);
+            geometrySink->EndFigure(D2D1_FIGURE_END_CLOSED);
+            geometrySink->Close();
+            geometrySink->Release();
+            geometrySink = NULL;
 
-        this->textureBrush->SetTransform(&transform);
-        Gdiplus::PointF pts[3] = { {vt1->x, vt1->y}, {vt2->x, vt2->y}, {vt3->x, vt3->y} };
-        this->graphics->FillPolygon(this->textureBrush, pts, 3);
+            GetAffineMatrix(
+                vt1->x, vt1->y, vt2->x, vt2->y, vt3->x, vt3->y,
+                vt1->u * W, vt1->v * H, vt2->u * W, vt2->v * H, vt3->u * W, vt3->v * H,
+                &transform
+            );
+
+            this->textureBrush->SetTransform(&transform);
+            this->pDCrenderTarget->FillGeometry(pathGeometry, this->textureBrush);
+            this->pDCrenderTarget->DrawGeometry(pathGeometry, this->textureBrush);
+            this->trianglesBuffer.push_back(pathGeometry);
+        }
     }
 }
 
@@ -775,11 +876,34 @@ BOOL SpineRenderer::Render()
     if (!IsWindowVisible(this->targetWnd))
         return TRUE;
 
-    this->graphics->Clear(Gdiplus::Color::Transparent);
     this->vertexBuffer.clear();
     this->vertexIndexBuffer.clear();
+    for (auto it = this->trianglesBuffer.begin(); it != this->trianglesBuffer.end(); it++)
+    {
+        (*it)->Release();
+    }
+    this->trianglesBuffer.clear();
+    this->pDCrenderTarget->BeginDraw();
+    this->pDCrenderTarget->Clear();
     this->spinechar->GetMeshTriangles(&this->vertexBuffer, &this->vertexIndexBuffer);
     this->DrawTriangles();
+    auto hr = this->pDCrenderTarget->EndDraw();
+    if (FAILED(hr))
+    {
+        if (hr == D2DERR_RECREATE_TARGET)
+        {
+            this->ReleaseSpineResources();
+            this->ReleaseTargetResources();
+            this->CreateTargetResources();
+            this->CreateSpineResources();
+        }
+        else
+        {
+            ShowLastError(__FUNCTIONW__, __LINE__);
+        }
+        return FALSE;
+    }
+
     this->RenderFrame();
     return TRUE;
 }
