@@ -596,6 +596,8 @@ BOOL SpineRenderer::CreateTargetResources()
         return FALSE;
     }
 
+    this->pDCrenderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED); // 设置抗锯齿
+
     // 把坐标系原点设置在窗口中心下方, 并且规范化正方向
     D2D1::Matrix3x2F originTrans(1, 0, 0, -1, (float)W / 2.0f, (float)H - 100.0f);
     this->pDCrenderTarget->SetTransform(&originTrans);
@@ -782,18 +784,15 @@ void SpineRenderer::DrawTriangles()
         vt3 = &this->vertexBuffer[*(it + 2)];
 
         D2D1_POINT_2F pts[3] = { {vt1->x, vt1->y}, {vt2->x, vt2->y}, {vt3->x, vt3->y} };
-        ID2D1PathGeometry* pathGeometry = NULL;
-        ID2D1GeometrySink* geometrySink = NULL;
-        if (SUCCEEDED(this->pD2DFactory->CreatePathGeometry(&pathGeometry)) &&
-            SUCCEEDED(pathGeometry->Open(&geometrySink)))
+
+        ID2D1Mesh* mesh = NULL;
+        ID2D1TessellationSink* sink = NULL;
+        if (SUCCEEDED(this->pDCrenderTarget->CreateMesh(&mesh)) &&
+            SUCCEEDED(mesh->Open(&sink)))
         {
-            geometrySink->BeginFigure(pts[0], D2D1_FIGURE_BEGIN_FILLED);
-            geometrySink->AddLine(pts[1]);
-            geometrySink->AddLine(pts[2]);
-            geometrySink->EndFigure(D2D1_FIGURE_END_CLOSED);
-            geometrySink->Close();
-            geometrySink->Release();
-            geometrySink = NULL;
+            sink->AddTriangles((D2D1_TRIANGLE*)pts, 1);
+            sink->Close();
+            sink->Release();
 
             GetAffineMatrix(
                 vt1->x, vt1->y, vt2->x, vt2->y, vt3->x, vt3->y,
@@ -802,9 +801,8 @@ void SpineRenderer::DrawTriangles()
             );
 
             this->textureBrush->SetTransform(&transform);
-            this->pDCrenderTarget->FillGeometry(pathGeometry, this->textureBrush);
-            this->pDCrenderTarget->DrawGeometry(pathGeometry, this->textureBrush);
-            this->trianglesBuffer.push_back(pathGeometry);
+            this->pDCrenderTarget->FillMesh(mesh, this->textureBrush);
+            this->trianglesBuffer.push_back(mesh);
         }
     }
 }

@@ -131,7 +131,7 @@ private:
     // 渲染数据缓冲
     std::vector<int> vertexIndexBuffer;
     std::vector<VERTEX> vertexBuffer;
-    std::vector<ID2D1PathGeometry*> trianglesBuffer;
+    std::vector<ID2D1Mesh*> trianglesBuffer;
 
     // 与 spine 有关的资源
     SpineChar* spinechar = NULL;
