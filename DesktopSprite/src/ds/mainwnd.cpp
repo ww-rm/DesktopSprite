@@ -463,7 +463,7 @@ LRESULT MainWindow::OnCreate(WPARAM wParam, LPARAM lParam)
 
     // 添加图标
     this->pNotifyIcon = new NotifyIcon(this->hWnd, ID_NIDMAIN);
-    this->pNotifyIcon->Add(WM_NOTIFYICON, this->LoadNotifyIconBySysTheme(), WinApp::GetName());
+    this->pNotifyIcon->Add(WM_NOTIFYICON, this->LoadNotifyIconBySysTheme());
 
     // 初始化窗口位置
     POINT wndPos = { 0 };
@@ -1008,6 +1008,6 @@ LRESULT MainWindow::OnPerfDataUpdated(WPARAM wParam, LPARAM lParam)
 LRESULT MainWindow::OnTaskbarCreated(WPARAM wParam, LPARAM lParam)
 {
     // 添加图标
-    this->pNotifyIcon->Add(WM_NOTIFYICON, LoadNotifyIconBySysTheme(), WinApp::GetName());
+    this->pNotifyIcon->Add(WM_NOTIFYICON, LoadNotifyIconBySysTheme());
     return 0;
 }
