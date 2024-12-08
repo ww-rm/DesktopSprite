@@ -1,5 +1,9 @@
 # DesktopSprite
 
+:tada::tada::tada: 使用C#编写的新版本程序 [DeskSpine](https://github.com/ww-rm/DeskSpine) 现已开源并发布，欢迎前往下载使用，拥有更酷炫的性能监控窗与更丰富的动画功能支持！
+
+---
+
 [用户手册](README.user.md) | [开发手册](README.dev.md)
 
 这是一个适用于 `Windows` 系统下的桌面精灵, 目前已在 `Win10`, `Win11` 下基本测试通过.
